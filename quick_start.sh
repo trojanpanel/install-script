@@ -24,8 +24,8 @@ initVar() {
   mariadb_port=3306
   mariadb_pas=
 
-  static_html='https://github.com/jonssonyan/gfw/raw/master/resource/moviehtml.zip'
-  sql_url='https://github.com/jonssonyan/trojan-panel/raw/master/resource/sql/trojan.sql'
+  static_html='https://github.com/trojanpanel/install-script/raw/main/moviehtml.zip'
+  sql_url='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
 }
 
 initVar
