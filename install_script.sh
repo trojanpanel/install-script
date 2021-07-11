@@ -472,9 +472,8 @@ function main() {
   cd "$HOME" || exit
   mkdirTools
   echoContent red "\n=============================================================="
-  echoContent skyBlue "作者: JonssonYan"
   echoContent skyBlue "当前版本: v1.2.4"
-  echoContent skyBlue "Github: https://github.com/jonssonyan/trojan-panel"
+  echoContent skyBlue "Github: https://github.com/trojanpanel"
   echoContent skyBlue "描述: Trojan Panel一键安装脚本"
   echoContent red "\n=============================================================="
   echoContent yellow "1.卸载阿里云盾(仅限阿里云服务使用)"
