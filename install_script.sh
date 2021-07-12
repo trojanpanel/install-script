@@ -197,17 +197,10 @@ function installDocker() {
     echoContent green "---> 安装Docker"
 
     yum install -y yum-utils
-    yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     yum makecache fast
     yum install -y docker-ce docker-ce-cli containerd.io
-    if [ ! -f /etc/docker ]; then
-      mkdir -p /etc/docker
-    fi
-  cat >"/etc/docker/daemon.json" <<EOF
-{
- "registry-mirrors":["https://mirror.ccs.tencentyun.com","https://hub-mirror.c.163.com","https://docker.mirrors.ustc.edu.cn"]
-}
-EOF
+    
     systemctl enable docker
     systemctl start docker
 
