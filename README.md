@@ -28,6 +28,8 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 2. 以数据库版为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装加速 > 安装面板 > 安装节点
 
+3. 安装结束后,访问域名如果是一个静态网页,说明已经安装成功。
+
 # 客户端推荐
 
 - Android: [igniter](https://github.com/trojan-gfw/igniter)
