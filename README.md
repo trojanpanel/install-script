@@ -22,9 +22,11 @@ Trojan Panel一键安装脚本
 yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
 ```
 
-# 说明
+# 注意
 
-1. 以数据库版为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装加速 > 安装面板 > 安装节点
+1. 控制面板和节点都推荐部署在国外服务器上,否则会由于网络问题使用一键安装脚本会报错。
+
+2. 以数据库版为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装加速 > 安装面板 > 安装节点
 
 # 客户端推荐
 
