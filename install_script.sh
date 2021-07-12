@@ -205,7 +205,7 @@ function installDocker() {
     fi
   cat >"/etc/docker/daemon.json" <<EOF
 {
- "registry-mirrors":["https://hub-mirror.c.163.com","https://docker.mirrors.ustc.edu.cn"]
+ "registry-mirrors":["https://mirror.ccs.tencentyun.com","https://hub-mirror.c.163.com","https://docker.mirrors.ustc.edu.cn"]
 }
 EOF
     systemctl enable docker
