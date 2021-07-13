@@ -466,6 +466,12 @@ EOF
 
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
+    echoContent red "\n=============================================================="
+    echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
+    echoContent yellow "域名: ${domain}"
+    echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
+    echoContent yellow "TrojanGFW的密码: ${trojan_pas}"
+    echoContent red "\n=============================================================="
   else
     echoContent red "---> TrojanGFW安装失败"
     exit 0
