@@ -18,10 +18,10 @@ initVar() {
   domain=
   caddy_remote_port=8863
   your_email=123456@qq.com
-  remote_addr='127.0.0.1'
+  remote_addr='trojan-panel-caddy'
   trojanGFW_port=443
-  mariadb_ip='127.0.0.1'
-  mariadb_port=3306
+  mariadb_ip='trojan-panel-mariadb'
+  mariadb_port=9507
   mariadb_pas=
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/moviehtml.zip'
@@ -192,6 +192,7 @@ function import_sql() {
 
 # 安装Docker
 function installDocker() {
+  systemctl stop firewalld.service && systemctl disable firewalld.service
   docker -v
   if [ $? -ne 0 ]; then
     echoContent green "---> 安装Docker"
@@ -202,9 +203,8 @@ function installDocker() {
     yum install -y docker-ce docker-ce-cli containerd.io
     
     systemctl enable docker
-    systemctl start docker
+    systemctl start docker && docker -v && docker network create trojan-panel-network
 
-    docker -v
     if [ $? -eq 0 ]; then
       echoContent skyBlue "---> Docker安装完成"
     else
@@ -218,6 +218,9 @@ function installDocker() {
 function installMariadb() {
   echoContent green "---> 安装MariaDB"
 
+  read -r -p '请输入数据库的端口(默认:9507): ' mariadb_port
+  [ -z "${mariadb_port}" ] && mariadb_port="9507"
+
   while true; do
     read -r -p '请输入数据库的密码(必填): ' mariadb_pas
     if [[ ! -n ${mariadb_pas} ]]; then
@@ -227,11 +230,13 @@ function installMariadb() {
     fi
   done
 
-  docker pull mariadb
-  docker run -d --name trojan-panel-mariadb --restart always --network host \
-  -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${mariadb_pas} -e TZ=Asia/Shanghai mariadb
+  docker pull mariadb \
+  && docker run -d --name trojan-panel-mariadb --restart always \
+  -p ${mariadb_port}:3306 \
+  -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${mariadb_pas} -e TZ=Asia/Shanghai mariadb \
+  && docker network connect trojan-panel-network trojan-panel-mariadb
 
-  if [[ -n $(docker ps | grep trojan-panel-mariadb) ]]; then
+  if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> MariaDB安装完成"
     echoContent skyBlue "---> MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
     import_sql
@@ -287,11 +292,13 @@ https://${domain}:${caddy_remote_port} {
 }
 EOF
 
-  docker pull abiosoft/caddy
-  docker run -d --name trojan-panel-caddy --restart always --network host -e ACME_AGREE=true \
-  -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy
+  docker pull abiosoft/caddy \
+  && docker run -d --name trojan-panel-caddy --restart always -e ACME_AGREE=true \
+  -p 80:80 -p ${caddy_remote_port}:${caddy_remote_port} \
+  -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
+  && docker network connect trojan-panel-network trojan-panel-caddy
 
-  if [[ -n $(docker ps | grep trojan-panel-caddy) ]]; then
+  if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Caddy安装完成"
   else
     echoContent red "---> Caddy安装失败"
@@ -305,9 +312,9 @@ function installTrojanGFW() {
 
   read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
   [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-  read -r -p '请输入数据库的IP地址(默认:127.0.0.1)：' mariadb_ip
-  [ -z "${mariadb_ip}" ] && mariadb_ip="127.0.0.1"
-  read -r -p '请输入数据库的端口(默认:3306)：' mariadb_port
+  read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
+  [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
+  read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
   [ -z "${mariadb_port}" ] && mariadb_port=3306
   while true; do
     read -r -p '请输入数据库的密码(必填)：' mariadb_pas
@@ -358,7 +365,7 @@ function installTrojanGFW() {
     "mysql": {
         "enabled": true,
         "server_addr": "${mariadb_ip}",
-        "server_port": 3306,
+        "server_port": ${mariadb_port},
         "database": "trojan",
         "username": "root",
         "password": "${mariadb_pas}",
@@ -369,9 +376,11 @@ function installTrojanGFW() {
 }
 EOF
 
-  docker pull trojangfw/trojan
-  docker run -d --name trojan-panel-trojanGFW --restart always --network host \
-  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan
+  docker pull trojangfw/trojan \
+  && docker run -d --name trojan-panel-trojanGFW --restart always \
+  -p ${trojanGFW_port}:${trojanGFW_port} \
+  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
+  && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
   if [[ -n $(docker ps | grep trojan-panel-trojanGFW) ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
@@ -449,11 +458,13 @@ function installTrojanGFWStandalone() {
 }
 EOF
 
-  docker pull trojangfw/trojan
-  docker run -d --name trojan-panel-trojanGFW --restart always --network host \
-  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan
+  docker pull trojangfw/trojan \
+  && docker run -d --name trojan-panel-trojanGFW --restart always \
+  -p ${trojanGFW_port}:${trojanGFW_port} \
+  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
+  && docker network connect trojan-panel-network trojanGFW
 
-  if [[ -n $(docker ps | grep trojan-panel-trojanGFW) ]]; then
+  if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
   else
     echoContent red "---> TrojanGFW安装失败"
