@@ -462,7 +462,7 @@ EOF
   && docker run -d --name trojan-panel-trojanGFW --restart always \
   -p ${trojanGFW_port}:${trojanGFW_port} \
   -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
-  && docker network connect trojan-panel-network trojanGFW
+  && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
