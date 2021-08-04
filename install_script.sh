@@ -488,8 +488,8 @@ function main() {
   echoContent red "\n=============================================================="
   echoContent yellow "1.卸载阿里云盾(仅限阿里云服务使用)"
   echoContent yellow "2.安装BBRplus"
-  echoContent yellow "3.安装Trojan Panel"
-  echoContent yellow "4.安装TrojanGFW+Caddy+TLS节点 数据库版"
+  echoContent yellow "3.安装Trojan Panel(开发中)"
+  echoContent yellow "4.安装TrojanGFW+Caddy+TLS节点 数据库版(开发中)"
   echoContent yellow "5.安装TrojanGFW+Caddy+TLS节点 单机版"
   echoContent yellow "6.卸载Trojan Panel"
   read -r -p "请选择:" selectInstallType
@@ -501,14 +501,14 @@ function main() {
     installBBRplus
     ;;
   3)
-    installDocker
-    installMariadb
-    installTrojanPanel
+    #installDocker
+    #installMariadb
+    #installTrojanPanel
     ;;
   4)
-    installDocker
-    installCaddyTLS
-    installTrojanGFW
+    #installDocker
+    #installCaddyTLS
+    #installTrojanGFW
     ;;
   5)
     installDocker
