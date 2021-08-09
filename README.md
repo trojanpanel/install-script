@@ -28,7 +28,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # 注意
 
-1. 控制面板和节点都推荐部署在**国外服务器**上,否则会由于网络问题使用一键安装脚本会报错。
+1. 控制面板和节点都推荐部署在**国外服务器**上,否则会由于网络问题使用一键安装脚本会因为远程下载文件超时报错。
 
 2. 以数据库版为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装加速 > 安装面板 > 安装节点
 
@@ -37,7 +37,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 # 客户端推荐
 
 - Android: [igniter](https://github.com/trojan-gfw/igniter)
-- IOS: [Shadowrocket-GFW](https://apps.apple.com/us/app/shadowrocket/id932747118)
+- IOS: [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118)
 - Windows: [Qv2ray](https://github.com/Qv2ray/Qv2ray/) & [QvPlugin-Trojan](https://github.com/Qv2ray/QvPlugin-Trojan)
 
 # 交流
