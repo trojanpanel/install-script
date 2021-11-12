@@ -25,7 +25,7 @@ initVar() {
   mariadb_pas=
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/moviehtml.zip'
-  sql_url='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
+  sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
 }
 
 initVar
@@ -177,7 +177,7 @@ function import_sql() {
 
   docker exec trojan-panel-mariadb mysql -uroot -p${mariadb_pas} -e 'drop database trojan;'
 
-  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url} \
+  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
   && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
   && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
   && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
@@ -239,7 +239,6 @@ function installMariadb() {
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> MariaDB安装完成"
     echoContent skyBlue "---> MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
-    import_sql
   else
     echoContent red "---> MariaDB安装失败"
     exit 0
@@ -249,6 +248,7 @@ function installMariadb() {
 # 安装TrojanPanel
 function installTrojanPanel() {
   echoContent green "---> 安装TrojanPanel"
+  import_sql
 }
 
 # 安装Caddy TLS
@@ -501,14 +501,14 @@ function main() {
     installBBRplus
     ;;
   3)
-    #installDocker
-    #installMariadb
-    #installTrojanPanel
+    installDocker
+    installMariadb
+    installTrojanPanel
     ;;
   4)
-    #installDocker
-    #installCaddyTLS
-    #installTrojanGFW
+    installDocker
+    installCaddyTLS
+    installTrojanGFW
     ;;
   5)
     installDocker
