@@ -42,4 +42,4 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # 交流
 
-Telegram: [trojanpanel](https://t.me/trojanpanel)
+Telegram: https://t.me/jonssonyangroup
