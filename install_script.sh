@@ -8,9 +8,10 @@ initVar() {
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
   TROJAN_PANEL_CONFIG='config.ini'
-  TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
-  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
+  TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
+  TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
+  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
 
   MARIA_DATA='/tpdata/mariadb'
 
@@ -37,6 +38,7 @@ initVar
 function mkdirTools() {
   mkdir -p ${TP_DATA}
   mkdir -p ${TROJAN_PANEL_DATA}
+  mkdir -p ${TROJAN_PANEL_UI_DATA}
 
   mkdir -p ${MARIA_DATA}
 
@@ -256,9 +258,13 @@ function installTrojanPanel() {
   # 导入数据库
   import_sql
 
-  # 安装Trojan Panel后端
+  # 下载并解压Trojan Panel后端
   yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
   yum install -y unzip && unzip -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+
+  # 下载并解压Trojan Panel前端
+  yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+  yum install -y unzip && unzip -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
   [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
@@ -281,9 +287,11 @@ pas=${mariadb_pas}
 EOF
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.16
-WORKDIR /tpdata/trojan-panel
-COPY * ${TROJAN_PANEL_DATA}
-EXPOSE 8081
+FROM nginx:1.8
+WORKDIR /
+COPY ${TROJAN_PANEL_DATA} ${TROJAN_PANEL_DATA}
+COPY ${TROJAN_PANEL_UI_DATA} /usr/share/nginx/html/
+EXPOSE 8888
 RUN chmod +x ${TROJAN_PANEL_DATA}/trojan-panel
 ENTRYPOINT ["${TROJAN_PANEL_DATA}/trojan-panel"]
 EOF
