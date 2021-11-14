@@ -256,6 +256,7 @@ function installTrojanPanel() {
   # 导入数据库
   import_sql
 
+  # 安装Trojan Panel后端
   yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
   yum install -y unzip && unzip -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
@@ -297,6 +298,9 @@ EOF
     echoContent red "---> Trojan Panel后端安装失败"
     exit 0
   fi
+
+  # 安装Trojan Panel前端
+
 }
 
 # 安装Caddy TLS
