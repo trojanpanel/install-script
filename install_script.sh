@@ -11,7 +11,7 @@ initVar() {
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
-  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel/releases/download/v1.0.0/trojan-panel.zip'
+  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/download/v1.0.0/trojan-panel-ui.zip'
 
   MARIA_DATA='/tpdata/mariadb'
 
