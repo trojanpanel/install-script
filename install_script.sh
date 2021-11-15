@@ -2,24 +2,30 @@
 
 initVar() {
   echoType='echo -e'
-
+  # 项目目录
   TP_DATA='/tpdata'
 
+  # trojanGFW
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
 
+  # Trojan Panel
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
   TROJAN_PANEL_CONFIG='/tpdata/trojan-panel/config.ini'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/latest/download/trojan-panel.zip'
 
+  # Trojan Panel ui
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
 
+  # Nginx
   NGINX_DATA='/tpdata/nginx'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
 
+  # MariaDB
   MARIA_DATA='/tpdata/mariadb'
 
+  # Caddy
   CADDY_DATA='/tpdata/caddy'
   CADDY_Caddyfile='/tpdata/caddy/Caddyfile'
   CADDY_SRV='/tpdata/caddy/srv'
@@ -42,9 +48,17 @@ initVar
 
 function mkdirTools() {
   mkdir -p ${TP_DATA}
+
+  mkdir -p ${TROJANGFW_DATA}
+  touch ${TROJANGFW_CONFIG}
+
   mkdir -p ${TROJAN_PANEL_DATA}
+  touch ${TROJAN_PANEL_CONFIG}
+
   mkdir -p ${TROJAN_PANEL_UI_DATA}
+
   mkdir -p ${NGINX_DATA}
+  touch ${NGINX_CONFIG}
 
   mkdir -p ${MARIA_DATA}
 
@@ -52,9 +66,6 @@ function mkdirTools() {
   touch ${CADDY_Caddyfile}
   mkdir -p ${CADDY_SRV}
   mkdir -p ${CADDY_ACME}
-
-  mkdir -p ${TROJANGFW_DATA}
-  touch ${TROJANGFW_CONFIG}
 }
 
 echoContent() {
@@ -93,14 +104,15 @@ echoContent() {
 
 # 卸载Trojan Panel
 function uninstallTrojanPanel() {
+  # 删除容器
   docker rm -f trojan-panel-mariadb
   docker rm -f trojan-panel-caddy
   docker rm -f trojan-panel-trojanGFW
-  rm -rf ${MARIA_DATA}
-  rm -rf ${TROJANGFW_DATA}
+  docker rm -f trojan-panel-ui
+  docker rm -f trojan-panel
 
-  rm -rf ${CADDY_Caddyfile}
-  rm -rf ${CADDY_SRV}
+  # 删除文件
+  rm -rf ${TP_DATA}
 
   echoContent skyBlue "---> Trojan Panel卸载完成"
 }
@@ -316,6 +328,7 @@ COPY / /usr/share/nginx/html/
 EXPOSE 80
 EOF
 
+# 配置Nginx
   cat >${NGINX_CONFIG} <<EOF
 server {
     listen       80;
@@ -368,7 +381,8 @@ server {
 EOF
 
   docker build -t trojan-panel-ui -f ${TROJAN_PANEL_UI_DATA}/Dockerfile . \
-  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
+  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
+  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
   && docker network connect trojan-panel-network trojan-panel-ui
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Trojan Panel前端安装完成"
@@ -615,8 +629,8 @@ function main() {
   echoContent red "\n=============================================================="
   echoContent yellow "1.卸载阿里云盾(仅限阿里云服务使用)"
   echoContent yellow "2.安装BBRplus"
-  echoContent yellow "3.安装Trojan Panel(开发中)"
-  echoContent yellow "4.安装TrojanGFW+Caddy+TLS节点 数据库版(开发中)"
+  echoContent yellow "3.安装Trojan Panel"
+  echoContent yellow "4.安装TrojanGFW+Caddy+TLS节点 数据库版"
   echoContent yellow "5.安装TrojanGFW+Caddy+TLS节点 单机版"
   echoContent yellow "6.卸载Trojan Panel"
   read -r -p "请选择:" selectInstallType
