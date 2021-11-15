@@ -296,7 +296,7 @@ RUN chmod +x /trojan-panel
 ENTRYPOINT ["/trojan-panel"]
 EOF
 
-  docker build -t trojan-panel-server ${TROJAN_PANEL_SERVER_DATA} \
+  docker build -t trojan-panel-server -f ${TROJAN_PANEL_SERVER_DATA}/Dockerfile . \
   && docker run -d --name trojan-panel-server -p 8888:80 --restart always trojan-panel-server \
   && docker network connect trojan-panel-network trojan-panel-server
   if [[ $? -eq 0 ]]; then
