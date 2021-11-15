@@ -34,6 +34,8 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 3. 安装结束后,访问**域名**如果是一个静态网页,说明已经安装成功。
 
+4. Trojan Panel前端地址在8888端口，即：{你的域名/IP}:8888
+
 # 客户端推荐
 
 - Android: [igniter](https://github.com/trojan-gfw/igniter)
