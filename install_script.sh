@@ -291,7 +291,7 @@ FROM nginx:latest
 WORKDIR /${TROJAN_PANEL_SERVER_DATA}
 COPY trojan-panel/* /
 COPY trojan-panel-ui/* /usr/share/nginx/html/
-EXPOSE 8888
+EXPOSE 80
 RUN chmod +x /trojan-panel
 ENTRYPOINT ["/trojan-panel"]
 EOF
