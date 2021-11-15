@@ -8,10 +8,9 @@ initVar() {
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
   TROJAN_PANEL_CONFIG='config.ini'
-  TROJAN_PANEL_SERVER_DATA="/tpdata/trojan-panel-server"
-  TROJAN_PANEL_DATA='/tpdata/trojan-panel-server/trojan-panel'
+  TROJAN_PANEL_DATA='/tpdata/trojan-panel'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/latest/download/trojan-panel.zip'
-  TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-server/trojan-panel-ui'
+  TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
 
   MARIA_DATA='/tpdata/mariadb'
@@ -38,7 +37,6 @@ initVar
 
 function mkdirTools() {
   mkdir -p ${TP_DATA}
-  mkdir -p ${TROJAN_PANEL_SERVER_DATA}
   mkdir -p ${TROJAN_PANEL_DATA}
   mkdir -p ${TROJAN_PANEL_UI_DATA}
 
@@ -285,24 +283,39 @@ ip=${mariadb_ip}
 port=${mariadb_port}
 pas=${mariadb_pas}
 EOF
-  cat >${TROJAN_PANEL_SERVER_DATA}/Dockerfile <<EOF
+
+  cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.16
-FROM nginx:latest
-WORKDIR /${TROJAN_PANEL_SERVER_DATA}
-COPY trojan-panel/* /
-COPY trojan-panel-ui/* /usr/share/nginx/html/
-EXPOSE 80
+WORKDIR /${TROJAN_PANEL_DATA}
+COPY * /
 RUN chmod +x /trojan-panel
 ENTRYPOINT ["/trojan-panel"]
 EOF
 
-  docker build -t trojan-panel-server -f ${TROJAN_PANEL_SERVER_DATA}/Dockerfile . \
-  && docker run -d --name trojan-panel-server -p 8888:80 --restart always trojan-panel-server \
-  && docker network connect trojan-panel-network trojan-panel-server
+  docker build -t trojan-panel -f ${TROJAN_PANEL_DATA}/Dockerfile . \
+  && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
+  && docker network connect trojan-panel-network trojan-panel
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Trojan Panel后端安装完成"
   else
     echoContent red "---> Trojan Panel后端安装失败"
+    exit 0
+  fi
+
+  cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
+FROM nginx:latest
+WORKDIR /${TROJAN_PANEL_UI_DATA}
+COPY * /usr/share/nginx/html/
+EXPOSE 80
+EOF
+
+  docker build -t trojan-panel-ui -f ${TROJAN_PANEL_UI_DATA}/Dockerfile . \
+  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always trojan-panel-ui \
+  && docker network connect trojan-panel-network trojan-panel-ui
+  if [[ $? -eq 0 ]]; then
+    echoContent skyBlue "---> Trojan Panel前端安装完成"
+  else
+    echoContent red "---> Trojan Panel前端安装失败"
     exit 0
   fi
 }
