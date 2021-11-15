@@ -288,19 +288,17 @@ EOF
   cat >${TROJAN_PANEL_SERVER_DATA}/Dockerfile <<EOF
 FROM golang:1.16
 FROM nginx:latest
-WORKDIR /
-COPY ${TROJAN_PANEL_DATA}/* ${TROJAN_PANEL_DATA}
-COPY ${TROJAN_PANEL_UI_DATA}/* /usr/share/nginx/html/
+WORKDIR /${TROJAN_PANEL_SERVER_DATA}
+COPY trojan-panel/* /
+COPY trojan-panel-ui/* /usr/share/nginx/html/
 EXPOSE 8888
-RUN chmod +x ${TROJAN_PANEL_DATA}/trojan-panel
-ENTRYPOINT ["${TROJAN_PANEL_DATA}/trojan-panel"]
+RUN chmod +x /trojan-panel
+ENTRYPOINT ["/trojan-panel"]
 EOF
 
-  docker build -t trojan-panel-server ${TROJAN_PANEL_SERVER_DATA} \
+  docker build -t trojan-panel-server -f ${TROJAN_PANEL_SERVER_DATA} . \
   && docker run -d --name trojan-panel-server --restart always \
   -p 8888:8888 \
-  -v ${TROJAN_PANEL_DATA}:${TROJAN_PANEL_DATA} \
-  -v ${TROJAN_PANEL_UI_DATA}:/usr/share/nginx/html/ \
   && docker network connect trojan-panel-network trojan-panel-server
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Trojan Panel后端安装完成"
