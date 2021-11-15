@@ -7,11 +7,16 @@ initVar() {
 
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
-  TROJAN_PANEL_CONFIG='config.ini'
+
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
+  TROJAN_PANEL_CONFIG='/tpdata/trojan-panel/config.ini'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/latest/download/trojan-panel.zip'
+
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
+
+  NGINX_DATA='/tpdata/nginx'
+  NGINX_CONFIG='/tpdata/nginx/default.conf'
 
   MARIA_DATA='/tpdata/mariadb'
 
@@ -39,6 +44,7 @@ function mkdirTools() {
   mkdir -p ${TP_DATA}
   mkdir -p ${TROJAN_PANEL_DATA}
   mkdir -p ${TROJAN_PANEL_UI_DATA}
+  mkdir -p ${NGINX_DATA}
 
   mkdir -p ${MARIA_DATA}
 
@@ -277,7 +283,7 @@ function installTrojanPanel() {
     fi
   done
 
-  cat >${TROJAN_PANEL_DATA}/${TROJAN_PANEL_CONFIG} <<EOF
+  cat >${TROJAN_PANEL_CONFIG} <<EOF
 [mysql]
 ip=${mariadb_ip}
 port=${mariadb_port}
@@ -310,8 +316,59 @@ COPY / /usr/share/nginx/html/
 EXPOSE 80
 EOF
 
+  cat >${NGINX_CONFIG} <<EOF
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    location /api {
+        proxy_pass http://trojan-panel:8081;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    root           html;
+    #    fastcgi_pass   127.0.0.1:9000;
+    #    fastcgi_index  index.php;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+    #    include        fastcgi_params;
+    #}
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
+EOF
+
   docker build -t trojan-panel-ui -f ${TROJAN_PANEL_UI_DATA}/Dockerfile . \
-  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always trojan-panel-ui \
+  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
   && docker network connect trojan-panel-network trojan-panel-ui
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Trojan Panel前端安装完成"
