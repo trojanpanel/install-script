@@ -287,9 +287,10 @@ EOF
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.16
 WORKDIR /${TROJAN_PANEL_DATA}
-COPY / /
-RUN chmod +x /trojan-panel
-ENTRYPOINT ["/trojan-panel"]
+ADD config.ini config.ini
+ADD trojan-panel trojan-panel
+RUN chmod +x ./trojan-panel
+ENTRYPOINT ["./trojan-panel"]
 EOF
 
   docker build -t trojan-panel -f ${TROJAN_PANEL_DATA}/Dockerfile . \
