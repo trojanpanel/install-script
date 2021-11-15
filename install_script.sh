@@ -257,8 +257,6 @@ function installMariadb() {
 # 安装TrojanPanel
 function installTrojanPanel() {
   echoContent green "---> 安装TrojanPanel"
-  # 导入数据库
-  import_sql
 
   # 下载并解压Trojan Panel后端
   yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
@@ -287,7 +285,7 @@ ip=${mariadb_ip}
 port=${mariadb_port}
 pas=${mariadb_pas}
 EOF
-  cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
+  cat >${TROJAN_PANEL_SERVER_DATA}/Dockerfile <<EOF
 FROM golang:1.16
 FROM nginx:latest
 WORKDIR /
@@ -298,7 +296,7 @@ RUN chmod +x ${TROJAN_PANEL_DATA}/trojan-panel
 ENTRYPOINT ["${TROJAN_PANEL_DATA}/trojan-panel"]
 EOF
 
-  docker build -t trojan-panel-server ${TROJAN_PANEL_DATA} \
+  docker build -t trojan-panel-server ${TROJAN_PANEL_SERVER_DATA} \
   && docker run -d --name trojan-panel-server --restart always \
   -p 8888:8888 \
   -v ${TROJAN_PANEL_DATA}:${TROJAN_PANEL_DATA} \
@@ -310,9 +308,6 @@ EOF
     echoContent red "---> Trojan Panel后端安装失败"
     exit 0
   fi
-
-  # 安装Trojan Panel前端
-
 }
 
 # 安装Caddy TLS
@@ -567,6 +562,7 @@ function main() {
   3)
     installDocker
     installMariadb
+    import_sql trojan-panel
     installTrojanPanel
     ;;
   4)
