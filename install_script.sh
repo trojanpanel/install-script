@@ -297,7 +297,7 @@ ENTRYPOINT ["/trojan-panel"]
 EOF
 
   docker build -t trojan-panel-server ${TROJAN_PANEL_SERVER_DATA} \
-  && docker run -d --name trojan-panel-server --restart always -p 8888:8888 trojan-panel-server \
+  && docker run -d --name trojan-panel-server -p 8888:80 --restart always trojan-panel-server \
   && docker network connect trojan-panel-network trojan-panel-server
   if [[ $? -eq 0 ]]; then
     echoContent skyBlue "---> Trojan Panel后端安装完成"
