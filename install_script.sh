@@ -102,20 +102,6 @@ echoContent() {
   esac
 }
 
-# 卸载Trojan Panel
-function uninstallTrojanPanel() {
-  # 强制删除容器
-  docker rm -f trojan-panel-ui
-  docker rm -f trojan-panel
-
-  # 删除文件
-  rm -rf ${TROJAN_PANEL_DATA}
-  rm -rf ${TROJAN_PANEL_UI_DATA}
-  rm -rf ${NGINX_DATA}
-
-  echoContent skyBlue "---> Trojan Panel卸载完成"
-}
-
 # 卸载阿里云盾
 function uninstallAliyun() {
   wget --no-check-certificate -O uninstall.sh http://update.aegis.aliyun.com/download/uninstall.sh && chmod +x uninstall.sh && ./uninstall.sh
@@ -186,34 +172,6 @@ function installBBRplus() {
   fi
 }
 
-# 导入数据库
-function import_sql() {
-  echoContent green "---> 导入数据库"
-
-  while true; do
-    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
-    if [[ ! -n ${mariadb_pas} ]]; then
-      echoContent yellow "数据库密码不能为空"
-    else
-      break
-    fi
-  done
-
-  docker exec trojan-panel-mariadb mysql -uroot -p${mariadb_pas} -e 'drop database trojan;'
-
-  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
-  && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
-  
-  if [ $? -eq 0 ]; then
-    echoContent skyBlue "---> 导入数据库完成"
-  else
-    echoContent red "---> 导入数据库失败"
-    exit 0
-  fi
-}
-
 # 安装Docker
 function installDocker() {
   systemctl stop firewalld.service && systemctl disable firewalld.service
@@ -269,17 +227,45 @@ function installMariadb() {
   fi
 }
 
+# 导入数据库
+function import_sql() {
+  echoContent green "---> 导入数据库"
+
+  while true; do
+    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
+    if [[ ! -n ${mariadb_pas} ]]; then
+      echoContent yellow "数据库密码不能为空"
+    else
+      break
+    fi
+  done
+
+  docker exec trojan-panel-mariadb mysql -uroot -p${mariadb_pas} -e 'drop database trojan;'
+
+  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
+  && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
+  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
+  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
+
+  if [ $? -eq 0 ]; then
+    echoContent skyBlue "---> 导入数据库完成"
+  else
+    echoContent red "---> 导入数据库失败"
+    exit 0
+  fi
+}
+
 # 安装TrojanPanel
 function installTrojanPanel() {
   echoContent green "---> 安装TrojanPanel"
 
   # 下载并解压Trojan Panel后端
   yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-  yum install -y unzip && unzip -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
   # 下载并解压Trojan Panel前端
   yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-  yum install -y unzip && unzip -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
   [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
@@ -618,6 +604,52 @@ EOF
   fi
 }
 
+# 卸载Trojan Panel
+function uninstallTrojanPanel() {
+   echoContent green "---> 卸载Trojan Panel"
+
+  # 强制删除容器
+  docker rm -f trojan-panel-ui
+  docker rm -f trojan-panel
+  # 删除image
+  docker rmi trojan-panel-ui
+  docker rmi trojan-panel
+
+  # 删除文件
+  rm -rf ${TROJAN_PANEL_DATA}/*
+  rm -rf ${TROJAN_PANEL_UI_DATA}/*
+  rm -rf ${NGINX_DATA}/*
+
+  echoContent skyBlue "---> Trojan Panel卸载完成"
+}
+
+# 更新Trojan Panel
+function updateTrojanPanel() {
+  echoContent green "---> 更新Trojan Panel"
+
+  # 判断Trojan Panel是否安装
+  if [[ -n $(docker ps | grep trojan-panel) ]];then
+    echoContent red "---> 请先安装Trojan Panel"
+    exit 0
+  fi
+
+  import_sql trojan-panel
+  # 下载并解压Trojan Panel后端
+  yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+
+  # 下载并解压Trojan Panel前端
+  yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+
+  docker cp ${TROJAN_PANEL_DATA} trojan-panel:/ \
+  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel:/usr/share/nginx/html/ \
+  && docker restart trojan-panel \
+  && docker restart trojan-panel-ui
+
+  echoContent skyBlue "---> Trojan Panel更新完成"
+}
+
 function main() {
   cd "$HOME" || exit
   mkdirTools
@@ -632,6 +664,7 @@ function main() {
   echoContent yellow "4.安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
   echoContent yellow "5.安装TrojanGFW+Caddy+Web+TLS节点 单机版"
   echoContent yellow "6.卸载Trojan Panel"
+  echoContent yellow "7.更新Trojan Panel"
   read -r -p "请选择:" selectInstallType
   case ${selectInstallType} in
   1)
@@ -658,6 +691,9 @@ function main() {
     ;;
   6)
     uninstallTrojanPanel
+    ;;
+  7)
+    updateTrojanPanel
     ;;
   esac
 }
