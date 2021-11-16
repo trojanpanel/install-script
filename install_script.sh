@@ -215,7 +215,7 @@ function installMariadb() {
   docker pull mariadb \
   && docker run -d --name trojan-panel-mariadb --restart always \
   -p ${mariadb_port}:3306 \
-  -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${mariadb_pas} -e TZ=Asia/Shanghai mariadb \
+  -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" -e TZ=Asia/Shanghai mariadb \
   && docker network connect trojan-panel-network trojan-panel-mariadb
 
   if [[ $? -eq 0 ]]; then
@@ -240,7 +240,7 @@ function import_sql() {
     fi
   done
 
-  docker exec trojan-panel-mariadb mysql -uroot -p${mariadb_pas} -e 'drop database trojan;'
+  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
 
   yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
   && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
