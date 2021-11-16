@@ -14,7 +14,7 @@ initVar() {
   TROJAN_PANEL_CONFIG='/tpdata/trojan-panel/config.ini'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/latest/download/trojan-panel.zip'
 
-  # Trojan Panel ui
+  # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
 
@@ -104,15 +104,14 @@ echoContent() {
 
 # 卸载Trojan Panel
 function uninstallTrojanPanel() {
-  # 删除容器
-  docker rm -f trojan-panel-mariadb
-  docker rm -f trojan-panel-caddy
-  docker rm -f trojan-panel-trojanGFW
+  # 强制删除容器
   docker rm -f trojan-panel-ui
   docker rm -f trojan-panel
 
   # 删除文件
-  rm -rf ${TP_DATA}
+  rm -rf ${TROJAN_PANEL_DATA}
+  rm -rf ${TROJAN_PANEL_UI_DATA}
+  rm -rf ${NGINX_DATA}
 
   echoContent skyBlue "---> Trojan Panel卸载完成"
 }
