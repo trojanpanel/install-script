@@ -673,8 +673,8 @@ function main() {
   3)
     installDocker
     installMariadb
-    import_sql trojan-panel
     installTrojanPanel
+    import_sql trojan-panel
     ;;
   4)
     installDocker
