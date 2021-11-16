@@ -642,8 +642,8 @@ function updateTrojanPanel() {
   yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
   yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
-  docker cp ${TROJAN_PANEL_DATA} trojan-panel:/ \
-  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel:/usr/share/nginx/html/ \
+  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
+  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
   && docker restart trojan-panel \
   && docker restart trojan-panel-ui
 
