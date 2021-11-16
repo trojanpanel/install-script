@@ -289,13 +289,12 @@ EOF
 
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.16
-ADD ${TROJAN_PANEL_DATA}/config.ini config.ini
-ADD ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel
+COPY / /
 RUN chmod +x ./trojan-panel
 ENTRYPOINT ["./trojan-panel"]
 EOF
 
-  docker build -t trojan-panel -f ${TROJAN_PANEL_DATA}/Dockerfile . \
+  docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
   && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
   && docker network connect trojan-panel-network trojan-panel
   if [[ $? -eq 0 ]]; then
@@ -307,7 +306,7 @@ EOF
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
-COPY ${TROJAN_PANEL_UI_DATA}/ /usr/share/nginx/html/
+COPY / /usr/share/nginx/html/
 EXPOSE 80
 EOF
 
@@ -363,7 +362,7 @@ server {
 }
 EOF
 
-  docker build -t trojan-panel-ui -f ${TROJAN_PANEL_UI_DATA}/Dockerfile . \
+  docker build -t trojan-panel-ui ${TROJAN_PANEL_UI_DATA} \
   && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
   -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
   && docker network connect trojan-panel-network trojan-panel-ui
