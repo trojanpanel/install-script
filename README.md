@@ -42,6 +42,6 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 - IOS: [Shadowrocket](https://apps.apple.com/us/app/shadowrocket/id932747118)
 - Windows: [Qv2ray](https://github.com/Qv2ray/Qv2ray/) & [QvPlugin-Trojan](https://github.com/Qv2ray/QvPlugin-Trojan)
 
-# 交流
+# Telegram讨论组
 
-Telegram: https://t.me/jonssonyangroup
+Telegram讨论组: https://t.me/jonssonyangroup
