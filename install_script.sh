@@ -38,7 +38,7 @@ initVar() {
   trojanGFW_port=443
   mariadb_ip='trojan-panel-mariadb'
   mariadb_port=9507
-  mariadb_pas=
+  mariadb_pas=''
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/moviehtml.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
@@ -196,6 +196,34 @@ function installDocker() {
   fi
 }
 
+# 导入数据库
+function import_sql() {
+  echoContent green "---> 导入数据库"
+
+  while true; do
+    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
+    if [[ ! -n ${mariadb_pas} ]]; then
+      echoContent yellow "数据库密码不能为空"
+    else
+      break
+    fi
+  done
+
+  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
+
+  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
+  && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
+  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
+  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
+
+  if [ $? -eq 0 ]; then
+    echoContent skyBlue "---> 导入数据库完成"
+  else
+    echoContent red "---> 导入数据库失败"
+    exit 0
+  fi
+}
+
 # 安装MariaDB
 function installMariadb() {
   echoContent green "---> 安装MariaDB"
@@ -223,34 +251,6 @@ function installMariadb() {
     echoContent skyBlue "---> MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
   else
     echoContent red "---> MariaDB安装失败"
-    exit 0
-  fi
-}
-
-# 导入数据库
-function import_sql() {
-  echoContent green "---> 导入数据库"
-
-  while true; do
-    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
-    if [[ ! -n ${mariadb_pas} ]]; then
-      echoContent yellow "数据库密码不能为空"
-    else
-      break
-    fi
-  done
-
-  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
-
-  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
-  && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
-
-  if [ $? -eq 0 ]; then
-    echoContent skyBlue "---> 导入数据库完成"
-  else
-    echoContent red "---> 导入数据库失败"
     exit 0
   fi
 }
