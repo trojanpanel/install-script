@@ -289,9 +289,8 @@ EOF
 
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.16
-WORKDIR ${TROJAN_PANEL_DATA}
-ADD config.ini config.ini
-ADD trojan-panel trojan-panel
+ADD ${TROJAN_PANEL_DATA}/config.ini config.ini
+ADD ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel
 RUN chmod +x ./trojan-panel
 ENTRYPOINT ["./trojan-panel"]
 EOF
@@ -308,8 +307,7 @@ EOF
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
-WORKDIR ${TROJAN_PANEL_UI_DATA}
-COPY / /usr/share/nginx/html/
+COPY ${TROJAN_PANEL_UI_DATA}/ /usr/share/nginx/html/
 EXPOSE 80
 EOF
 
