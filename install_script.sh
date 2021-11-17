@@ -200,30 +200,34 @@ function installDocker() {
 
 # 导入数据库
 function import_sql() {
-  echoContent green "---> 导入数据库"
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel-mariadb$") ]]; then
+    echoContent green "---> 导入数据库"
 
-  while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-    if [[ ! -n ${mariadb_pas} ]]; then
-      echoContent yellow "数据库密码不能为空"
+    while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
+      if [[ ! -n ${mariadb_pas} ]]; then
+        echoContent yellow "数据库密码不能为空"
+      else
+        break
+      fi
+    done
+
+    sleep 1
+
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
+
+    yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
+    && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
+    && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
+    && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
+
+    if [ $? -eq 0 ]; then
+      echoContent skyBlue "---> 导入数据库完成"
     else
-      break
+      echoContent red "---> 导入数据库失败"
+      exit 0
     fi
-  done
-
-  sleep 1
-
-  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
-
-  yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
-  && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
-  && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
-
-  if [ $? -eq 0 ]; then
-    echoContent skyBlue "---> 导入数据库完成"
   else
-    echoContent red "---> 导入数据库失败"
-    exit 0
+    echoContent red "---> 你还没有安装MariaDB"
   fi
 }
 
