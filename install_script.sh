@@ -398,32 +398,33 @@ EOF
 
 # 安装Caddy TLS
 function installCaddyTLS() {
-  echoContent green "---> 安装Caddy TLS"
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-caddy$") ]]; then
+    echoContent green "---> 安装Caddy TLS"
 
-  echoContent yellow "注意: 请确保域名已经解析到本机IP,否则申请证书会失败"
-  while read -r -p '请输入你的域名(必填): ' domain; do
-    if [[ ! -n ${domain} ]]; then
-      echoContent yellow "域名不能为空"
-    else
-      break
+    echoContent yellow "注意: 请确保域名已经解析到本机IP,否则申请证书会失败"
+    while read -r -p '请输入你的域名(必填): ' domain; do
+      if [[ ! -n ${domain} ]]; then
+        echoContent yellow "域名不能为空"
+      else
+        break
+      fi
+    done
+
+    ping -c 2 -w 5 "${domain}"
+    if [[ $? -ne 0 ]]; then
+      echoContent yellow "你的域名没有解析到本机IP"
+      echoContent red "---> Caddy安装失败"
+      exit 0
     fi
-  done
 
-  ping -c 2 -w 5 "${domain}"
-  if [[ $? -ne 0 ]]; then
-    echoContent yellow "你的域名没有解析到本机IP"
-    echoContent red "---> Caddy安装失败"
-    exit 0
-  fi
+    read -r -p '请输入你的邮箱(用于申请证书,默认:123456@qq.com)：' your_email
+    [ -z "${your_email}" ] && your_email="123456@qq.com"
 
-  read -r -p '请输入你的邮箱(用于申请证书,默认:123456@qq.com)：' your_email
-  [ -z "${your_email}" ] && your_email="123456@qq.com"
+    read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863)：' caddy_remote_port
+    [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
-  read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863)：' caddy_remote_port
-  [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
-
-  yum install -y wget && wget --no-check-certificate -O html.zip ${static_html}
-  yum install -y unzip && unzip -d ${CADDY_SRV} ./html.zip
+    yum install -y wget && wget --no-check-certificate -O html.zip ${static_html}
+    yum install -y unzip && unzip -d ${CADDY_SRV} ./html.zip
 
   cat >${CADDY_Caddyfile} <<EOF
 http://${domain}:80 {
@@ -436,17 +437,20 @@ https://${domain}:${caddy_remote_port} {
 }
 EOF
 
-  docker pull abiosoft/caddy \
-  && docker run -d --name trojan-panel-caddy --restart always -e ACME_AGREE=true \
-  -p 80:80 -p ${caddy_remote_port}:${caddy_remote_port} \
-  -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
-  && docker network connect trojan-panel-network trojan-panel-caddy
+    docker pull abiosoft/caddy \
+    && docker run -d --name trojan-panel-caddy --restart always -e ACME_AGREE=true \
+    -p 80:80 -p ${caddy_remote_port}:${caddy_remote_port} \
+    -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
+    && docker network connect trojan-panel-network trojan-panel-caddy
 
-  if [[ -n $(docker ps -aq -f "name=^trojan-panel-caddy$") ]]; then
-    echoContent skyBlue "---> Caddy安装完成"
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-caddy$") ]]; then
+      echoContent skyBlue "---> Caddy安装完成"
+    else
+      echoContent red "---> Caddy安装失败"
+      exit 0
+    fi
   else
-    echoContent red "---> Caddy安装失败"
-    exit 0
+    echoContent skyBlue "---> 你已经安装了Caddy"
   fi
 }
 
