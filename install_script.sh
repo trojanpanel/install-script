@@ -208,6 +208,8 @@ function import_sql() {
     fi
   done
 
+  sleep 1
+
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
 
   yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
@@ -310,7 +312,7 @@ EXPOSE 80
 EOF
 
 # 配置Nginx
-  cat >${NGINX_CONFIG} <<EOF
+  cat >${NGINX_CONFIG} << EOF
 server {
     listen       80;
     listen  [::]:80;
@@ -375,7 +377,7 @@ EOF
   echoContent red "\n=============================================================="
   echoContent skyBlue "Trojan Panel 安装成功"
   echoContent yellow "MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
-  echoContent yellow "后台管理地址: ${domain}:8888"
+  echoContent yellow "后台管理地址: 你的IP地址/域名:8888"
   echoContent yellow "默认用户名: sysadmin 默认密码: 123456 请及时登陆后台修改密码"
   echoContent red "\n=============================================================="
 }
@@ -393,7 +395,7 @@ function installCaddyTLS() {
     fi
   done
 
-  ping -c 2 -w 5 ${domain}
+  ping -c 2 -w 5 "${domain}"
   if [[ $? -ne 0 ]]; then
     echoContent yellow "你的域名没有解析到本机IP"
     echoContent red "---> Caddy安装失败"
@@ -676,7 +678,6 @@ function main() {
   3)
     installDocker
     installMariadb
-    sleep 1
     import_sql trojan-panel
     installTrojanPanel
     ;;
