@@ -29,11 +29,11 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 1. 控制面板和节点都推荐部署在**国外服务器**上,否则会由于网络问题使用一键安装脚本会因为远程下载文件超时报错。
 
-2. 以Trojan Panel+数据库版节点为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装加速 > 安装面板 > 安装节点
+2. 以Trojan Panel+数据库版节点为例,建议的安装顺序: 卸载云盾(阿里云服务器) > 安装BBRplus > 安装Trojan Panel面板 > 安装节点(数据库版)
 
 3. 安装结束后,访问**域名**如果是一个静态网页,说明已经安装成功。
 
-4. Trojan Panel后台管理地址在8888端口，即：host:8888
+4. Trojan Panel后台管理地址: **http**://域名/IP:8888
 
 # 客户端推荐
 
