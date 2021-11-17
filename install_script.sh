@@ -395,7 +395,7 @@ EOF
   echoContent red "\n=============================================================="
   echoContent skyBlue "Trojan Panel 安装成功"
   echoContent yellow "MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
-  echoContent yellow "后台管理地址: 你的IP地址/域名:8888"
+  echoContent yellow "后台管理地址: http://你的IP地址/域名:8888"
   echoContent yellow "默认用户名: sysadmin 默认密码: 123456 请及时登陆后台修改密码"
   echoContent red "\n=============================================================="
 }
@@ -690,7 +690,7 @@ function main() {
   cd "$HOME" || exit
   mkdirTools
   echoContent red "\n=============================================================="
-  echoContent skyBlue "当前版本: v1.2.4"
+  echoContent skyBlue "当前版本: v2.0.0"
   echoContent skyBlue "Github: https://github.com/trojanpanel"
   echoContent skyBlue "描述: Trojan Panel一键安装脚本"
   echoContent red "\n=============================================================="
