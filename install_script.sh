@@ -374,6 +374,13 @@ EOF
     echoContent red "---> Trojan Panel前端安装失败"
     exit 0
   fi
+
+  echoContent red "\n=============================================================="
+  echoContent skyBlue "Trojan Panel 安装成功"
+  echoContent yellow "MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
+  echoContent yellow "后台管理地址: ${domain}:8888"
+  echoContent yellow "默认用户名: sysadmin 默认密码: 123456 请及时登陆后台修改密码"
+  echoContent red "\n=============================================================="
 }
 
 # 安装Caddy TLS
@@ -675,8 +682,9 @@ function main() {
   3)
     installDocker
     installMariadb
-    installTrojanPanel
+    sleep 1
     import_sql trojan-panel
+    installTrojanPanel
     ;;
   4)
     installDocker
