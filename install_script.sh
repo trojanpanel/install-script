@@ -535,13 +535,19 @@ EOF
     && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
-      echoContent skyBlue "---> TrojanGFW安装完成"
+      echoContent skyBlue "---> TrojanGFW 数据库版 安装完成"
+      echoContent red "\n=============================================================="
+      echoContent skyBlue "TrojanGFW+Caddy+TLS节点 数据库版 安装成功"
+      echoContent yellow "域名: ${domain}"
+      echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
+      echoContent yellow "TrojanGFW的密码: 用户名&密码"
+      echoContent red "\n=============================================================="
     else
-      echoContent red "---> TrojanGFW安装失败"
+      echoContent red "---> TrojanGFW 数据库版 安装失败"
       exit 0
     fi
   else
-    echoContent skyBlue "---> 你已经安装了TrojanGFW"
+    echoContent skyBlue "---> 你已经安装了TrojanGFW 数据库版"
   fi
 }
 
@@ -620,7 +626,7 @@ EOF
     && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-      echoContent skyBlue "---> TrojanGFW 单机版安装完成"
+      echoContent skyBlue "---> TrojanGFW 单机版 安装完成"
       echoContent red "\n=============================================================="
       echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
       echoContent yellow "域名: ${domain}"
@@ -628,7 +634,7 @@ EOF
       echoContent yellow "TrojanGFW的密码: ${trojan_pas}"
       echoContent red "\n=============================================================="
     else
-      echoContent red "---> TrojanGFW 单机版安装失败"
+      echoContent red "---> TrojanGFW 单机版 安装失败"
       exit 0
     fi
   else
