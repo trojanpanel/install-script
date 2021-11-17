@@ -29,7 +29,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 1. 控制面板和节点都推荐部署在**国外服务器**上,否则会由于网络问题使用一键安装脚本会因为远程下载文件超时报错。
 
-2. 以Trojan Panel+数据库版节点为例
+2. 以Trojan Panel+节点(数据库版)为例
 
    建议的安装顺序: 卸载云盾(阿里云服务器) > 安装BBRplus > 安装Trojan Panel面板 > 安装节点(数据库版)
 
@@ -41,7 +41,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 连接参数如下：
 
-- 地址：`你输入的域名`
+- 地址：`你的域名`
 - 端口：`TrojanGFW的端口`
 - 密码：`用户名&密码` (需要在管理后台添加用户)
 
