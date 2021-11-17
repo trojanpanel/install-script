@@ -200,8 +200,7 @@ function installDocker() {
 function import_sql() {
   echoContent green "---> 导入数据库"
 
-  while true; do
-    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
+  while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
     if [[ ! -n ${mariadb_pas} ]]; then
       echoContent yellow "数据库密码不能为空"
     else
@@ -231,8 +230,7 @@ function installMariadb() {
   read -r -p '请输入数据库的端口(默认:9507): ' mariadb_port
   [ -z "${mariadb_port}" ] && mariadb_port="9507"
 
-  while true; do
-    read -r -p '请输入数据库的密码(必填): ' mariadb_pas
+  while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
     if [[ ! -n ${mariadb_pas} ]]; then
       echoContent yellow "数据库密码不能为空"
     else
@@ -271,8 +269,7 @@ function installTrojanPanel() {
   [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
   read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
   [ -z "${mariadb_port}" ] && mariadb_port=3306
-  while true; do
-    read -r -p '请输入数据库的密码(必填)：' mariadb_pas
+  while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
     if [[ ! -n ${mariadb_pas} ]]; then
       echoContent yellow "数据库密码不能为空"
     else
@@ -388,8 +385,7 @@ function installCaddyTLS() {
   echoContent green "---> 安装Caddy TLS"
 
   echoContent yellow "注意: 请确保域名已经解析到本机IP,否则申请证书会失败"
-  while true; do
-    read -r -p '请输入你的域名(必填): ' domain
+  while read -r -p '请输入你的域名(必填): ' domain; do
     if [[ ! -n ${domain} ]]; then
       echoContent yellow "域名不能为空"
     else
@@ -448,8 +444,7 @@ function installTrojanGFW() {
   [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
   read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
   [ -z "${mariadb_port}" ] && mariadb_port=3306
-  while true; do
-    read -r -p '请输入数据库的密码(必填)：' mariadb_pas
+  while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
     if [[ ! -n ${mariadb_pas} ]]; then
       echoContent yellow "数据库密码不能为空"
     else
@@ -528,8 +523,7 @@ function installTrojanGFWStandalone() {
 
   read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
   [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-  while true; do
-    read -r -p '请输入TrojanGFW的密码(必填)：' trojan_pas
+  while read -r -p '请输入TrojanGFW的密码(必填)：' trojan_pas; do
     if [[ ! -n ${trojan_pas} ]]; then
       echoContent yellow "密码不能为空"
     else
