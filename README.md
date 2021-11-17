@@ -43,7 +43,9 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 - 端口：`TrojanGFW的端口`
 - 密码：`用户名&密码` (需要在管理后台添加)
 
-![Qv2ray](./images/Qv2ray.png =100x100)
+<p float="left">
+  <img src="./images/Qv2ray.png" width="32%" />
+</p>
 
 # 客户端推荐
 
