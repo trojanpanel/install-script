@@ -35,6 +35,16 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 4. Trojan Panel后台管理地址: **http**://你的域名:8888
 
+# 如何使用连接？
+
+连接参数如下：
+
+- 地址：`你输入的域名`
+- 端口：`TrojanGFW的端口`
+- 密码：`用户名&密码` (需要在管理后台添加)
+
+![Qv2ray](./images/Qv2ray.png =100x100)
+
 # 客户端推荐
 
 - Android: [igniter](https://github.com/trojan-gfw/igniter)
