@@ -33,7 +33,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 3. 安装结束后,访问**你的域名**如果是一个静态网页,说明已经安装成功。
 
-4. Trojan Panel后台管理地址: **http**://你的域名:8888
+4. Trojan Panel后台管理地址: `http://你的域名:8888` 默认用户名: `sysadmin` 默认密码: `123456` 请及时登陆后台修改密码
 
 # 如何使用连接？
 
@@ -41,7 +41,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 - 地址：`你输入的域名`
 - 端口：`TrojanGFW的端口`
-- 密码：`用户名&密码` (需要在管理后台添加)
+- 密码：`用户名&密码` (需要在管理后台添加用户)
 
 <p float="left">
   <img src="./images/Qv2ray.png" width="32%" />
