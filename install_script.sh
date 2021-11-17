@@ -187,7 +187,7 @@ function installDocker() {
     systemctl enable docker
     systemctl start docker && docker -v && docker network create trojan-panel-network
 
-    if [ $? -eq 0 ]; then
+    if [[ -n $(docker -v) ]]; then
       echoContent skyBlue "---> Docker安装完成"
     else
       echoContent red "---> Docker安装失败"
@@ -246,7 +246,7 @@ function installMariadb() {
   -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" -e TZ=Asia/Shanghai mariadb \
   && docker network connect trojan-panel-network trojan-panel-mariadb
 
-  if [[ $? -eq 0 ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel-mariadb) ]]; then
     echoContent skyBlue "---> MariaDB安装完成"
     echoContent skyBlue "---> MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
   else
@@ -298,7 +298,7 @@ EOF
   docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
   && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
   && docker network connect trojan-panel-network trojan-panel
-  if [[ $? -eq 0 ]]; then
+  if [[ -n $(docker ps | grep -w trojan-pane) ]]; then
     echoContent skyBlue "---> Trojan Panel后端安装完成"
   else
     echoContent red "---> Trojan Panel后端安装失败"
@@ -367,7 +367,7 @@ EOF
   && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
   -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
   && docker network connect trojan-panel-network trojan-panel-ui
-  if [[ $? -eq 0 ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel-ui) ]]; then
     echoContent skyBlue "---> Trojan Panel前端安装完成"
   else
     echoContent red "---> Trojan Panel前端安装失败"
@@ -428,7 +428,7 @@ EOF
   -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
   && docker network connect trojan-panel-network trojan-panel-caddy
 
-  if [[ $? -eq 0 ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel-caddy) ]]; then
     echoContent skyBlue "---> Caddy安装完成"
   else
     echoContent red "---> Caddy安装失败"
@@ -511,7 +511,7 @@ EOF
   -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
   && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ -n $(docker ps | grep trojan-panel-trojanGFW) ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel-trojanGFW) ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
   else
     echoContent red "---> TrojanGFW安装失败"
@@ -587,12 +587,12 @@ function installTrojanGFWStandalone() {
 EOF
 
   docker pull trojangfw/trojan \
-  && docker run -d --name trojan-panel-trojanGFW --restart always \
+  && docker run -d --name trojan-panel-trojanGFW-standalone --restart always \
   -p ${trojanGFW_port}:${trojanGFW_port} \
   -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
   && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ $? -eq 0 ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel-trojanGFW-standalone) ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
     echoContent red "\n=============================================================="
     echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
@@ -630,7 +630,7 @@ function updateTrojanPanel() {
   echoContent green "---> 更新Trojan Panel"
 
   # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps | grep trojan-panel) ]];then
+  if [[ -n $(docker ps | grep -w trojan-panel) ]];then
     echoContent red "---> 请先安装Trojan Panel"
     exit 0
   fi
