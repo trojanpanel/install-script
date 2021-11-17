@@ -193,6 +193,8 @@ function installDocker() {
       echoContent red "---> Docker安装失败"
       exit 0
     fi
+  else
+    echoContent skyBlue "---> 你已经安装了Docker"
   fi
 }
 
@@ -254,6 +256,8 @@ function installMariadb() {
       echoContent red "---> MariaDB安装失败"
       exit 0
     fi
+  else
+    echoContent skyBlue "---> 你已经安装了MariaDB"
   fi
 }
 
@@ -303,6 +307,8 @@ EOF
       echoContent red "---> Trojan Panel后端安装失败"
       exit 0
     fi
+  else
+    echoContent skyBlue "---> 你已经安装了Trojan Panel"
   fi
 
   if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-ui$") ]]; then
@@ -378,6 +384,8 @@ EOF
       echoContent red "---> Trojan Panel前端安装失败"
       exit 0
     fi
+  else
+    echoContent skyBlue "---> 你已经安装了Trojan Panel UI"
   fi
 
   echoContent red "\n=============================================================="
@@ -444,21 +452,22 @@ EOF
 
 # 安装TrojanGFW 数据库版
 function installTrojanGFW() {
-  echoContent green "---> 安装TrojanGFW"
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
+    echoContent green "---> 安装TrojanGFW"
 
-  read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
-  [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-  read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
-  [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
-  read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
-  [ -z "${mariadb_port}" ] && mariadb_port=3306
-  while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
-    if [[ ! -n ${mariadb_pas} ]]; then
-      echoContent yellow "数据库密码不能为空"
-    else
-      break
-    fi
-  done
+    read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
+    [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
+    read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
+    [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
+    read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
+    [ -z "${mariadb_port}" ] && mariadb_port=3306
+    while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
+      if [[ ! -n ${mariadb_pas} ]]; then
+        echoContent yellow "数据库密码不能为空"
+      else
+        break
+      fi
+    done
 
   cat >${TROJANGFW_CONFIG} <<EOF
     {
@@ -511,33 +520,37 @@ function installTrojanGFW() {
 }
 EOF
 
-  docker pull trojangfw/trojan \
-  && docker run -d --name trojan-panel-trojanGFW --restart always \
-  -p ${trojanGFW_port}:${trojanGFW_port} \
-  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
-  && docker network connect trojan-panel-network trojan-panel-trojanGFW
+    docker pull trojangfw/trojan \
+    && docker run -d --name trojan-panel-trojanGFW --restart always \
+    -p ${trojanGFW_port}:${trojanGFW_port} \
+    -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
+    && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
-    echoContent skyBlue "---> TrojanGFW安装完成"
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
+      echoContent skyBlue "---> TrojanGFW安装完成"
+    else
+      echoContent red "---> TrojanGFW安装失败"
+      exit 0
+    fi
   else
-    echoContent red "---> TrojanGFW安装失败"
-    exit 0
+    echoContent skyBlue "---> 你已经安装了TrojanGFW"
   fi
 }
 
 # 安装TrojanGFW 单机版
 function installTrojanGFWStandalone() {
-  echoContent green "---> 安装TrojanGFW"
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+    echoContent green "---> 安装TrojanGFW"
 
-  read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
-  [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-  while read -r -p '请输入TrojanGFW的密码(必填)：' trojan_pas; do
-    if [[ ! -n ${trojan_pas} ]]; then
-      echoContent yellow "密码不能为空"
-    else
-      break
-    fi
-  done
+    read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
+    [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
+    while read -r -p '请输入TrojanGFW的密码(必填)：' trojan_pas; do
+      if [[ ! -n ${trojan_pas} ]]; then
+        echoContent yellow "密码不能为空"
+      else
+        break
+      fi
+    done
 
   cat >${TROJANGFW_CONFIG} <<EOF
     {
@@ -592,23 +605,26 @@ function installTrojanGFWStandalone() {
 }
 EOF
 
-  docker pull trojangfw/trojan \
-  && docker run -d --name trojan-panel-trojanGFW-standalone --restart always \
-  -p ${trojanGFW_port}:${trojanGFW_port} \
-  -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
-  && docker network connect trojan-panel-network trojan-panel-trojanGFW
+    docker pull trojangfw/trojan \
+    && docker run -d --name trojan-panel-trojanGFW-standalone --restart always \
+    -p ${trojanGFW_port}:${trojanGFW_port} \
+    -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
+    && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-    echoContent skyBlue "---> TrojanGFW安装完成"
-    echoContent red "\n=============================================================="
-    echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
-    echoContent yellow "域名: ${domain}"
-    echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
-    echoContent yellow "TrojanGFW的密码: ${trojan_pas}"
-    echoContent red "\n=============================================================="
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+      echoContent skyBlue "---> TrojanGFW 单机版安装完成"
+      echoContent red "\n=============================================================="
+      echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
+      echoContent yellow "域名: ${domain}"
+      echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
+      echoContent yellow "TrojanGFW的密码: ${trojan_pas}"
+      echoContent red "\n=============================================================="
+    else
+      echoContent red "---> TrojanGFW 单机版安装失败"
+      exit 0
+    fi
   else
-    echoContent red "---> TrojanGFW安装失败"
-    exit 0
+    echoContent skyBlue "---> 你已经安装了TrojanGFW 单机版"
   fi
 }
 
