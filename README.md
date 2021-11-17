@@ -10,7 +10,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # 文档
 
-[wiki](https://github.com/trojanpanel/install-script/wiki)
+安装教程和客户端使用等请参考[Wiki](https://github.com/trojanpanel/install-script/wiki)
 
 # Telegram讨论组
 
