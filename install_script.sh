@@ -649,7 +649,11 @@ function updateTrojanPanel() {
   && docker restart trojan-panel \
   && docker restart trojan-panel-ui
 
-  echoContent skyBlue "---> Trojan Panel更新完成"
+  if [ $? -ne 0 ]; then
+    echoContent skyBlue "---> Trojan Panel更新失败"
+  else
+    echoContent skyBlue "---> Trojan Panel更新完成"
+  fi
 }
 
 function main() {
