@@ -44,7 +44,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 - 密码：`用户名&密码` (需要在管理后台添加用户)
 
 <p float="left">
-  <img src="./images/Qv2ray.png" width="32%" />
+  <img src="./images/Qv2ray.png" width="50%" />
 </p>
 
 # 客户端推荐
