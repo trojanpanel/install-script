@@ -227,7 +227,7 @@ function import_sql() {
 
 # 安装MariaDB
 function installMariadb() {
-  if [[ ! -n $(docker ps -a -f "name=^trojan-panel-mariadb$") ]]; then
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-mariadb$") ]]; then
     echoContent green "---> 安装MariaDB"
 
     read -r -p '请输入数据库的端口(默认:9507): ' mariadb_port
@@ -247,7 +247,7 @@ function installMariadb() {
     -v ${MARIA_DATA}:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" -e TZ=Asia/Shanghai mariadb \
     && docker network connect trojan-panel-network trojan-panel-mariadb
 
-    if [[ -n $(docker ps -a -f "name=^trojan-panel-mariadb$") ]]; then
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-mariadb$") ]]; then
       echoContent skyBlue "---> MariaDB安装完成"
       echoContent skyBlue "---> MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
     else
@@ -261,7 +261,7 @@ function installMariadb() {
 function installTrojanPanel() {
   echoContent green "---> 安装TrojanPanel"
 
-  if [[ ! -n $(docker ps -a -f "name=^trojan-panel$") ]]; then
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel$") ]]; then
     # 下载并解压Trojan Panel后端
     yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
     yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
@@ -297,7 +297,7 @@ EOF
     docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
     && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
     && docker network connect trojan-panel-network trojan-panel
-    if [[ -n $(docker ps -a -f "name=^trojan-panel$") ]]; then
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel$") ]]; then
       echoContent skyBlue "---> Trojan Panel后端安装完成"
     else
       echoContent red "---> Trojan Panel后端安装失败"
@@ -305,7 +305,7 @@ EOF
     fi
   fi
 
-  if [[ ! -n $(docker ps -a -f "name=^trojan-panel-ui$") ]]; then
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
     yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
     yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
@@ -372,7 +372,7 @@ EOF
     && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
     -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
     && docker network connect trojan-panel-network trojan-panel-ui
-    if [[ -n $(docker ps -a -f "name=^trojan-panel-ui$") ]]; then
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-ui$") ]]; then
       echoContent skyBlue "---> Trojan Panel前端安装完成"
     else
       echoContent red "---> Trojan Panel前端安装失败"
@@ -434,7 +434,7 @@ EOF
   -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
   && docker network connect trojan-panel-network trojan-panel-caddy
 
-  if [[ -n $(docker ps -a -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel-caddy$") ]]; then
     echoContent skyBlue "---> Caddy安装完成"
   else
     echoContent red "---> Caddy安装失败"
@@ -517,7 +517,7 @@ EOF
   -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
   && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ -n $(docker ps -a -f "name=^trojan-panel-trojanGFW$") ]]; then
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
   else
     echoContent red "---> TrojanGFW安装失败"
@@ -598,7 +598,7 @@ EOF
   -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
   && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
-  if [[ -n $(docker ps -a -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
     echoContent skyBlue "---> TrojanGFW安装完成"
     echoContent red "\n=============================================================="
     echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
@@ -636,7 +636,7 @@ function updateTrojanPanel() {
   echoContent green "---> 更新Trojan Panel"
 
   # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps -a -f "name=^trojan-panel$") ]];then
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel$") ]];then
     echoContent red "---> 请先安装Trojan Panel"
     exit 0
   fi
