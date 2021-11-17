@@ -298,7 +298,7 @@ EOF
   docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
   && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
   && docker network connect trojan-panel-network trojan-panel
-  if [[ -n $(docker ps | grep -w trojan-pane) ]]; then
+  if [[ -n $(docker ps | grep -w trojan-panel) ]]; then
     echoContent skyBlue "---> Trojan Panel后端安装完成"
   else
     echoContent red "---> Trojan Panel后端安装失败"
