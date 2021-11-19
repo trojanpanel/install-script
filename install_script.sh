@@ -32,16 +32,21 @@ initVar() {
   caddy_remote_port=8863
   your_email=123456@qq.com
 
+  trojan_pas=''
+  remote_addr='trojan-panel-caddy'
   # trojanGFW
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
-  remote_addr='trojan-panel-caddy'
   trojanGFW_port=443
-
   # trojanGO
   TROJANGO_DATA='/tpdata/trojanGO/'
   TROJANGO_CONFIG='/tpdata/trojanGO/config.json'
   trojanGO_port=443
+  trojanGO_websocket_enable=false
+  trojanGO_websocket_path='my-websocket-path'
+  trojanGO_shadowsocks_enable=false
+  trojanGO_shadowsocks_method='AES-128-GCM'
+  trojanGO_shadowsocks_password=''
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/html.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
@@ -218,7 +223,7 @@ function import_sql() {
 
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
       if [[ ! -n ${mariadb_pas} ]]; then
-        echoContent yellow "数据库密码不能为空"
+        echoContent red "密码不能为空"
       else
         break
       fi
@@ -254,7 +259,7 @@ function installMariadb() {
 
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
       if [[ ! -n ${mariadb_pas} ]]; then
-        echoContent yellow "数据库密码不能为空"
+        echoContent red "密码不能为空"
       else
         break
       fi
@@ -287,13 +292,13 @@ function installTrojanPanel() {
     yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
     yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
-    read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
+    read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
-    read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
+    read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port=3306
-    while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
+    while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
       if [[ ! -n ${mariadb_pas} ]]; then
-        echoContent yellow "数据库密码不能为空"
+        echoContent red "密码不能为空"
       else
         break
       fi
@@ -471,7 +476,7 @@ function installCaddyTLS() {
     echoContent yellow "注意: 请确保域名已经解析到本机IP,否则申请证书会失败"
     while read -r -p '请输入你的域名(必填): ' domain; do
       if [[ ! -n ${domain} ]]; then
-        echoContent yellow "域名不能为空"
+        echoContent red "域名不能为空"
       else
         break
       fi
@@ -484,10 +489,10 @@ function installCaddyTLS() {
       exit 0
     fi
 
-    read -r -p '请输入你的邮箱(用于申请证书,默认:123456@qq.com)：' your_email
+    read -r -p '请输入你的邮箱(用于申请证书,默认:123456@qq.com): ' your_email
     [ -z "${your_email}" ] && your_email="123456@qq.com"
 
-    read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863)：' caddy_remote_port
+    read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863): ' caddy_remote_port
     [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
     yum install -y wget && wget --no-check-certificate -O html.zip ${static_html}
@@ -526,15 +531,15 @@ function installTrojanGFW() {
   if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
     echoContent green "---> 安装TrojanGFW"
 
-    read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
+    read -r -p '请输入TrojanGFW的端口(默认:443): ' trojanGFW_port
     [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-    read -r -p '请输入数据库的IP地址(默认:本地数据库)：' mariadb_ip
+    read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
-    read -r -p '请输入数据库的端口(默认:本地数据库端口)：' mariadb_port
+    read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port=3306
-    while read -r -p '请输入数据库的密码(必填)：' mariadb_pas; do
+    while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
       if [[ ! -n ${mariadb_pas} ]]; then
-        echoContent yellow "数据库密码不能为空"
+        echoContent red "密码不能为空"
       else
         break
       fi
@@ -600,7 +605,7 @@ EOF
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW$") ]]; then
       echoContent skyBlue "---> TrojanGFW 数据库版 安装完成"
       echoContent red "\n=============================================================="
-      echoContent skyBlue "TrojanGFW+Caddy+TLS节点 数据库版 安装成功"
+      echoContent skyBlue "TrojanGFW+Caddy+Web+TLS节点 数据库版 安装成功"
       echoContent yellow "域名: ${domain}"
       echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
       echoContent yellow "TrojanGFW的密码: 用户名&密码"
@@ -619,11 +624,11 @@ function installTrojanGFWStandalone() {
   if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
     echoContent green "---> 安装TrojanGFW"
 
-    read -r -p '请输入TrojanGFW的端口(默认:443)：' trojanGFW_port
+    read -r -p '请输入TrojanGFW的端口(默认:443): ' trojanGFW_port
     [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
-    while read -r -p '请输入TrojanGFW的密码(必填)：' trojan_pas; do
+    while read -r -p '请输入TrojanGFW的密码(必填): ' trojan_pas; do
       if [[ ! -n ${trojan_pas} ]]; then
-        echoContent yellow "密码不能为空"
+        echoContent red "密码不能为空"
       else
         break
       fi
@@ -691,7 +696,7 @@ EOF
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
       echoContent skyBlue "---> TrojanGFW 单机版 安装完成"
       echoContent red "\n=============================================================="
-      echoContent skyBlue "TrojanGFW+Caddy+TLS节点 单机版 安装成功"
+      echoContent skyBlue "TrojanGFW+Caddy+Web+TLS节点 单机版 安装成功"
       echoContent yellow "域名: ${domain}"
       echoContent yellow "TrojanGFW的端口: ${trojanGFW_port}"
       echoContent yellow "TrojanGFW的密码: ${trojan_pas}"
@@ -710,7 +715,158 @@ function installTrojanGO() {
   if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGO$") ]]; then
     echoContent green "---> 安装TrojanGO 数据库版"
 
+    read -r -p '请输入TrojanGO的端口(默认:443): ' trojanGO_port
+    [ -z "${trojanGO_port}" ] && trojanGO_port=443
+    read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
+    [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
+    read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
+    [ -z "${mariadb_port}" ] && mariadb_port=3306
+    while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
+      if [[ ! -n ${mariadb_pas} ]]; then
+        echoContent red "密码不能为空"
+      else
+        break
+      fi
+    done
 
+    while read -r -p '是否开启Websocket?(false/关闭 true/开启 默认:false/关闭): ' trojanGO_websocket_enable; do
+      if [ -z "${trojanGO_websocket_enable}" ] || [ "${trojanGO_websocket_enable}" = false ]; then
+          trojanGO_websocket_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_websocket_enable} = true ]]; then
+          echoContent red "不可以输入除false和true之外的其他字符"
+        else
+          read -r -p '请输入Websocket路径(默认:my-websocket-path): ' trojanGO_websocket_path
+          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="my-websocket-path"
+          break
+        fi
+      fi
+    done
+
+    while read -r -p '是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭):' trojanGO_shadowsocks_enable; do
+      if [ -z "${trojanGO_shadowsocks_enable}" ] || [ "${trojanGO_shadowsocks_enable}" = false ]; then
+          trojanGO_websocket_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_shadowsocks_enable} = true ]]; then
+          echoContent yellow "不可以输入除false和true之外的其他字符"
+        else
+          echoContent skyBlue "Shadowsocks AEAD加密方式如下:"
+          echoContent yellow "1. CHACHA20-IETF-POLY1305"
+          echoContent yellow "2. AES-128-GCM(默认)"
+          echoContent yellow "3. AES-256-GCM"
+          read -r -p '请输入Shadowsocks AEAD加密方式(默认:AES-128-GCM): ' selectMethodType
+          [ -z "${selectMethodType}" ] && selectMethodType=2
+          case ${selectMethodType} in
+          1)
+            trojanGO_shadowsocks_method='CHACHA20-IETF-POLY1305'
+            ;;
+          2)
+            trojanGO_shadowsocks_method='AES-128-GCM'
+            ;;
+          3)
+            trojanGO_shadowsocks_method='AES-256-GCM'
+            ;;
+          *)
+            trojanGO_shadowsocks_method='AES-128-GCM'
+          esac
+
+          while read -r -p '请输入Shadowsocks AEAD加密密码(必填): ' trojanGO_shadowsocks_password; do
+            if [[ ! -n ${trojanGO_shadowsocks_password} ]]; then
+              echoContent red "密码不能为空"
+            else
+              break
+            fi
+          done
+          break
+        fi
+      fi
+    done
+
+    cat >${TROJANGO_CONFIG} <<EOF
+{
+  "run_type": "server",
+  "local_addr": "0.0.0.0",
+  "local_port": ${trojanGO_port},
+  "remote_addr": "${remote_addr}",
+  "remote_port": 80,
+  "log_level": 1,
+  "log_file": "",
+  "password": [],
+  "disable_http_check": false,
+  "udp_timeout": 60,
+  "ssl": {
+    "verify": true,
+    "verify_hostname": true,
+    "cert": ${CADDY_ACME}/${domain}/${domain}.crt,
+    "key": "${CADDY_ACME}/${domain}/${domain}.key",
+    "key_password": "",
+    "cipher": "",
+    "curves": "",
+    "prefer_server_cipher": false,
+    "sni": "",
+    "alpn": [
+      "http/1.1"
+    ],
+    "session_ticket": true,
+    "reuse_session": true,
+    "plain_http_response": "",
+    "fallback_addr": "",
+    "fallback_port": 80,
+    "fingerprint": ""
+  },
+  "tcp": {
+    "no_delay": true,
+    "keep_alive": true,
+    "prefer_ipv4": false
+  },
+  "websocket": {
+    "enabled": ${trojanGO_websocket_enable},
+    "path": "${trojanGO_websocket_path}",
+    "host": "${domain}"
+  },
+  "shadowsocks": {
+    "enabled": ${trojanGO_shadowsocks_enable},
+    "method": "${trojanGO_shadowsocks_method}",
+    "password": "${trojanGO_shadowsocks_password}"
+  },
+  "mysql": {
+    "enabled": true,
+    "server_addr": "${mariadb_ip}",
+    "server_port": ${mariadb_port},
+    "database": "trojan",
+    "username": "root",
+    "password": "${mariadb_pas}",
+    "check_rate": 60
+  }
+}
+EOF
+    docker pull teddysun/trojan-go && \
+    docker run -d --name trojan-panel-trojanGO --restart=always \
+    -p ${trojanGO_port}:${trojanGO_port} \
+    -v ${TROJANGO_CONFIG}:"/etc/trojan-go/config.json" -v ${CADDY_ACME}:${CADDY_ACME} teddysun/trojan-go \
+    && docker network connect trojan-panel-network trojan-panel-trojanGO
+
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGO$") ]]; then
+      echoContent skyBlue "---> TrojanGO 数据库版 安装完成"
+      echoContent red "\n=============================================================="
+      echoContent skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 数据库版 安装成功"
+      echoContent yellow "域名: ${domain}"
+      echoContent yellow "TrojanGO的端口: ${trojanGO_port}"
+      echoContent yellow "TrojanGFW的密码: 用户名&密码"
+      if [[ ${trojanGO_websocket_enable} = true ]]; then
+          echoContent yellow "Websocket路径: ${trojanGO_websocket_path}"
+      fi
+      if [[ ${trojanGO_shadowsocks_enable} = true ]]; then
+          echoContent yellow "Shadowsocks AEAD加密方式: ${selectMethodType}"
+          echoContent yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
+      fi
+      echoContent red "\n=============================================================="
+    else
+      echoContent red "---> TrojanGO 单机版 安装失败"
+      exit 0
+    fi
   else
     echoContent skyBlue "---> 你已经安装了TrojanGO 数据库版"
   fi
@@ -718,12 +874,161 @@ function installTrojanGO() {
 
 # 安装TrojanGO 单机版
 function installTrojanGOStandalone() {
-  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGOStandalone$") ]]; then
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
     echoContent green "---> 安装TrojanGO 单机版"
 
+    read -r -p '请输入TrojanGO的端口(默认:443): ' trojanGO_port
+    [ -z "${trojanGO_port}" ] && trojanGO_port=443
+    while read -r -p '请输入TrojanGO的密码(必填): ' trojan_pas; do
+      if [[ ! -n ${trojan_pas} ]]; then
+        echoContent red "密码不能为空"
+      else
+        break
+      fi
+    done
 
+    while read -r -p '是否开启Websocket?(false/关闭 true/开启 默认:false/关闭): ' trojanGO_websocket_enable; do
+      if [ -z "${trojanGO_websocket_enable}" ] || [ "${trojanGO_websocket_enable}" = false ]; then
+          trojanGO_websocket_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_websocket_enable} = true ]]; then
+          echoContent red "不可以输入除false和true之外的其他字符"
+        else
+          read -r -p '请输入Websocket路径(默认:my-websocket-path): ' trojanGO_websocket_path
+          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="my-websocket-path"
+          break
+        fi
+      fi
+    done
+
+    while read -r -p '是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭):' trojanGO_shadowsocks_enable; do
+      if [ -z "${trojanGO_shadowsocks_enable}" ] || [ "${trojanGO_shadowsocks_enable}" = false ]; then
+          trojanGO_websocket_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_shadowsocks_enable} = true ]]; then
+          echoContent yellow "不可以输入除false和true之外的其他字符"
+        else
+          echoContent skyBlue "Shadowsocks AEAD加密方式如下:"
+          echoContent yellow "1. CHACHA20-IETF-POLY1305"
+          echoContent yellow "2. AES-128-GCM(默认)"
+          echoContent yellow "3. AES-256-GCM"
+          read -r -p '请输入Shadowsocks AEAD加密方式(默认:AES-128-GCM): ' selectMethodType
+          [ -z "${selectMethodType}" ] && selectMethodType=2
+          case ${selectMethodType} in
+          1)
+            trojanGO_shadowsocks_method='CHACHA20-IETF-POLY1305'
+            ;;
+          2)
+            trojanGO_shadowsocks_method='AES-128-GCM'
+            ;;
+          3)
+            trojanGO_shadowsocks_method='AES-256-GCM'
+            ;;
+          *)
+            trojanGO_shadowsocks_method='AES-128-GCM'
+          esac
+          
+          while read -r -p '请输入Shadowsocks AEAD加密密码(必填): ' trojanGO_shadowsocks_password; do
+            if [[ ! -n ${trojanGO_shadowsocks_password} ]]; then
+              echoContent red "密码不能为空"
+            else
+              break
+            fi
+          done
+          break
+        fi
+      fi
+    done
+
+    cat >${TROJANGO_CONFIG} <<EOF
+{
+  "run_type": "server",
+  "local_addr": "0.0.0.0",
+  "local_port": ${trojanGO_port},
+  "remote_addr": "${remote_addr}",
+  "remote_port": 80,
+  "log_level": 1,
+  "log_file": "",
+  "password": [
+      "${trojan_pas}"
+  ],
+  "disable_http_check": false,
+  "udp_timeout": 60,
+  "ssl": {
+    "verify": true,
+    "verify_hostname": true,
+    "cert": ${CADDY_ACME}/${domain}/${domain}.crt,
+    "key": "${CADDY_ACME}/${domain}/${domain}.key",
+    "key_password": "",
+    "cipher": "",
+    "curves": "",
+    "prefer_server_cipher": false,
+    "sni": "",
+    "alpn": [
+      "http/1.1"
+    ],
+    "session_ticket": true,
+    "reuse_session": true,
+    "plain_http_response": "",
+    "fallback_addr": "",
+    "fallback_port": 80,
+    "fingerprint": ""
+  },
+  "tcp": {
+    "no_delay": true,
+    "keep_alive": true,
+    "prefer_ipv4": false
+  },
+  "websocket": {
+    "enabled": ${trojanGO_websocket_enable},
+    "path": "${trojanGO_websocket_path}",
+    "host": "${domain}"
+  },
+  "shadowsocks": {
+    "enabled": ${trojanGO_shadowsocks_enable},
+    "method": "${trojanGO_shadowsocks_method}",
+    "password": "${trojanGO_shadowsocks_password}"
+  },
+  "mysql": {
+    "enabled": false,
+    "server_addr": "localhost",
+    "server_port": 3306,
+    "database": "",
+    "username": "",
+    "password": "",
+    "check_rate": 60
+  }
+}
+EOF
+    docker pull teddysun/trojan-go && \
+    docker run -d --name trojan-panel-trojanGO-standalone --restart=always \
+    -p ${trojanGO_port}:${trojanGO_port} \
+    -v ${TROJANGO_CONFIG}:"/etc/trojan-go/config.json" -v ${CADDY_ACME}:${CADDY_ACME} teddysun/trojan-go \
+    && docker network connect trojan-panel-network trojan-panel-trojanGO-standalone
+
+    if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+      echoContent skyBlue "---> TrojanGO 单机版 安装完成"
+      echoContent red "\n=============================================================="
+      echoContent skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 单机版 安装成功"
+      echoContent yellow "域名: ${domain}"
+      echoContent yellow "TrojanGO的端口: ${trojanGO_port}"
+      echoContent yellow "TrojanGO的密码: ${trojan_pas}"
+      if [[ ${trojanGO_websocket_enable} = true ]]; then
+          echoContent yellow "Websocket路径: ${trojanGO_websocket_path}"
+      fi
+      if [[ ${trojanGO_shadowsocks_enable} = true ]]; then
+          echoContent yellow "Shadowsocks AEAD加密方式: ${selectMethodType}"
+          echoContent yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
+      fi
+      echoContent red "\n=============================================================="
+    else
+      echoContent red "---> TrojanGO 单机版 安装失败"
+      exit 0
+    fi
   else
-    echoContent skyBlue "---> 你已经了TrojanGO 单机版"
+    echoContent skyBlue "---> 你已经了安装了TrojanGO 单机版"
   fi
 }
 
@@ -735,18 +1040,18 @@ function main() {
   echoContent skyBlue "Github: https://github.com/trojanpanel"
   echoContent skyBlue "描述: Trojan Panel一键安装脚本"
   echoContent red "\n=============================================================="
-  echoContent yellow "1.卸载阿里云盾(仅限阿里云服务使用)"
-  echoContent yellow "2.安装BBRplus"
+  echoContent yellow "1. 卸载阿里云盾(仅限阿里云服务使用)"
+  echoContent yellow "2. 安装BBRplus"
   echoContent green "\n=============================================================="
-  echoContent yellow "3.安装Trojan Panel"
-  echoContent yellow "4.更新Trojan Panel"
-  echoContent yellow "5.卸载Trojan Panel"
+  echoContent yellow "3. 安装Trojan Panel"
+  echoContent yellow "4. 更新Trojan Panel"
+  echoContent yellow "5. 卸载Trojan Panel"
   echoContent green "\n=============================================================="
-  echoContent yellow "6.安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
-  echoContent yellow "7.安装TrojanGFW+Caddy+Web+TLS节点 单机版"
+  echoContent yellow "6. 安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
+  echoContent yellow "7. 安装TrojanGFW+Caddy+Web+TLS节点 单机版"
   echoContent green "\n=============================================================="
-  echoContent yellow "8.安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-  echoContent yellow "9.安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+  echoContent yellow "8. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+  echoContent yellow "9. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
   read -r -p "请选择:" selectInstallType
   case ${selectInstallType} in
   1)
@@ -787,6 +1092,8 @@ function main() {
     installCaddyTLS
     installTrojanGOStandalone
     ;;
+  *)
+    echoContent red "没有这个选项"
   esac
 }
 
