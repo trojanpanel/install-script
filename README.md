@@ -1,6 +1,6 @@
 # install-script
 
-一键安装脚本，包括安装/更新/卸载Trojan Panel、节点(数据版/单机版)、安装BBRplus、卸载阿里云盾等
+一键安装Trojan Panel，一键安装Trojan-gfw+Caddy+Web+TLS，一键安装Trojan-go+Caddy+Web+TLS+Websocket
 
 # 一键安装脚本
 
