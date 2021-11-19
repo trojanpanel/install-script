@@ -49,6 +49,7 @@ initVar() {
   trojanGO_shadowsocks_enable=false
   trojanGO_shadowsocks_method='AES-128-GCM'
   trojanGO_shadowsocks_password=''
+  trojanGO_mux_enable=true
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/html.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
@@ -733,6 +734,19 @@ function installTrojanGO() {
       fi
     done
 
+    while read -r -p '是否开启多路复用?(false/关闭 true/开启 默认:true/开启): ' trojanGO_mux_enable; do
+      if [ -z "${trojanGO_mux_enable}" ] || [ "${trojanGO_mux_enable}" = false ]; then
+          trojanGO_mux_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_mux_enable} = true ]]; then
+          echoContent red "不可以输入除false和true之外的其他字符"
+        else
+          break
+        fi
+      fi
+    done
+
     while read -r -p '是否开启Websocket?(false/关闭 true/开启 默认:false/关闭): ' trojanGO_websocket_enable; do
       if [ -z "${trojanGO_websocket_enable}" ] || [ "${trojanGO_websocket_enable}" = false ]; then
           trojanGO_websocket_enable=false
@@ -825,6 +839,11 @@ function installTrojanGO() {
     "keep_alive": true,
     "prefer_ipv4": false
   },
+  "mux": {
+    "enabled": ${trojanGO_mux_enable},
+    "concurrency": 8,
+    "idle_timeout": 60
+  },
   "websocket": {
     "enabled": ${trojanGO_websocket_enable},
     "path": "/${trojanGO_websocket_path}",
@@ -888,6 +907,19 @@ function installTrojanGOStandalone() {
         echoContent red "密码不能为空"
       else
         break
+      fi
+    done
+
+    while read -r -p '是否开启多路复用?(false/关闭 true/开启 默认:true/开启): ' trojanGO_mux_enable; do
+      if [ -z "${trojanGO_mux_enable}" ] || [ "${trojanGO_mux_enable}" = false ]; then
+          trojanGO_mux_enable=false
+          break
+      else
+        if [[ ! ${trojanGO_mux_enable} = true ]]; then
+          echoContent red "不可以输入除false和true之外的其他字符"
+        else
+          break
+        fi
       fi
     done
 
@@ -984,6 +1016,11 @@ function installTrojanGOStandalone() {
     "no_delay": true,
     "keep_alive": true,
     "prefer_ipv4": false
+  },
+    "mux": {
+    "enabled": ${trojanGO_mux_enable},
+    "concurrency": 8,
+    "idle_timeout": 60
   },
   "websocket": {
     "enabled": ${trojanGO_websocket_enable},
