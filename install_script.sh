@@ -45,7 +45,7 @@ initVar() {
   TROJANGO_STANDALONE_CONFIG='/tpdata/trojanGO/standalone_config.json'
   trojanGO_port=443
   trojanGO_websocket_enable=false
-  trojanGO_websocket_path='my-websocket-path'
+  trojanGO_websocket_path='trojan-panel-websocket-path'
   trojanGO_shadowsocks_enable=false
   trojanGO_shadowsocks_method='AES-128-GCM'
   trojanGO_shadowsocks_password=''
@@ -755,8 +755,8 @@ function installTrojanGO() {
         if [[ ! ${trojanGO_websocket_enable} = true ]]; then
           echoContent red "不可以输入除false和true之外的其他字符"
         else
-          read -r -p '请输入Websocket路径(默认:my-websocket-path): ' trojanGO_websocket_path
-          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="my-websocket-path"
+          read -r -p '请输入Websocket路径(默认:trojan-panel-websocket-path): ' trojanGO_websocket_path
+          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="trojan-panel-websocket-path"
           break
         fi
       fi
@@ -931,8 +931,8 @@ function installTrojanGOStandalone() {
         if [[ ! ${trojanGO_websocket_enable} = true ]]; then
           echoContent red "不可以输入除false和true之外的其他字符"
         else
-          read -r -p '请输入Websocket路径(默认:my-websocket-path): ' trojanGO_websocket_path
-          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="my-websocket-path"
+          read -r -p '请输入Websocket路径(默认:trojan-panel-websocket-path): ' trojanGO_websocket_path
+          [ -z "${trojanGO_websocket_path}" ] && trojanGO_websocket_path="trojan-panel-websocket-path"
           break
         fi
       fi
