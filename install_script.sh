@@ -827,7 +827,7 @@ function installTrojanGO() {
   },
   "websocket": {
     "enabled": ${trojanGO_websocket_enable},
-    "path": "${trojanGO_websocket_path}",
+    "path": "/${trojanGO_websocket_path}",
     "host": "${domain}"
   },
   "shadowsocks": {
@@ -987,7 +987,7 @@ function installTrojanGOStandalone() {
   },
   "websocket": {
     "enabled": ${trojanGO_websocket_enable},
-    "path": "${trojanGO_websocket_path}",
+    "path": "/${trojanGO_websocket_path}",
     "host": "${domain}"
   },
   "shadowsocks": {
