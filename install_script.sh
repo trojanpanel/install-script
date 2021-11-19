@@ -803,7 +803,7 @@ function installTrojanGO() {
   "ssl": {
     "verify": true,
     "verify_hostname": true,
-    "cert": ${CADDY_ACME}/${domain}/${domain}.crt,
+    "cert": "${CADDY_ACME}/${domain}/${domain}.crt",
     "key": "${CADDY_ACME}/${domain}/${domain}.key",
     "key_password": "",
     "cipher": "",
@@ -963,7 +963,7 @@ function installTrojanGOStandalone() {
   "ssl": {
     "verify": true,
     "verify_hostname": true,
-    "cert": ${CADDY_ACME}/${domain}/${domain}.crt,
+    "cert": "${CADDY_ACME}/${domain}/${domain}.crt",
     "key": "${CADDY_ACME}/${domain}/${domain}.key",
     "key_password": "",
     "cipher": "",
