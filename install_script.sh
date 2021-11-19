@@ -37,10 +37,12 @@ initVar() {
   # trojanGFW
   TROJANGFW_DATA='/tpdata/trojanGFW'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
+  TROJANGFW_STANDALONE_CONFIG='/tpdata/trojanGFW/standalone_config.json'
   trojanGFW_port=443
   # trojanGO
   TROJANGO_DATA='/tpdata/trojanGO/'
   TROJANGO_CONFIG='/tpdata/trojanGO/config.json'
+  TROJANGO_STANDALONE_CONFIG='/tpdata/trojanGO/standalone_config.json'
   trojanGO_port=443
   trojanGO_websocket_enable=false
   trojanGO_websocket_path='my-websocket-path'
@@ -80,10 +82,12 @@ function mkdirTools() {
   # trojanGFW
   mkdir -p ${TROJANGFW_DATA}
   touch ${TROJANGFW_CONFIG}
+  touch ${TROJANGFW_STANDALONE_CONFIG}
 
   # trojanGO
   mkdir -p ${TROJANGO_DATA}
   touch ${TROJANGO_CONFIG}
+  touch ${TROJANGO_STANDALONE_CONFIG}
 }
 
 echoContent() {
@@ -634,7 +638,7 @@ function installTrojanGFWStandalone() {
       fi
     done
 
-  cat >${TROJANGFW_CONFIG} <<EOF
+  cat >${TROJANGFW_STANDALONE_CONFIG} <<EOF
     {
     "run_type": "server",
     "local_addr": "0.0.0.0",
@@ -690,7 +694,7 @@ EOF
     docker pull trojangfw/trojan \
     && docker run -d --name trojan-panel-trojanGFW-standalone --restart always \
     -p ${trojanGFW_port}:${trojanGFW_port} \
-    -v ${TROJANGFW_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
+    -v ${TROJANGFW_STANDALONE_CONFIG}:"/config/config.json" -v ${CADDY_ACME}:${CADDY_ACME} trojangfw/trojan \
     && docker network connect trojan-panel-network trojan-panel-trojanGFW
 
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
@@ -942,7 +946,7 @@ function installTrojanGOStandalone() {
       fi
     done
 
-    cat >${TROJANGO_CONFIG} <<EOF
+    cat >${TROJANGO_STANDALONE_CONFIG} <<EOF
 {
   "run_type": "server",
   "local_addr": "0.0.0.0",
@@ -1005,7 +1009,7 @@ EOF
     docker pull teddysun/trojan-go && \
     docker run -d --name trojan-panel-trojanGO-standalone --restart=always \
     -p ${trojanGO_port}:${trojanGO_port} \
-    -v ${TROJANGO_CONFIG}:"/etc/trojan-go/config.json" -v ${CADDY_ACME}:${CADDY_ACME} teddysun/trojan-go \
+    -v ${TROJANGO_STANDALONE_CONFIG}:"/etc/trojan-go/config.json" -v ${CADDY_ACME}:${CADDY_ACME} teddysun/trojan-go \
     && docker network connect trojan-panel-network trojan-panel-trojanGO-standalone
 
     if [[ -n $(docker ps -aq -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
