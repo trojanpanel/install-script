@@ -753,17 +753,17 @@ function installTrojanGO() {
           echoContent yellow "不可以输入除false和true之外的其他字符"
         else
           echoContent skyBlue "Shadowsocks AEAD加密方式如下:"
-          echoContent yellow "1. CHACHA20-IETF-POLY1305"
-          echoContent yellow "2. AES-128-GCM(默认)"
+          echoContent yellow "1. AES-128-GCM(默认)"
+          echoContent yellow "2. CHACHA20-IETF-POLY1305"
           echoContent yellow "3. AES-256-GCM"
-          read -r -p '请输入Shadowsocks AEAD加密方式(默认:AES-128-GCM): ' selectMethodType
-          [ -z "${selectMethodType}" ] && selectMethodType=2
+          read -r -p '请输入Shadowsocks AEAD加密方式(默认:1): ' selectMethodType
+          [ -z "${selectMethodType}" ] && selectMethodType=1
           case ${selectMethodType} in
           1)
-            trojanGO_shadowsocks_method='CHACHA20-IETF-POLY1305'
+            trojanGO_shadowsocks_method='AES-128-GCM'
             ;;
           2)
-            trojanGO_shadowsocks_method='AES-128-GCM'
+            trojanGO_shadowsocks_method='CHACHA20-IETF-POLY1305'
             ;;
           3)
             trojanGO_shadowsocks_method='AES-256-GCM'
