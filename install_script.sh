@@ -5,9 +5,11 @@ initVar() {
   # 项目目录
   TP_DATA='/tpdata'
 
-  # trojanGFW
-  TROJANGFW_DATA='/tpdata/trojanGFW'
-  TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
+  # MariaDB
+  MARIA_DATA='/tpdata/mariadb'
+  mariadb_ip='trojan-panel-mariadb'
+  mariadb_port=9507
+  mariadb_pas=''
 
   # Trojan Panel
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
@@ -17,28 +19,29 @@ initVar() {
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
-
   # Nginx
   NGINX_DATA='/tpdata/nginx'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
-
-  # MariaDB
-  MARIA_DATA='/tpdata/mariadb'
 
   # Caddy
   CADDY_DATA='/tpdata/caddy'
   CADDY_Caddyfile='/tpdata/caddy/Caddyfile'
   CADDY_SRV='/tpdata/caddy/srv'
   CADDY_ACME='/tpdata/caddy/acme'
-
   domain=
   caddy_remote_port=8863
   your_email=123456@qq.com
+
+  # trojanGFW
+  TROJANGFW_DATA='/tpdata/trojanGFW'
+  TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
   remote_addr='trojan-panel-caddy'
   trojanGFW_port=443
-  mariadb_ip='trojan-panel-mariadb'
-  mariadb_port=9507
-  mariadb_pas=''
+
+  # trojanGO
+  TROJANGO_DATA='/tpdata/trojanGO/'
+  TROJANGO_CONFIG='/tpdata/trojanGO/config.json'
+  trojanGO_port=443
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/html.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
@@ -47,25 +50,35 @@ initVar() {
 initVar
 
 function mkdirTools() {
+  # 项目目录
   mkdir -p ${TP_DATA}
 
-  mkdir -p ${TROJANGFW_DATA}
-  touch ${TROJANGFW_CONFIG}
+  # MariaDB
+  mkdir -p ${MARIA_DATA}
 
+  # Trojan Panel
   mkdir -p ${TROJAN_PANEL_DATA}
   touch ${TROJAN_PANEL_CONFIG}
 
+  # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
-
+  # # Nginx
   mkdir -p ${NGINX_DATA}
   touch ${NGINX_CONFIG}
 
-  mkdir -p ${MARIA_DATA}
-
+  # Caddy
   mkdir -p ${CADDY_DATA}
   touch ${CADDY_Caddyfile}
   mkdir -p ${CADDY_SRV}
   mkdir -p ${CADDY_ACME}
+
+  # trojanGFW
+  mkdir -p ${TROJANGFW_DATA}
+  touch ${TROJANGFW_CONFIG}
+
+  # trojanGO
+  mkdir -p ${TROJANGO_DATA}
+  touch ${TROJANGO_CONFIG}
 }
 
 echoContent() {
