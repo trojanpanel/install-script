@@ -462,7 +462,7 @@ function updateTrojanPanel() {
   && docker restart trojan-panel-ui
 
   if [ $? -ne 0 ]; then
-    echoContent skyBlue "---> Trojan Panel更新失败"
+    echoContent red "---> Trojan Panel更新失败"
   else
     echoContent skyBlue "---> Trojan Panel更新完成"
   fi
@@ -859,12 +859,12 @@ EOF
           echoContent yellow "Websocket路径: ${trojanGO_websocket_path}"
       fi
       if [[ ${trojanGO_shadowsocks_enable} = true ]]; then
-          echoContent yellow "Shadowsocks AEAD加密方式: ${selectMethodType}"
+          echoContent yellow "Shadowsocks AEAD加密方式: ${trojanGO_shadowsocks_method}"
           echoContent yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
       fi
       echoContent red "\n=============================================================="
     else
-      echoContent red "---> TrojanGO 单机版 安装失败"
+      echoContent red "---> TrojanGO 数据库版 安装失败"
       exit 0
     fi
   else
