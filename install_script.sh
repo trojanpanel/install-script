@@ -400,6 +400,56 @@ EOF
   echoContent red "\n=============================================================="
 }
 
+# 卸载Trojan Panel
+function uninstallTrojanPanel() {
+   echoContent green "---> 卸载Trojan Panel"
+
+  # 强制删除容器
+  docker rm -f trojan-panel-ui
+  docker rm -f trojan-panel
+  # 删除image
+  docker rmi trojan-panel-ui
+  docker rmi trojan-panel
+
+  # 删除文件
+  rm -rf ${TROJAN_PANEL_DATA}/*
+  rm -rf ${TROJAN_PANEL_UI_DATA}/*
+  rm -rf ${NGINX_DATA}/*
+
+  echoContent skyBlue "---> Trojan Panel卸载完成"
+}
+
+# 更新Trojan Panel
+function updateTrojanPanel() {
+  echoContent green "---> 更新Trojan Panel"
+
+  # 判断Trojan Panel是否安装
+  if [[ -n $(docker ps -aq -f "name=^trojan-panel$") ]];then
+    echoContent red "---> 请先安装Trojan Panel"
+    exit 0
+  fi
+
+  import_sql trojan-panel
+  # 下载并解压Trojan Panel后端
+  yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+
+  # 下载并解压Trojan Panel前端
+  yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+
+  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
+  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
+  && docker restart trojan-panel \
+  && docker restart trojan-panel-ui
+
+  if [ $? -ne 0 ]; then
+    echoContent skyBlue "---> Trojan Panel更新失败"
+  else
+    echoContent skyBlue "---> Trojan Panel更新完成"
+  fi
+}
+
 # 安装Caddy TLS
 function installCaddyTLS() {
   if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-caddy$") ]]; then
@@ -642,53 +692,25 @@ EOF
   fi
 }
 
-# 卸载Trojan Panel
-function uninstallTrojanPanel() {
-   echoContent green "---> 卸载Trojan Panel"
+# 安装TrojanGO 数据库版
+function installTrojanGO() {
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGO$") ]]; then
+    echoContent green "---> 安装TrojanGO 数据库版"
 
-  # 强制删除容器
-  docker rm -f trojan-panel-ui
-  docker rm -f trojan-panel
-  # 删除image
-  docker rmi trojan-panel-ui
-  docker rmi trojan-panel
 
-  # 删除文件
-  rm -rf ${TROJAN_PANEL_DATA}/*
-  rm -rf ${TROJAN_PANEL_UI_DATA}/*
-  rm -rf ${NGINX_DATA}/*
-
-  echoContent skyBlue "---> Trojan Panel卸载完成"
+  else
+    echoContent skyBlue "---> 你已经安装了TrojanGO 数据库版"
+  fi
 }
 
-# 更新Trojan Panel
-function updateTrojanPanel() {
-  echoContent green "---> 更新Trojan Panel"
+# 安装TrojanGO 单机版
+function installTrojanGOStandalone() {
+  if [[ ! -n $(docker ps -aq -f "name=^trojan-panel-trojanGOStandalone$") ]]; then
+    echoContent green "---> 安装TrojanGO 单机版"
 
-  # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps -aq -f "name=^trojan-panel$") ]];then
-    echoContent red "---> 请先安装Trojan Panel"
-    exit 0
-  fi
 
-  import_sql trojan-panel
-  # 下载并解压Trojan Panel后端
-  yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
-
-  # 下载并解压Trojan Panel前端
-  yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
-
-  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
-  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
-  && docker restart trojan-panel \
-  && docker restart trojan-panel-ui
-
-  if [ $? -ne 0 ]; then
-    echoContent skyBlue "---> Trojan Panel更新失败"
   else
-    echoContent skyBlue "---> Trojan Panel更新完成"
+    echoContent skyBlue "---> 你已经了TrojanGO 单机版"
   fi
 }
 
@@ -702,11 +724,16 @@ function main() {
   echoContent red "\n=============================================================="
   echoContent yellow "1.卸载阿里云盾(仅限阿里云服务使用)"
   echoContent yellow "2.安装BBRplus"
+  echoContent green "\n=============================================================="
   echoContent yellow "3.安装Trojan Panel"
-  echoContent yellow "4.安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
-  echoContent yellow "5.安装TrojanGFW+Caddy+Web+TLS节点 单机版"
-  echoContent yellow "6.卸载Trojan Panel"
-  echoContent yellow "7.更新Trojan Panel"
+  echoContent yellow "4.更新Trojan Panel"
+  echoContent yellow "5.卸载Trojan Panel"
+  echoContent green "\n=============================================================="
+  echoContent yellow "6.安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
+  echoContent yellow "7.安装TrojanGFW+Caddy+Web+TLS节点 单机版"
+  echoContent green "\n=============================================================="
+  echoContent yellow "8.安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+  echoContent yellow "9.安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
   read -r -p "请选择:" selectInstallType
   case ${selectInstallType} in
   1)
@@ -722,20 +749,30 @@ function main() {
     installTrojanPanel
     ;;
   4)
+    updateTrojanPanel
+    ;;
+  5)
+    uninstallTrojanPanel
+    ;;
+  6)
     installDocker
     installCaddyTLS
     installTrojanGFW
     ;;
-  5)
+  7)
     installDocker
     installCaddyTLS
     installTrojanGFWStandalone
     ;;
-  6)
-    uninstallTrojanPanel
+  8)
+    installDocker
+    installCaddyTLS
+    installTrojanGO
     ;;
-  7)
-    updateTrojanPanel
+  9)
+    installDocker
+    installCaddyTLS
+    installTrojanGOStandalone
     ;;
   esac
 }
