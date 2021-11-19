@@ -1023,7 +1023,7 @@ EOF
           echoContent yellow "Websocket路径: ${trojanGO_websocket_path}"
       fi
       if [[ ${trojanGO_shadowsocks_enable} = true ]]; then
-          echoContent yellow "Shadowsocks AEAD加密方式: ${selectMethodType}"
+          echoContent yellow "Shadowsocks AEAD加密方式: ${trojanGO_shadowsocks_method}"
           echoContent yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
       fi
       echoContent red "\n=============================================================="
