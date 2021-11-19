@@ -51,7 +51,7 @@ initVar() {
   trojanGO_shadowsocks_password=''
   trojanGO_mux_enable=true
 
-  static_html='https://github.com/trojanpanel/install-script/raw/main/html.zip'
+  static_html='https://github.com/trojanpanel/install-script/raw/main/static/html.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
 }
 
