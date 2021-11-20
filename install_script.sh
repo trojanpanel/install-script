@@ -419,7 +419,7 @@ EOF
   echoContent skyBlue "Trojan Panel 安装成功"
   echoContent yellow "MariaDB的数据库密码(请妥善保存): ${mariadb_pas}"
   echoContent yellow "后台管理地址: http://你的IP地址/域名:8888"
-  echoContent yellow "默认用户名: sysadmin 默认密码: 123456 请及时登陆后台修改密码"
+  echoContent yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆控制面板修改密码"
   echoContent red "\n=============================================================="
 }
 
