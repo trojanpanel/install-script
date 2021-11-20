@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Author: jonssonyan <https://jonssonyan.com>
+
 initVar() {
   echoType='echo -e'
   # 项目目录
