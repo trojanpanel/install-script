@@ -127,8 +127,13 @@ echoContent() {
   esac
 }
 
-# 卸载阿里云盾
+# 卸载阿里云内置相关监控
 function uninstallAliyun() {
+  # 卸载云监控(Cloudmonitor) Java 版
+  /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh stop && \
+  /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh remove && \
+  rm -rf /usr/local/cloudmonitor
+  # 卸载云盾(安骑士)
   wget --no-check-certificate -O uninstall.sh http://update.aegis.aliyun.com/download/uninstall.sh && chmod +x uninstall.sh && ./uninstall.sh
   wget --no-check-certificate -O quartz_uninstall.sh http://update.aegis.aliyun.com/download/quartz_uninstall.sh && chmod +x quartz_uninstall.sh && ./quartz_uninstall.sh
   pkill aliyun-service
