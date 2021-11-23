@@ -14,7 +14,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # Telegram讨论组
 
-Telegram讨论组: https://t.me/jonssonyangroup
+Telegram讨论组: https://t.me/TrojanPanelGroup
 
 # 开源协议
 
