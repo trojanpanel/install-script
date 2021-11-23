@@ -11,8 +11,8 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 # 特点
 
 1. 5分钟极速安装所有服务，并且占内存小
-2. 自动申请/续费证书
-3. 集成系统控制面板
+2. 自动申请/续签证书
+3. 集成Trojan Panel控制面板
 4. 集成Trojan-gfw和Trojan-go
 5. 支持数据库版节点集群和单机版节点
 
