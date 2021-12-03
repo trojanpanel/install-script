@@ -771,7 +771,7 @@ function installTrojanGO() {
 
     while read -r -p '是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭): ' trojanGO_shadowsocks_enable; do
       if [ -z "${trojanGO_shadowsocks_enable}" ] || [ "${trojanGO_shadowsocks_enable}" = false ]; then
-          trojanGO_websocket_enable=false
+          trojanGO_shadowsocks_enable=false
           break
       else
         if [[ ! ${trojanGO_shadowsocks_enable} = true ]]; then
