@@ -1,4 +1,4 @@
-# install-script
+# Install Script
 
 一键安装Trojan Panel控制面板，一键安装Trojan-gfw+Caddy+Web+TLS，一键安装Trojan-go+Caddy+Web+TLS+Websocket，支持数据库版节点集群和单机版节点。
 
@@ -12,7 +12,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 ![界面](./static/images/script.png)
 
-# 特点
+# Features
 
 1. 5分钟极速安装所有服务，并且占内存小
 2. 自动申请/续签证书
@@ -20,14 +20,14 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 4. 集成Trojan-gfw和Trojan-go
 5. 支持数据库版节点集群和单机版节点
 
-# 文档
+# Documentation
 
 请参考[Wiki](https://github.com/trojanpanel/install-script/wiki)
 
-# Telegram讨论组
+# Telegram
 
-Telegram讨论组: https://t.me/TrojanPanelGroup
+[Trojan Panel交流群](https://t.me/TrojanPanelGroup)
 
-# 开源协议
+# License
 
 [MIT](./LICENSE)
