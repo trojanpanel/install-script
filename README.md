@@ -8,6 +8,10 @@
 yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
 ```
 
+# 界面
+
+![界面](./static/images/script.png)
+
 # 特点
 
 1. 5分钟极速安装所有服务，并且占内存小
