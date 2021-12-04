@@ -742,11 +742,11 @@ function installTrojanGO() {
     done
 
     while read -r -p '是否开启多路复用?(false/关闭 true/开启 默认:true/开启): ' trojanGO_mux_enable; do
-      if [[ ${trojanGO_mux_enable} = false ]]; then
-          trojanGO_mux_enable=false
+      if [ -z "${trojanGO_mux_enable}" ] || [ "${trojanGO_mux_enable}" = true ]; then
+          trojanGO_mux_enable=true
           break
       else
-        if [[ -z ${trojanGO_mux_enable} || ! ${trojanGO_mux_enable} = true ]]; then
+        if [[ ! ${trojanGO_mux_enable} = false ]]; then
           echoContent red "不可以输入除false和true之外的其他字符"
         else
           break
@@ -918,11 +918,11 @@ function installTrojanGOStandalone() {
     done
 
     while read -r -p '是否开启多路复用?(false/关闭 true/开启 默认:true/开启): ' trojanGO_mux_enable; do
-      if [ -z "${trojanGO_mux_enable}" ] || [ "${trojanGO_mux_enable}" = false ]; then
-          trojanGO_mux_enable=false
+      if [ -z "${trojanGO_mux_enable}" ] || [ "${trojanGO_mux_enable}" = true ]; then
+          trojanGO_mux_enable=true
           break
       else
-        if [[ ! ${trojanGO_mux_enable} = true ]]; then
+        if [[ ! ${trojanGO_mux_enable} = false ]]; then
           echoContent red "不可以输入除false和true之外的其他字符"
         else
           break
@@ -947,7 +947,7 @@ function installTrojanGOStandalone() {
 
     while read -r -p '是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭): ' trojanGO_shadowsocks_enable; do
       if [ -z "${trojanGO_shadowsocks_enable}" ] || [ "${trojanGO_shadowsocks_enable}" = false ]; then
-          trojanGO_websocket_enable=false
+          trojanGO_shadowsocks_enable=false
           break
       else
         if [[ ! ${trojanGO_shadowsocks_enable} = true ]]; then
