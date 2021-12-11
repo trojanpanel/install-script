@@ -4,6 +4,14 @@
 
 initVar() {
   echoType='echo -e'
+
+  # 系统
+  release=
+  # CentOS版本
+  centosVersion=
+  # Debian版本
+  debianVersion=
+
   # 项目目录
   TP_DATA='/tpdata'
 
@@ -209,11 +217,6 @@ function installDocker() {
   if [ $? -ne 0 ]; then
     echoContent green "---> 安装Docker"
 
-    yum install -y yum-utils
-    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    yum makecache fast
-    yum install -y docker-ce docker-ce-cli containerd.io
-    
     systemctl enable docker
     systemctl start docker && docker -v && docker network create trojan-panel-network
 
@@ -225,6 +228,81 @@ function installDocker() {
     fi
   else
     echoContent skyBlue "---> 你已经安装了Docker"
+  fi
+}
+
+installDockerCentOS(){
+  sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+  sudo yum install -y yum-utils \
+  device-mapper-persistent-data \
+  lvm2
+  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  sudo yum install -y docker-ce docker-ce-cli containerd.io
+}
+
+installDockerDebian(){
+  sudo apt-get remove docker docker-engine docker.io containerd runc
+  sudo apt-get update
+  sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+}
+
+installDockerUbuntu(){
+  sudo apt-get remove docker docker-engine docker.io containerd runc
+  sudo apt-get update
+  sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install docker-ce docker-ce-cli containerd.io
+}
+
+checkSystem() {
+  if [[ -n $(find /etc -name "redhat-release") ]] || grep </proc/version -q -i "centos"; then
+    # 检测系统版本号
+    centosVersion=$(rpm -q centos-release | awk -F "[-]" '{print $3}' | awk -F "[.]" '{print $1}')
+    if [[ -z "${centosVersion}" ]] && grep </etc/centos-release "release 8"; then
+      centosVersion=8
+    fi
+    release="centos"
+
+  elif grep </etc/issue -q -i "debian" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "debian" && [[ -f "/proc/version" ]]; then
+    if grep </etc/issue -i "8"; then
+      debianVersion=8
+    fi
+    release="debian"
+
+  elif grep </etc/issue -q -i "ubuntu" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "ubuntu" && [[ -f "/proc/version" ]]; then
+    release="ubuntu"
+  fi
+
+  if [[ -z ${release} ]]; then
+    echo "暂支持该系统"
+    exit 0
+  else
+    echo "当前系统为${release}"
   fi
 }
 
