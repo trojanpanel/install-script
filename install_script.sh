@@ -217,6 +217,17 @@ function installDocker() {
   if [ $? -ne 0 ]; then
     echoContent green "---> 安装Docker"
 
+    if [[ ${release} == "centos" ]]; then
+      installDockerCentOS
+    elif [[ ${release} == "debian" ]]; then
+      installDockerDebian
+    elif [[ ${release} == "ubuntu" ]]; then
+      installDockerUbuntu
+    else
+      echoContent red "---> 暂不支持该系统"
+      exit 0
+    fi
+
     systemctl enable docker
     systemctl start docker && docker -v && docker network create trojan-panel-network
 
@@ -299,7 +310,7 @@ checkSystem() {
   fi
 
   if [[ -z ${release} ]]; then
-    echo "暂支持该系统"
+    echo "暂不支持该系统"
     exit 0
   else
     echo "当前系统为${release}"
