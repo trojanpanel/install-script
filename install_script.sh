@@ -286,9 +286,9 @@ function installDockerCentOS(){
 }
 
 function installDockerDebian(){
-  sudo apt-get remove docker docker-engine docker.io containerd runc
-  sudo apt-get update
-  sudo apt-get -y install \
+  sudo apt remove docker docker-engine docker.io containerd runc
+  sudo apt update -y
+  sudo apt -y install \
     ca-certificates \
     curl \
     gnupg \
@@ -297,14 +297,14 @@ function installDockerDebian(){
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt-get update
-  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+  sudo apt update -y
+  sudo apt install -y docker-ce docker-ce-cli containerd.io
 }
 
 function installDockerUbuntu(){
-  sudo apt-get remove docker docker-engine docker.io containerd runc
-  sudo apt-get update
-  sudo apt-get -y install \
+  sudo apt remove docker docker-engine docker.io containerd runc
+  sudo apt update -y
+  sudo apt -y install \
     ca-certificates \
     curl \
     gnupg \
@@ -313,8 +313,8 @@ function installDockerUbuntu(){
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt-get update
-  sudo apt-get install docker-ce docker-ce-cli containerd.io
+  sudo apt update -y
+  sudo apt install docker-ce docker-ce-cli containerd.io
 }
 
 # 导入数据库
