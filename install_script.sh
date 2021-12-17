@@ -340,7 +340,7 @@ function import_sql() {
 
     docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
 
-    yum install -y wget && wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
+    wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
     && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
     && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
     && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
@@ -396,7 +396,7 @@ function installTrojanPanel() {
 
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
     # 下载并解压Trojan Panel后端
-    yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
+    wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
     yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
     read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
@@ -442,7 +442,7 @@ EOF
 
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
-    yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+    wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
     yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
@@ -556,11 +556,11 @@ function updateTrojanPanel() {
 
   import_sql trojan-panel
   # 下载并解压Trojan Panel后端
-  yum install -y wget && wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
+  wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
   yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
   # 下载并解压Trojan Panel前端
-  yum install -y wget && wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+  wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
   yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
@@ -602,7 +602,7 @@ function installCaddyTLS() {
     read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863): ' caddy_remote_port
     [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
-    yum install -y wget && wget --no-check-certificate -O html.zip ${static_html}
+    wget --no-check-certificate -O html.zip ${static_html}
     yum install -y unzip && unzip -d ${CADDY_SRV} ./html.zip
 
   cat >${CADDY_Caddyfile} <<EOF
