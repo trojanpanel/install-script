@@ -46,6 +46,7 @@ echoContent() {
 
 initVar() {
   echoType='echo -e'
+  cur_dir=`pwd`
 
   # 系统
   release=
@@ -344,7 +345,7 @@ function import_sql() {
     docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
 
     wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
-    && docker cp trojan.sql trojan-panel-mariadb:/trojan.sql \
+    && docker cp ${cur_dir}/trojan.sql trojan-panel-mariadb:/trojan.sql \
     && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
     && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
 
@@ -400,7 +401,7 @@ function installTrojanPanel() {
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
     # 下载并解压Trojan Panel后端
     wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-    unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+    unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
 
     read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
@@ -446,7 +447,7 @@ EOF
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
     wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-    unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+    unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
@@ -560,11 +561,11 @@ function updateTrojanPanel() {
   import_sql trojan-panel
   # 下载并解压Trojan Panel后端
   wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-  unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+  unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
 
   # 下载并解压Trojan Panel前端
   wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-  unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+  unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
   && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
@@ -606,7 +607,7 @@ function installCaddyTLS() {
     [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
     wget --no-check-certificate -O html.zip ${static_html}
-    unzip -d ${CADDY_SRV} ./html.zip
+    unzip -d ${CADDY_SRV} ${cur_dir}/html.zip
 
   cat >${CADDY_Caddyfile} <<EOF
 http://${domain}:80 {
