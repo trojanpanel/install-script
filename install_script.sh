@@ -1,6 +1,48 @@
-#!/bin/bash
+#!/usr/bin/env bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
 
-# Author: jonssonyan <https://jonssonyan.com>
+#=================================================================#
+#   System Required: CentOS 6+, Debian8+, Ubuntu16+               #
+#   Version: v2.0.0                                               #
+#   Description: One click Install Trojan Panel server            #
+#   Author: jonssonyan <https://jonssonyan.com>                   #
+#   Github: https://github.com/trojanpanel                        #
+#=================================================================#
+
+echoContent() {
+  case $1 in
+  # 红色
+  "red")
+    # shellcheck disable=SC2154
+    ${echoType} "\033[31m$2\033[0m"
+    ;;
+    # 绿色
+  "green")
+    ${echoType} "\033[32m$2\033[0m"
+    ;;
+    # 黄色
+  "yellow")
+    ${echoType} "\033[33m$2\033[0m"
+    ;;
+    # 蓝色
+  "blue")
+    ${echoType} "\033[34m$2\033[0m"
+    ;;
+    # 紫色
+  "purple")
+    ${echoType} "\033[35m$2\033[0m"
+    ;;
+    # 天蓝色
+  "skyBlue")
+    ${echoType} "\033[36m$2\033[0m"
+    ;;
+    # 白色
+  "white")
+    ${echoType} "\033[37m$2\033[0m"
+    ;;
+  esac
+}
 
 initVar() {
   echoType='echo -e'
@@ -67,33 +109,6 @@ initVar() {
 
 initVar
 
-function checkSystem() {
-  if [[ -n $(find /etc -name "redhat-release") ]] || grep </proc/version -q -i "centos"; then
-    # 检测系统版本号
-    centosVersion=$(rpm -q centos-release | awk -F "[-]" '{print $3}' | awk -F "[.]" '{print $1}')
-    if [[ -z "${centosVersion}" ]] && grep </etc/centos-release "release 8"; then
-      centosVersion=8
-    fi
-    release="centos"
-
-  elif grep </etc/issue -q -i "debian" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "debian" && [[ -f "/proc/version" ]]; then
-    if grep </etc/issue -i "8"; then
-      debianVersion=8
-    fi
-    release="debian"
-
-  elif grep </etc/issue -q -i "ubuntu" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "ubuntu" && [[ -f "/proc/version" ]]; then
-    release="ubuntu"
-  fi
-
-  if [[ -z ${release} ]]; then
-    echoContent red "暂不支持该系统"
-    exit 0
-  fi
-}
-
-checkSystem
-
 function mkdirTools() {
   # 项目目录
   mkdir -p ${TP_DATA}
@@ -128,38 +143,29 @@ function mkdirTools() {
   touch ${TROJANGO_STANDALONE_CONFIG}
 }
 
-echoContent() {
-  case $1 in
-  # 红色
-  "red")
-    # shellcheck disable=SC2154
-    ${echoType} "\033[31m$2\033[0m"
-    ;;
-    # 绿色
-  "green")
-    ${echoType} "\033[32m$2\033[0m"
-    ;;
-    # 黄色
-  "yellow")
-    ${echoType} "\033[33m$2\033[0m"
-    ;;
-    # 蓝色
-  "blue")
-    ${echoType} "\033[34m$2\033[0m"
-    ;;
-    # 紫色
-  "purple")
-    ${echoType} "\033[35m$2\033[0m"
-    ;;
-    # 天蓝色
-  "skyBlue")
-    ${echoType} "\033[36m$2\033[0m"
-    ;;
-    # 白色
-  "white")
-    ${echoType} "\033[37m$2\033[0m"
-    ;;
-  esac
+function checkSystem() {
+  if [[ -n $(find /etc -name "redhat-release") ]] || grep </proc/version -q -i "centos"; then
+    # 检测系统版本号
+    centosVersion=$(rpm -q centos-release | awk -F "[-]" '{print $3}' | awk -F "[.]" '{print $1}')
+    if [[ -z "${centosVersion}" ]] && grep </etc/centos-release "release 8"; then
+      centosVersion=8
+    fi
+    release="centos"
+
+  elif grep </etc/issue -q -i "debian" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "debian" && [[ -f "/proc/version" ]]; then
+    if grep </etc/issue -i "8"; then
+      debianVersion=8
+    fi
+    release="debian"
+
+  elif grep </etc/issue -q -i "ubuntu" && [[ -f "/etc/issue" ]] || grep </etc/issue -q -i "ubuntu" && [[ -f "/proc/version" ]]; then
+    release="ubuntu"
+  fi
+
+  if [[ -z ${release} ]]; then
+    echoContent red "暂不支持该系统"
+    exit 0
+  fi
 }
 
 # 卸载阿里云内置相关监控
@@ -187,7 +193,7 @@ function uninstallAliyun() {
   iptables -I INPUT -s 140.205.225.204/32 -j DROP
 }
 
-# 安装BBRplus
+# 安装BBRplus 仅支持centos
 function installBBRplus() {
   kernel_version="4.14.129-bbrplus"
   if [[ ! -f /etc/redhat-release ]]; then
@@ -237,6 +243,54 @@ function installBBRplus() {
   fi
 }
 
+function installDockerCentOS(){
+  sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+  sudo yum install -y yum-utils \
+  device-mapper-persistent-data \
+  lvm2
+  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  sudo yum install -y docker-ce docker-ce-cli containerd.io
+}
+
+function installDockerDebian(){
+  sudo apt remove docker docker-engine docker.io containerd runc
+  sudo apt -y update
+  sudo apt -y install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt -y update
+  sudo apt -y install docker-ce docker-ce-cli containerd.io
+}
+
+function installDockerUbuntu(){
+  sudo apt remove docker docker-engine docker.io containerd runc
+  sudo apt -y update
+  sudo apt -y install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt -y update
+  sudo apt -y install docker-ce docker-ce-cli containerd.io
+}
+
 # 安装Docker
 function installDocker() {
   systemctl stop firewalld.service && systemctl disable firewalld.service
@@ -267,54 +321,6 @@ function installDocker() {
   else
     echoContent skyBlue "---> 你已经安装了Docker"
   fi
-}
-
-function installDockerCentOS(){
-  sudo yum remove docker \
-                  docker-client \
-                  docker-client-latest \
-                  docker-common \
-                  docker-latest \
-                  docker-latest-logrotate \
-                  docker-logrotate \
-                  docker-engine
-  sudo yum install -y yum-utils \
-  device-mapper-persistent-data \
-  lvm2
-  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-  sudo yum install -y docker-ce docker-ce-cli containerd.io
-}
-
-function installDockerDebian(){
-  sudo apt remove docker docker-engine docker.io containerd runc
-  sudo apt update -y
-  sudo apt -y install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-  echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt update -y
-  sudo apt install -y docker-ce docker-ce-cli containerd.io
-}
-
-function installDockerUbuntu(){
-  sudo apt remove docker docker-engine docker.io containerd runc
-  sudo apt update -y
-  sudo apt -y install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-  echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt update -y
-  sudo apt install docker-ce docker-ce-cli containerd.io
 }
 
 # 导入数据库
@@ -1061,7 +1067,7 @@ function installTrojanGOStandalone() {
           *)
             trojanGO_shadowsocks_method='AES-128-GCM'
           esac
-          
+
           while read -r -p '请输入Shadowsocks AEAD加密密码(必填): ' trojanGO_shadowsocks_password; do
             if [[ ! -n ${trojanGO_shadowsocks_password} ]]; then
               echoContent red "密码不能为空"
@@ -1172,10 +1178,14 @@ EOF
 function main() {
   cd "$HOME" || exit
   mkdirTools
+  checkSystem
+  clear
   echoContent red "\n=============================================================="
-  echoContent skyBlue "当前版本: v2.0.0"
+  echoContent skyBlue "System Required: CentOS 6+, Debian8+, Ubuntu16+"
+  echoContent skyBlue "Version: v2.0.0"
+  echoContent skyBlue "Description: One click Install Trojan Panel server"
+  echoContent skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echoContent skyBlue "Github: https://github.com/trojanpanel"
-  echoContent skyBlue "描述: Trojan Panel一键安装脚本"
   echoContent red "\n=============================================================="
   echoContent yellow "1. 卸载阿里云盾(仅限阿里云服务使用)"
   echoContent yellow "2. 安装BBRplus"
