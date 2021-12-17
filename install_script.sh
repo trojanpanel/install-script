@@ -254,7 +254,8 @@ function installDockerCentOS(){
                   docker-engine
   sudo yum install -y yum-utils \
   device-mapper-persistent-data \
-  lvm2
+  lvm2 \
+  unzip
   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   sudo yum install -y docker-ce docker-ce-cli containerd.io
 }
@@ -266,7 +267,8 @@ function installDockerDebian(){
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
+    umzip
   curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
@@ -282,7 +284,8 @@ function installDockerUbuntu(){
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
+    unzip
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
@@ -397,7 +400,7 @@ function installTrojanPanel() {
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
     # 下载并解压Trojan Panel后端
     wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-    yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+    unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
     read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
@@ -443,7 +446,7 @@ EOF
   if [[ ! -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
     wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-    yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+    unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
@@ -557,11 +560,11 @@ function updateTrojanPanel() {
   import_sql trojan-panel
   # 下载并解压Trojan Panel后端
   wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
+  unzip -o -d ${TROJAN_PANEL_DATA} ./trojan-panel.zip
 
   # 下载并解压Trojan Panel前端
   wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-  yum install -y unzip && unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
+  unzip -o -d ${TROJAN_PANEL_UI_DATA} ./trojan-panel-ui.zip
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
   && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
@@ -603,7 +606,7 @@ function installCaddyTLS() {
     [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
     wget --no-check-certificate -O html.zip ${static_html}
-    yum install -y unzip && unzip -d ${CADDY_SRV} ./html.zip
+    unzip -d ${CADDY_SRV} ./html.zip
 
   cat >${CADDY_Caddyfile} <<EOF
 http://${domain}:80 {
