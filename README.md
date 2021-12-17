@@ -13,7 +13,7 @@ yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 For Ubuntu/Debian:
 
 ```shell
-apt-get install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
+apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
 ```
 
 # Enjoy!
