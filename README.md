@@ -35,7 +35,3 @@ apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 # Bugs & Issues
 
 [Trojan Panel交流群](https://t.me/TrojanPanelGroup)
-
-# License
-
-[MIT](./LICENSE)
