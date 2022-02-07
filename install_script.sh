@@ -333,7 +333,7 @@ function import_sql() {
     echoContent green "---> 导入数据库"
 
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ ! -n ${mariadb_pas} ]]; then
+      if [[ -z ${mariadb_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -362,14 +362,14 @@ function import_sql() {
 
 # 安装MariaDB
 function installMariadb() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
     echoContent green "---> 安装MariaDB"
 
     read -r -p '请输入数据库的端口(默认:9507): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port="9507"
 
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ ! -n ${mariadb_pas} ]]; then
+      if [[ -z ${mariadb_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -398,7 +398,7 @@ function installMariadb() {
 function installTrojanPanel() {
   echoContent green "---> 安装TrojanPanel"
 
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
     # 下载并解压Trojan Panel后端
     wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
     unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
@@ -408,7 +408,7 @@ function installTrojanPanel() {
     read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port=3306
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ ! -n ${mariadb_pas} ]]; then
+      if [[ -z ${mariadb_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -444,7 +444,7 @@ EOF
     echoContent skyBlue "---> 你已经安装了Trojan Panel"
   fi
 
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
     wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
     unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
@@ -553,7 +553,7 @@ function updateTrojanPanel() {
   echoContent green "---> 更新Trojan Panel"
 
   # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]];then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]];then
     echoContent red "---> 请先安装Trojan Panel"
     exit 0
   fi
@@ -581,12 +581,12 @@ function updateTrojanPanel() {
 
 # 安装Caddy TLS
 function installCaddyTLS() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
     echoContent green "---> 安装Caddy TLS"
 
     echoContent yellow "注意: 请确保域名已经解析到本机IP,否则申请证书会失败"
     while read -r -p '请输入你的域名(必填): ' domain; do
-      if [[ ! -n ${domain} ]]; then
+      if [[ -z ${domain} ]]; then
         echoContent red "域名不能为空"
       else
         break
@@ -639,7 +639,7 @@ EOF
 
 # 安装TrojanGFW 数据库版
 function installTrojanGFW() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]]; then
     echoContent green "---> 安装TrojanGFW"
 
     read -r -p '请输入TrojanGFW的端口(默认:443): ' trojanGFW_port
@@ -649,7 +649,7 @@ function installTrojanGFW() {
     read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port=3306
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ ! -n ${mariadb_pas} ]]; then
+      if [[ -z ${mariadb_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -732,13 +732,13 @@ EOF
 
 # 安装TrojanGFW 单机版
 function installTrojanGFWStandalone() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
     echoContent green "---> 安装TrojanGFW"
 
     read -r -p '请输入TrojanGFW的端口(默认:443): ' trojanGFW_port
     [ -z "${trojanGFW_port}" ] && trojanGFW_port=443
     while read -r -p '请输入TrojanGFW的密码(必填): ' trojan_pas; do
-      if [[ ! -n ${trojan_pas} ]]; then
+      if [[ -z ${trojan_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -823,7 +823,7 @@ EOF
 
 # 安装TrojanGO 数据库版
 function installTrojanGO() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
     echoContent green "---> 安装TrojanGO 数据库版"
 
     read -r -p '请输入TrojanGO的端口(默认:443): ' trojanGO_port
@@ -833,7 +833,7 @@ function installTrojanGO() {
     read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
     [ -z "${mariadb_port}" ] && mariadb_port=3306
     while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ ! -n ${mariadb_pas} ]]; then
+      if [[ -z ${mariadb_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -897,7 +897,7 @@ function installTrojanGO() {
           esac
 
           while read -r -p '请输入Shadowsocks AEAD加密密码(必填): ' trojanGO_shadowsocks_password; do
-            if [[ ! -n ${trojanGO_shadowsocks_password} ]]; then
+            if [[ -z ${trojanGO_shadowsocks_password} ]]; then
               echoContent red "密码不能为空"
             else
               break
@@ -1003,13 +1003,13 @@ EOF
 
 # 安装TrojanGO 单机版
 function installTrojanGOStandalone() {
-  if [[ ! -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
     echoContent green "---> 安装TrojanGO 单机版"
 
     read -r -p '请输入TrojanGO的端口(默认:443): ' trojanGO_port
     [ -z "${trojanGO_port}" ] && trojanGO_port=443
     while read -r -p '请输入TrojanGO的密码(必填): ' trojan_pas; do
-      if [[ ! -n ${trojan_pas} ]]; then
+      if [[ -z ${trojan_pas} ]]; then
         echoContent red "密码不能为空"
       else
         break
@@ -1073,7 +1073,7 @@ function installTrojanGOStandalone() {
           esac
 
           while read -r -p '请输入Shadowsocks AEAD加密密码(必填): ' trojanGO_shadowsocks_password; do
-            if [[ ! -n ${trojanGO_shadowsocks_password} ]]; then
+            if [[ -z ${trojanGO_shadowsocks_password} ]]; then
               echoContent red "密码不能为空"
             else
               break
