@@ -569,7 +569,7 @@ function updateTrojanPanel() {
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
   && docker restart trojan-panel \
-  && docker cp ${TROJAN_PANEL_UI_DATA} trojan-panel-ui:/usr/share/nginx/html/ \
+  && docker cp ${TROJAN_PANEL_UI_DATA}/. trojan-panel-ui:/usr/share/nginx/html/ \
   && docker restart trojan-panel-ui
 
   if [ $? -ne 0 ]; then
