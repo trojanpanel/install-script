@@ -567,7 +567,7 @@ function updateTrojanPanel() {
   wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
   unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
 
-  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:/ \
+  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:${TROJAN_PANEL_DATA}/ \
   && docker restart trojan-panel \
   && docker cp ${TROJAN_PANEL_UI_DATA}/. trojan-panel-ui:/usr/share/nginx/html/ \
   && docker restart trojan-panel-ui
