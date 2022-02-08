@@ -560,14 +560,16 @@ function updateTrojanPanel() {
 
   import_sql trojan-panel
   # 下载并解压Trojan Panel后端
-  wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-  unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
+  wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL} \
+  && unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip \
+  && chmod +x ${TROJAN_PANEL_DATA}/trojan-panel
 
   # 下载并解压Trojan Panel前端
-  wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-  unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
+  wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL} \
+  && unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:${TROJAN_PANEL_DATA}/ \
+  && docker cp ${TROJAN_PANEL_DATA}/config trojan-panel:${TROJAN_PANEL_DATA}/ \
   && docker restart trojan-panel \
   && docker cp ${TROJAN_PANEL_UI_DATA}/. trojan-panel-ui:/usr/share/nginx/html/ \
   && docker restart trojan-panel-ui
