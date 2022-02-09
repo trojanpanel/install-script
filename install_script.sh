@@ -426,6 +426,7 @@ EOF
 FROM golang:1.16
 WORKDIR ${TROJAN_PANEL_DATA}
 ADD config.ini config.ini
+ADD config/ config/
 ADD trojan-panel trojan-panel
 RUN chmod +x ./trojan-panel
 ENTRYPOINT ["./trojan-panel"]
