@@ -10,7 +10,7 @@ For CentOS 6+:
 yum install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
 ```
 
-For Ubuntu16+/Debian8+:
+For Ubuntu 16+/Debian 8+:
 
 ```shell
 apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/install-script/raw/main/install_script.sh;chmod 777 install_script.sh;./install_script.sh
