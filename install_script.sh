@@ -245,7 +245,7 @@ function installBBRplus() {
 }
 
 function installDockerCentOS(){
-  sudo yum remove docker \
+  yum remove docker \
                   docker-client \
                   docker-client-latest \
                   docker-common \
@@ -253,46 +253,46 @@ function installDockerCentOS(){
                   docker-latest-logrotate \
                   docker-logrotate \
                   docker-engine
-  sudo yum install -y yum-utils \
+  yum install -y yum-utils \
   device-mapper-persistent-data \
   lvm2 \
   unzip
-  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-  sudo yum install -y docker-ce docker-ce-cli containerd.io
+  yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  yum install -y docker-ce docker-ce-cli containerd.io
 }
 
 function installDockerDebian(){
-  sudo apt remove docker docker-engine docker.io containerd runc
-  sudo apt -y update
-  sudo apt -y install \
+  apt remove docker docker-engine docker.io containerd runc
+  apt -y update
+  apt -y install \
     ca-certificates \
     curl \
     gnupg \
     lsb-release \
     unzip
-  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt -y update
-  sudo apt -y install docker-ce docker-ce-cli containerd.io
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  apt -y update
+  apt -y install docker-ce docker-ce-cli containerd.io
 }
 
 function installDockerUbuntu(){
-  sudo apt remove docker docker-engine docker.io containerd runc
-  sudo apt -y update
-  sudo apt -y install \
+  apt remove docker docker-engine docker.io containerd runc
+  apt -y update
+  apt -y install \
     ca-certificates \
     curl \
     gnupg \
     lsb-release \
     unzip
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt -y update
-  sudo apt -y install docker-ce docker-ce-cli containerd.io
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  apt -y update
+  apt -y install docker-ce docker-ce-cli containerd.io
 }
 
 # 安装Docker
