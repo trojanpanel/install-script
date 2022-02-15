@@ -1,6 +1,6 @@
 # Install Script
 
-一键安装Trojan Panel控制面板，一键安装Trojan-gfw+Caddy+Web+TLS，一键安装Trojan-go+Caddy+Web+TLS+Websocket，支持数据库版节点集群和单机版节点。
+一键安装Trojan Panel，一键安装Trojan-gfw+Caddy+Web+TLS，一键安装Trojan-go+Caddy+Web+TLS+Websocket，支持数据库版节点集群和单机版节点。
 
 # Installation
 
