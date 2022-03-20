@@ -508,16 +508,16 @@ server {
 }
 EOF
 
-    docker build -t trojan-panel-ui ${TROJAN_PANEL_UI_DATA} \
-    && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
-    -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
-    && docker network connect trojan-panel-network trojan-panel-ui
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
-      echoContent skyBlue "---> Trojan Panel前端安装完成"
-    else
-      echoContent red "---> Trojan Panel前端安装失败"
-      exit 0
-    fi
+  docker build -t trojan-panel-ui ${TROJAN_PANEL_UI_DATA} \
+  && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
+  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
+  && docker network connect trojan-panel-network trojan-panel-ui
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
+    echoContent skyBlue "---> Trojan Panel前端安装完成"
+  else
+    echoContent red "---> Trojan Panel前端安装失败"
+    exit 0
+  fi
   else
     echoContent skyBlue "---> 你已经安装了Trojan Panel UI"
   fi
@@ -532,7 +532,7 @@ EOF
 
 # 卸载Trojan Panel
 function uninstallTrojanPanel() {
-   echoContent green "---> 卸载Trojan Panel"
+  echoContent green "---> 卸载Trojan Panel"
 
   # 强制删除容器
   docker rm -f trojan-panel-ui
@@ -821,6 +821,46 @@ EOF
     fi
   else
     echoContent skyBlue "---> 你已经安装了TrojanGFW 单机版"
+  fi
+}
+
+# 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版
+function uninstallTrojanGFW() {
+  # 判断TrojanGFW+Caddy+Web+TLS节点 数据库版是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]];then
+    echoContent green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版"
+
+    # 强制删除容器
+    docker rm -f trojan-panel-trojanGFW
+    # 删除image
+    docker rmi trojangfw/trojan
+
+    # 删除文件
+    rm -f ${TROJANGFW_CONFIG}
+
+    echoContent skyBlue "---> TrojanGFW+Caddy+Web+TLS节点 数据库版卸载完成"
+  else
+    echoContent red "---> 请先安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
+  fi
+}
+
+# 卸载TrojanGFW+Caddy+Web+TLS节点 单机版
+function uninstallTrojanGFWStandalone() {
+  # 判断TrojanGFW+Caddy+Web+TLS节点 单机版是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]];then
+    echoContent green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 单机版"
+
+    # 强制删除容器
+    docker rm -f trojan-panel-trojanGFW-standalone
+    # 删除image
+    docker rmi trojangfw/trojan
+
+    # 删除文件
+    rm -f ${TROJANGFW_STANDALONE_CONFIG}
+
+    echoContent skyBlue "---> TrojanGFW+Caddy+Web+TLS节点 单机版卸载完成"
+  else
+    echoContent red "---> 请先安装TrojanGFW+Caddy+Web+TLS节点 单机版"
   fi
 }
 
@@ -1182,6 +1222,46 @@ EOF
   fi
 }
 
+# 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版
+function uninstallTrojanGO() {
+  # 判断TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
+    echoContent green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+
+    # 强制删除容器
+    docker rm -f trojan-panel-trojanGO
+    # 删除image
+    docker rmi p4gefau1t/trojan-go
+
+    # 删除文件
+    rm -f ${TROJANGO_CONFIG}
+
+    echoContent skyBlue "---> TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版卸载完成"
+  else
+    echoContent red "---> 请先安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+  fi
+}
+
+# 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版
+function uninstallTrojanGOStandalone() {
+  # 判断TrojanGo+Caddy+Web+TLS+Websocket节点 单机版是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+    echoContent green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+
+    # 强制删除容器
+    docker rm -f trojan-panel-trojanGO-standalone
+    # 删除image
+    docker rmi p4gefau1t/trojan-go
+
+    # 删除文件
+    rm -f ${TROJANGO_STANDALONE_CONFIG}
+
+    echoContent skyBlue "---> TrojanGo+Caddy+Web+TLS+Websocket节点 单机版卸载完成"
+  else
+    echoContent red "---> 请先安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+  fi
+}
+
 function main() {
   cd "$HOME" || exit
   mkdirTools
@@ -1203,9 +1283,13 @@ function main() {
   echoContent green "\n=============================================================="
   echoContent yellow "6. 安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
   echoContent yellow "7. 安装TrojanGFW+Caddy+Web+TLS节点 单机版"
+  echoContent yellow "8. 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版"
+  echoContent yellow "9. 卸载TrojanGFW+Caddy+Web+TLS节点 单机版"
   echoContent green "\n=============================================================="
-  echoContent yellow "8. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-  echoContent yellow "9. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+  echoContent yellow "10. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+  echoContent yellow "11. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+  echoContent yellow "12. 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
+  echoContent yellow "13. 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
   read -r -p "请选择:" selectInstallType
   case ${selectInstallType} in
   1)
@@ -1237,14 +1321,26 @@ function main() {
     installTrojanGFWStandalone
     ;;
   8)
+    uninstallTrojanGFW
+    ;;
+  9)
+    uninstallTrojanGFWStandalone
+    ;;
+  10)
     installDocker
     installCaddyTLS
     installTrojanGO
     ;;
-  9)
+  11)
     installDocker
     installCaddyTLS
     installTrojanGOStandalone
+    ;;
+  12)
+    uninstallTrojanGO
+    ;;
+  13)
+    uninstallTrojanGOStandalone
     ;;
   *)
     echoContent red "没有这个选项"
