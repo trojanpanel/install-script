@@ -1231,7 +1231,7 @@ function uninstallTrojanGO() {
     # 强制删除容器
     docker rm -f trojan-panel-trojanGO
     # 删除image
-    docker rmi p4gefau1t/trojan-go
+    docker rmi teddysun/trojan-go
 
     # 删除文件
     rm -f ${TROJANGO_CONFIG}
@@ -1251,7 +1251,7 @@ function uninstallTrojanGOStandalone() {
     # 强制删除容器
     docker rm -f trojan-panel-trojanGO-standalone
     # 删除image
-    docker rmi p4gefau1t/trojan-go
+    docker rmi teddysun/trojan-go
 
     # 删除文件
     rm -f ${TROJANGO_STANDALONE_CONFIG}
