@@ -81,7 +81,7 @@ initVar() {
   CADDY_Caddyfile='/tpdata/caddy/Caddyfile'
   CADDY_SRV='/tpdata/caddy/srv'
   CADDY_ACME='/tpdata/caddy/acme'
-  domain=
+  domain=''
   caddy_remote_port=8863
   your_email=123456@qq.com
 
@@ -107,8 +107,6 @@ initVar() {
   static_html='https://github.com/trojanpanel/install-script/raw/main/static/html.zip'
   sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
 }
-
-initVar
 
 function mkdirTools() {
   # 项目目录
@@ -460,8 +458,18 @@ EOF
   cat >${NGINX_CONFIG} << \EOF
 server {
     listen       80;
-    listen  [::]:80;
+    listen       443 ssl;
     server_name  localhost;
+    ssl_certificate      ${CADDY_ACME}/${domain}/${domain}.crt;
+    ssl_certificate_key  ${CADDY_ACME}/${domain}/${domain}.key;
+    #缓存有效期
+    ssl_session_timeout  5m;
+    #安全链接可选的加密协议
+    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+    #加密算法
+    ssl_ciphers  ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    #使用服务器端的首选算法
+    ssl_prefer_server_ciphers  on;
 
     #access_log  /var/log/nginx/host.access.log  main;
 
@@ -510,7 +518,8 @@ EOF
 
   docker build -t trojan-panel-ui ${TROJAN_PANEL_UI_DATA} \
   && docker run -d --name trojan-panel-ui -p 8888:80 --restart always \
-  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf trojan-panel-ui \
+  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+  -v ${CADDY_ACME}/${domain}:${CADDY_ACME}/${domain} trojan-panel-ui \
   && docker network connect trojan-panel-network trojan-panel-ui
   if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     echoContent skyBlue "---> Trojan Panel前端安装完成"
@@ -542,9 +551,9 @@ function uninstallTrojanPanel() {
   docker rmi trojan-panel
 
   # 删除文件
-  rm -rf ${TROJAN_PANEL_DATA}/*
-  rm -rf ${TROJAN_PANEL_UI_DATA}/*
-  rm -rf ${NGINX_DATA}/*
+  rm -rf ${TROJAN_PANEL_DATA}
+  rm -rf ${TROJAN_PANEL_UI_DATA}
+  rm -rf ${NGINX_DATA}
 
   echoContent skyBlue "---> Trojan Panel卸载完成"
 }
@@ -1264,6 +1273,7 @@ function uninstallTrojanGOStandalone() {
 
 function main() {
   cd "$HOME" || exit
+  initVar
   mkdirTools
   checkSystem
   clear
