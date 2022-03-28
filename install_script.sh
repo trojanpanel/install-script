@@ -455,7 +455,7 @@ EXPOSE 80
 EOF
 
 # 配置Nginx
-  cat >${NGINX_CONFIG} << \EOF
+  cat >${NGINX_CONFIG} <<EOF
 server {
     listen       80;
     listen       443 ssl;
@@ -490,29 +490,6 @@ server {
     location = /50x.html {
         root   /usr/share/nginx/html;
     }
-
-    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
-    #
-    #location ~ \.php$ {
-    #    proxy_pass   http://127.0.0.1;
-    #}
-
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    #location ~ \.php$ {
-    #    root           html;
-    #    fastcgi_pass   127.0.0.1:9000;
-    #    fastcgi_index  index.php;
-    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
-    #    include        fastcgi_params;
-    #}
-
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    #location ~ /\.ht {
-    #    deny  all;
-    #}
 }
 EOF
 
