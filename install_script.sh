@@ -455,7 +455,7 @@ EXPOSE 80
 EOF
 
 # 配置Nginx
-  cat >${NGINX_CONFIG} << \EOF
+  cat >${NGINX_CONFIG} <<- EOF
 server {
     listen       80;
     listen       443 ssl;
@@ -487,7 +487,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://$host:8888$uri?$args;
+    error_page  497              https://\$host:8888\$uri?\$args;
 
     # redirect server error pages to the static page /50x.html
     #
