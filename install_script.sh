@@ -455,11 +455,14 @@ EXPOSE 80
 EOF
 
 # 配置Nginx
-  cat >${NGINX_CONFIG} <<EOF
+  cat >${NGINX_CONFIG} << \EOF
 server {
     listen       80;
     listen       443 ssl;
     server_name  localhost;
+
+    #强制ssl
+    ssl on;
     ssl_certificate      ${CADDY_ACME}/${domain}/${domain}.crt;
     ssl_certificate_key  ${CADDY_ACME}/${domain}/${domain}.key;
     #缓存有效期
@@ -483,6 +486,8 @@ server {
     }
 
     #error_page  404              /404.html;
+    #497 http->https
+    error_page  497              https://$host:8888$uri?$args;
 
     # redirect server error pages to the static page /50x.html
     #
