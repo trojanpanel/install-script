@@ -66,12 +66,11 @@ initVar() {
 
   # Trojan Panel
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
-  TROJAN_PANEL_CONFIG='/tpdata/trojan-panel/config.ini'
-  TROJAN_PANEL_URL='https://github.com/trojanpanel/trojan-panel/releases/latest/download/trojan-panel.zip'
+  TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel.zip'
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
-  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/trojan-panel-ui/releases/latest/download/trojan-panel-ui.zip'
+  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-ui.zip'
   # Nginx
   NGINX_DATA='/tpdata/nginx'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
@@ -105,7 +104,6 @@ initVar() {
   trojanGO_mux_enable=true
 
   static_html='https://github.com/trojanpanel/install-script/raw/main/static/html.zip'
-  sql_url_trojan_panel='https://github.com/trojanpanel/trojan-panel/raw/master/resource/sql/trojan.sql'
 }
 
 function mkdirTools() {
@@ -117,7 +115,6 @@ function mkdirTools() {
 
   # Trojan Panel
   mkdir -p ${TROJAN_PANEL_DATA}
-  touch ${TROJAN_PANEL_CONFIG}
 
   # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
@@ -325,39 +322,6 @@ function installDocker() {
   fi
 }
 
-# 导入数据库
-function import_sql() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
-    echoContent green "---> 导入数据库"
-
-    while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
-      if [[ -z ${mariadb_pas} ]]; then
-        echoContent red "密码不能为空"
-      else
-        break
-      fi
-    done
-
-    sleep 1
-
-    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
-
-    wget --no-check-certificate -O trojan.sql ${sql_url_trojan_panel} \
-    && docker cp ${cur_dir}/trojan.sql trojan-panel-mariadb:/trojan.sql \
-    && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} -e 'create database trojan;'" \
-    && docker exec -it trojan-panel-mariadb /bin/bash -c "mysql -uroot -p${mariadb_pas} trojan </trojan.sql"
-
-    if [ $? -eq 0 ]; then
-      echoContent skyBlue "---> 导入数据库完成"
-    else
-      echoContent red "---> 导入数据库失败"
-      exit 0
-    fi
-  else
-    echoContent red "---> 你还没有安装MariaDB"
-  fi
-}
-
 # 安装MariaDB
 function installMariadb() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
@@ -413,22 +377,17 @@ function installTrojanPanel() {
       fi
     done
 
-  cat >${TROJAN_PANEL_CONFIG} <<EOF
-[mysql]
-ip=${mariadb_ip}
-port=${mariadb_port}
-pas=${mariadb_pas}
+  cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
+FROM golang:1.17
+WORKDIR ${TROJAN_PANEL_DATA}
+ADD trojan-panel trojan-panel
+RUN chmod +x trojan-panel
+ENTRYPOINT ["trojan-panel -host=${mariadb_ip} -password=${mariadb_pas} -port=${mariadb_port}"]
 EOF
 
-  cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
-FROM golang:1.16
-WORKDIR ${TROJAN_PANEL_DATA}
-ADD config.ini config.ini
-ADD config/ config/
-ADD trojan-panel trojan-panel
-RUN chmod +x ./trojan-panel
-ENTRYPOINT ["./trojan-panel"]
-EOF
+    # 初始化数据库
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;' \
+    && docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
     docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
     && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
@@ -1293,7 +1252,6 @@ function main() {
   3)
     installDocker
     installMariadb
-    import_sql trojan-panel
     installTrojanPanel
     ;;
   4)
