@@ -382,8 +382,8 @@ function installTrojanPanel() {
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
 ADD trojan-panel trojan-panel
-RUN chmod +x trojan-panel
-ENTRYPOINT ["trojan-panel -host=${mariadb_ip} -password=${mariadb_pas} -port=${mariadb_port}"]
+RUN chmod +x ./trojan-panel
+ENTRYPOINT ["./trojan-panel -host=${mariadb_ip} -password=${mariadb_pas} -port=${mariadb_port}"]
 EOF
 
     # 初始化数据库
@@ -1230,7 +1230,7 @@ function main() {
   echoContent yellow "2. 安装BBRplus(仅CentOS)"
   echoContent green "\n=============================================================="
   echoContent yellow "3. 安装Trojan Panel"
-  echoContent yellow "4. 更新Trojan Panel"
+  echoContent yellow "4. 更新Trojan Panel(注意: 会清除数据)"
   echoContent yellow "5. 卸载Trojan Panel"
   echoContent green "\n=============================================================="
   echoContent yellow "6. 安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
