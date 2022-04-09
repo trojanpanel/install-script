@@ -67,6 +67,7 @@ initVar() {
   # Trojan Panel
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
   TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile'
+  TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel.zip'
 
   # Trojan Panel UI
@@ -116,6 +117,7 @@ function mkdirTools() {
 
   # Trojan Panel
   mkdir -p ${TROJAN_PANEL_DATA}
+  mkdir -p ${TROJAN_PANEL_LOGS}
 
   # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
@@ -382,16 +384,18 @@ function installTrojanPanel() {
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
 ADD trojan-panel trojan-panel
-RUN chmod +x trojan-panel
+RUN chmod 777 trojan-panel
 ENTRYPOINT ["trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
 EOF
 
     # 初始化数据库
-    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;' \
-    && docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
     docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
-    && docker run -d --name trojan-panel -p 8081:8081 -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} --restart always trojan-panel \
+    && docker run -d --name trojan-panel -p 8081:8081 \
+    -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+    --restart always trojan-panel \
     && docker network connect trojan-panel-network trojan-panel
     if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
       echoContent skyBlue "---> Trojan Panel后端安装完成"
@@ -510,7 +514,6 @@ function updateTrojanPanel() {
     exit 0
   fi
 
-  import_sql trojan-panel
   # 下载并解压Trojan Panel后端
   wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL} \
   && unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip \
