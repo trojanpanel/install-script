@@ -66,6 +66,7 @@ initVar() {
 
   # Trojan Panel
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
+  TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel.zip'
 
   # Trojan Panel UI
@@ -389,7 +390,7 @@ EOF
     docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;' \
     && docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
-    docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
+    docker build -t -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} trojan-panel ${TROJAN_PANEL_DATA} \
     && docker run -d --name trojan-panel -p 8081:8081 --restart always trojan-panel \
     && docker network connect trojan-panel-network trojan-panel
     if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
