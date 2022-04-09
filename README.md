@@ -18,7 +18,9 @@ apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # Enjoy!
 
-![Enjoy!](./static/images/script.png)
+![script](./static/images/script.png)
+
+![trojan-panel](./static/images/trojan-panel.png)
 
 # Features
 
@@ -35,3 +37,8 @@ apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 # Bugs & Issues
 
 [Trojan Panel交流群](https://t.me/TrojanPanelGroup)
+
+# Thanks
+
+- [trojan-gfw](https://github.com/trojan-gfw/trojan)
+- [trojan-go](https://github.com/p4gefau1t/trojan-go)
