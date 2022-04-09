@@ -384,8 +384,8 @@ function installTrojanPanel() {
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
 ADD trojan-panel trojan-panel
-RUN chmod 777 trojan-panel
-ENTRYPOINT ["trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
+RUN chmod 777 ./trojan-panel
+ENTRYPOINT ["./trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
 EOF
 
     # 初始化数据库
