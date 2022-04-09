@@ -380,6 +380,10 @@ function installTrojanPanel() {
       fi
     done
 
+    # 初始化数据库
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
+    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
+
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
@@ -387,10 +391,6 @@ ADD trojan-panel trojan-panel
 RUN chmod 777 ./trojan-panel
 ENTRYPOINT ["./trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
 EOF
-
-    # 初始化数据库
-    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
-    docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
     docker build -t trojan-panel ${TROJAN_PANEL_DATA} \
     && docker run -d --name trojan-panel -p 8081:8081 \
@@ -522,6 +522,18 @@ function updateTrojanPanel() {
   # 下载并解压Trojan Panel前端
   wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL} \
   && unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
+
+  while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
+    if [[ -z ${mariadb_pas} ]]; then
+      echoContent red "密码不能为空"
+    else
+      break
+    fi
+  done
+
+  # 初始化数据库
+  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
+  docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:${TROJAN_PANEL_DATA}/ \
   && docker cp ${TROJAN_PANEL_DATA}/config trojan-panel:${TROJAN_PANEL_DATA}/ \
