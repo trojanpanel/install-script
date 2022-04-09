@@ -4,10 +4,10 @@ export PATH
 
 #=================================================================#
 #   System Required: CentOS 6+, Debian8+, Ubuntu16+               #
-#   Version: v2.0.0                                               #
+#   Version: v1.0.0                                               #
 #   Description: One click Install Trojan Panel server            #
 #   Author: jonssonyan <https://jonssonyan.com>                   #
-#   Github: https://github.com/trojanpanel                        #
+#   Github: https://github.com/trojanpanel/install-script         #
 #=================================================================#
 
 echoContent() {
@@ -1220,10 +1220,10 @@ function main() {
   clear
   echoContent red "\n=============================================================="
   echoContent skyBlue "System Required: CentOS 6+, Debian8+, Ubuntu16+"
-  echoContent skyBlue "Version: v2.0.0"
+  echoContent skyBlue "Version: v1.0.0"
   echoContent skyBlue "Description: One click Install Trojan Panel server"
   echoContent skyBlue "Author: jonssonyan <https://jonssonyan.com>"
-  echoContent skyBlue "Github: https://github.com/trojanpanel"
+  echoContent skyBlue "Github: https://github.com/trojanpanel/install-script"
   echoContent red "\n=============================================================="
   echoContent yellow "1. 卸载阿里云盾(仅阿里云服务)"
   echoContent yellow "2. 安装BBRplus(仅CentOS)"
