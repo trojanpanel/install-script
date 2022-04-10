@@ -83,6 +83,7 @@ initVar() {
   CADDY_SRV='/tpdata/caddy/srv'
   CADDY_ACME='/tpdata/caddy/acme'
   domain=''
+  DOMAIN_FILE='/tpdata/caddy/domain.lock'
   caddy_remote_port=8863
   your_email=123456@qq.com
 
@@ -596,12 +597,16 @@ EOF
     && docker network connect trojan-panel-network trojan-panel-caddy
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+        cat >${DOMAIN_FILE} <<EOF
+${domain}
+EOF
       echoContent skyBlue "---> Caddy安装完成"
     else
       echoContent red "---> Caddy安装失败"
       exit 0
     fi
   else
+    domain=$(cat ${DOMAIN_FILE})
     echoContent skyBlue "---> 你已经安装了Caddy"
   fi
 }
