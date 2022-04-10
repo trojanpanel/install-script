@@ -1267,6 +1267,7 @@ function main() {
     ;;
   3)
     installDocker
+    installCaddyTLS
     installMariadb
     installTrojanPanel
     ;;
