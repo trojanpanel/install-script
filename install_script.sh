@@ -537,7 +537,6 @@ function updateTrojanPanel() {
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
   docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:${TROJAN_PANEL_DATA}/ \
-  && docker cp ${TROJAN_PANEL_DATA}/config trojan-panel:${TROJAN_PANEL_DATA}/ \
   && docker restart trojan-panel \
   && docker cp ${TROJAN_PANEL_UI_DATA}/. trojan-panel-ui:/usr/share/nginx/html/ \
   && docker restart trojan-panel-ui
