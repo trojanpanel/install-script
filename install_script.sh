@@ -596,7 +596,7 @@ EOF
     && docker network connect trojan-panel-network trojan-panel-caddy
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
-        cat >${DOMAIN_FILE} <<EOF
+      cat >${DOMAIN_FILE} <<EOF
 ${domain}
 EOF
       echoContent skyBlue "---> Caddy安装完成"
