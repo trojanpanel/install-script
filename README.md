@@ -1,6 +1,6 @@
 # Install Script
 
-支持trojan-gfw/trojan-go的多用户管理面板。
+支持trojan-gfw/trojan-go的可视化管理面板，节点类型支持trojan-gfw+Caddy+Web+TLS和trojan-go+Caddy+Web+TLS+Websocket。
 
 # Installation
 
@@ -24,10 +24,10 @@ apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # Features
 
-1. 5分钟极速安装所有服务，并且占内存小
+1. 3分钟傻瓜式一键安装所有服务，占内存小
 2. 自动申请/续签证书
-3. 集成Trojan Panel控制面板
-4. 集成Trojan-gfw和Trojan-go
+3. 集成Trojan Panel可视化管理面板
+4. 节点类型支持trojan-gfw+Caddy+Web+TLS和trojan-go+Caddy+Web+TLS+Websocket
 5. 支持数据库版节点集群和单机版节点
 
 # Documentation
