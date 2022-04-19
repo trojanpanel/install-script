@@ -18,9 +18,10 @@ apt install -y wget;wget --no-check-certificate https://github.com/trojanpanel/i
 
 # Enjoy!
 
-![script](./static/images/script.png)
-
-![trojan-panel](./static/images/trojan-panel.png)
+<p float="left">
+  <img src="./static/images/script.png" width="80%" />
+  <img src="./static/images/trojan-panel.png" width="80%" />
+</p>
 
 # Features
 
