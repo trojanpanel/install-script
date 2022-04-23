@@ -548,6 +548,12 @@ function updateTrojanPanel() {
   fi
 }
 
+# 卸载Caddy TLS
+function uninstallCaddyTLS() {
+  docker rm -f trojan-panel-caddy
+  rm -rf ${CADDY_DATA}
+}
+
 # 安装Caddy TLS
 function installCaddyTLS() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
@@ -594,6 +600,12 @@ EOF
     -p 80:80 -p ${caddy_remote_port}:${caddy_remote_port} \
     -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
     && docker network connect trojan-panel-network trojan-panel-caddy
+
+    if [ ! -f ${CADDY_ACME}/${domain}/${domain}.crt ];then
+      uninstallCaddyTLS
+      echoContent red "---> 证书申请失败，请再次执行脚本即可重新申请"
+      exit 0
+    fi
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
       cat >${DOMAIN_FILE} <<EOF
