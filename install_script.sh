@@ -362,9 +362,9 @@ function installMariadb() {
 
 # 安装TrojanPanel
 function installTrojanPanel() {
-  echoContent green "---> 安装TrojanPanel"
-
   if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
+    echoContent green "---> 安装TrojanPanel"
+
     # 下载并解压Trojan Panel后端
     wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
     unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
@@ -808,7 +808,6 @@ EOF
 
 # 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版
 function uninstallTrojanGFW() {
-  # 判断TrojanGFW+Caddy+Web+TLS节点 数据库版是否安装
   if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]];then
     echoContent green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版"
 
@@ -828,7 +827,6 @@ function uninstallTrojanGFW() {
 
 # 卸载TrojanGFW+Caddy+Web+TLS节点 单机版
 function uninstallTrojanGFWStandalone() {
-  # 判断TrojanGFW+Caddy+Web+TLS节点 单机版是否安装
   if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]];then
     echoContent green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 单机版"
 
@@ -1206,7 +1204,6 @@ EOF
 
 # 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版
 function uninstallTrojanGO() {
-  # 判断TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版是否安装
   if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
     echoContent green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
 
@@ -1226,7 +1223,6 @@ function uninstallTrojanGO() {
 
 # 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版
 function uninstallTrojanGOStandalone() {
-  # 判断TrojanGo+Caddy+Web+TLS+Websocket节点 单机版是否安装
   if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
     echoContent green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
 
