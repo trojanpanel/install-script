@@ -601,12 +601,6 @@ EOF
     -v ${CADDY_Caddyfile}:"/etc/Caddyfile" -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites" -v ${CADDY_SRV}:"/srv" abiosoft/caddy \
     && docker network connect trojan-panel-network trojan-panel-caddy
 
-    if [ ! -f ${CADDY_ACME}/${domain}/${domain}.crt ];then
-      uninstallCaddyTLS
-      echoContent red "---> 证书申请失败，请再次执行脚本即可重新申请"
-      exit 0
-    fi
-
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
       cat >${DOMAIN_FILE} <<EOF
 ${domain}
