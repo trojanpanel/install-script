@@ -68,11 +68,11 @@ initVar() {
   TROJAN_PANEL_DATA='/tpdata/trojan-panel'
   TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile'
   TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs'
-  TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel.zip'
+  TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-linux-amd64.tar.gz'
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
-  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-ui.zip'
+  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-ui.tar.gz'
   # Nginx
   NGINX_DATA='/tpdata/nginx'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
@@ -366,8 +366,8 @@ function installTrojanPanel() {
     echoContent green "---> 安装TrojanPanel"
 
     # 下载并解压Trojan Panel后端
-    wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-    unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
+    #wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
+    #unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
 
     read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
@@ -388,7 +388,7 @@ function installTrojanPanel() {
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
-ADD trojan-panel trojan-panel
+ADD ${TROJAN_PANEL_URL} /
 RUN ["chmod","777","./trojan-panel"]
 ENTRYPOINT ["./trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
 EOF
@@ -410,12 +410,13 @@ EOF
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
-    wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-    unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
+    #wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
+    #unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
-COPY / /usr/share/nginx/html/
+WORKDIR /usr/share/nginx/html/
+ADD ${TROJAN_PANEL_UI_URL} /
 EXPOSE 80
 EOF
 
