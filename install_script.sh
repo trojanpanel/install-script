@@ -514,13 +514,12 @@ function updateTrojanPanel() {
   fi
 
   # 下载并解压Trojan Panel后端
-  wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL} \
-  && unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip \
-  && chmod +x ${TROJAN_PANEL_DATA}/trojan-panel
+  wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL} \
+  && tar -zxvf ${TROJAN_PANEL_DATA}trojan-panel.tar.gz -C ${TROJAN_PANEL_DATA}update
 
   # 下载并解压Trojan Panel前端
-  wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL} \
-  && unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
+  wget --no-check-certificate -O ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz ${TROJAN_PANEL_UI_URL} \
+  && tar -zxvf ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz -C ${TROJAN_PANEL_DATA}/update
 
   while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
     if [[ -z ${mariadb_pas} ]]; then
@@ -534,9 +533,9 @@ function updateTrojanPanel() {
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
-  docker cp ${TROJAN_PANEL_DATA}/trojan-panel trojan-panel:${TROJAN_PANEL_DATA}/ \
+  docker cp ${TROJAN_PANEL_DATA}update/ trojan-panel:${TROJAN_PANEL_DATA} \
   && docker restart trojan-panel \
-  && docker cp ${TROJAN_PANEL_UI_DATA}/. trojan-panel-ui:/usr/share/nginx/html/ \
+  && docker cp ${TROJAN_PANEL_UI_DATA}update/ trojan-panel-ui:${TROJAN_PANEL_UI_DATA} \
   && docker restart trojan-panel-ui
 
   if [ $? -ne 0 ]; then
