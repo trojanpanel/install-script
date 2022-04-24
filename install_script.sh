@@ -68,11 +68,11 @@ initVar() {
   TROJAN_PANEL_DATA='/tpdata/trojan-panel/'
   TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile/'
   TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs/'
-  TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-linux-amd64.tar.gz'
+  TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-linux-amd64.tar.gz'
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui/'
-  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-ui.tar.gz'
+  TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-ui.tar.gz'
   # Nginx
   NGINX_DATA='/tpdata/nginx/'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
