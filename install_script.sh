@@ -365,10 +365,6 @@ function installTrojanPanel() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
     echoContent green "---> 安装TrojanPanel"
 
-    # 下载并解压Trojan Panel后端
-    #wget --no-check-certificate -O trojan-panel.zip ${TROJAN_PANEL_URL}
-    #unzip -o -d ${TROJAN_PANEL_DATA} ${cur_dir}/trojan-panel.zip
-
     read -r -p '请输入数据库的IP地址(默认:本地数据库): ' mariadb_ip
     [ -z "${mariadb_ip}" ] && mariadb_ip="trojan-panel-mariadb"
     read -r -p '请输入数据库的端口(默认:本地数据库端口): ' mariadb_port
@@ -385,11 +381,13 @@ function installTrojanPanel() {
     docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
     docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
+    # 下载并解压Trojan Panel后端
+    wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL}
+
   cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
 FROM golang:1.17
 WORKDIR ${TROJAN_PANEL_DATA}
-ADD ${TROJAN_PANEL_URL} /
-RUN ["chmod","777","./trojan-panel"]
+ADD ./trojan-panel.tar.gz ./
 ENTRYPOINT ["./trojan-panel","-host=${mariadb_ip}","-password=${mariadb_pas}","-port=${mariadb_port}"]
 EOF
 
@@ -410,13 +408,12 @@ EOF
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
     # 下载并解压Trojan Panel前端
-    #wget --no-check-certificate -O trojan-panel-ui.zip ${TROJAN_PANEL_UI_URL}
-    #unzip -o -d ${TROJAN_PANEL_UI_DATA} ${cur_dir}/trojan-panel-ui.zip
+    wget --no-check-certificate -O ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz ${TROJAN_PANEL_UI_URL}
 
   cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
 FROM nginx:latest
-WORKDIR /usr/share/nginx/html/
-ADD ${TROJAN_PANEL_UI_URL} /
+WORKDIR ${TROJAN_PANEL_UI_DATA}
+ADD ./trojan-panel-ui.tar.gz ./
 EXPOSE 80
 EOF
 
@@ -443,7 +440,7 @@ server {
     #access_log  /var/log/nginx/host.access.log  main;
 
     location / {
-        root   /usr/share/nginx/html;
+        root   ${TROJAN_PANEL_UI_DATA};
         index  index.html index.htm;
     }
 
