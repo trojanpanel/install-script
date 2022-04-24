@@ -68,10 +68,12 @@ initVar() {
   TROJAN_PANEL_DATA='/tpdata/trojan-panel/'
   TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile/'
   TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs/'
+  TROJAN_PANEL_UPDATE_DIR='/tpdata/trojan-panel/update/'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-linux-amd64.tar.gz'
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui/'
+  TROJAN_PANEL_UI_UPDATE_DIR='/tpdata/trojan-panel-ui/update/'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-ui.tar.gz'
   # Nginx
   NGINX_DATA='/tpdata/nginx/'
@@ -118,10 +120,12 @@ function mkdirTools() {
 
   # Trojan Panel
   mkdir -p ${TROJAN_PANEL_DATA}
+  mkdir -p ${TROJAN_PANEL_UPDATE_DIR}
   mkdir -p ${TROJAN_PANEL_LOGS}
 
   # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
+  mkdir -p ${TROJAN_PANEL_UI_UPDATE_DIR}
   # # Nginx
   mkdir -p ${NGINX_DATA}
   touch ${NGINX_CONFIG}
@@ -515,11 +519,11 @@ function updateTrojanPanel() {
 
   # 下载并解压Trojan Panel后端
   wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL} \
-  && tar -zxvf ${TROJAN_PANEL_DATA}trojan-panel.tar.gz -C ${TROJAN_PANEL_DATA}update
+  && tar -zxvf ${TROJAN_PANEL_DATA}trojan-panel.tar.gz -C ${TROJAN_PANEL_UPDATE_DIR}
 
   # 下载并解压Trojan Panel前端
   wget --no-check-certificate -O ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz ${TROJAN_PANEL_UI_URL} \
-  && tar -zxvf ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz -C ${TROJAN_PANEL_DATA}update
+  && tar -zxvf ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz -C ${TROJAN_PANEL_UI_UPDATE_DIR}
 
   while read -r -p '请输入数据库的密码(必填): ' mariadb_pas; do
     if [[ -z ${mariadb_pas} ]]; then
@@ -533,9 +537,9 @@ function updateTrojanPanel() {
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'drop database trojan;'
   docker exec trojan-panel-mariadb mysql -uroot -p"${mariadb_pas}" -e 'create database trojan;'
 
-  docker cp ${TROJAN_PANEL_DATA}update trojan-panel:${TROJAN_PANEL_DATA} \
+  docker cp ${TROJAN_PANEL_UPDATE_DIR} trojan-panel:${TROJAN_PANEL_DATA} \
   && docker restart trojan-panel \
-  && docker cp ${TROJAN_PANEL_UI_DATA}update trojan-panel-ui:${TROJAN_PANEL_UI_DATA} \
+  && docker cp ${TROJAN_PANEL_UI_UPDATE_DIR} trojan-panel-ui:${TROJAN_PANEL_UI_DATA} \
   && docker restart trojan-panel-ui
 
   if [ $? -ne 0 ]; then
