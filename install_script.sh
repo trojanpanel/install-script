@@ -56,32 +56,32 @@ initVar() {
   debianVersion=
 
   # 项目目录
-  TP_DATA='/tpdata'
+  TP_DATA='/tpdata/'
 
   # MariaDB
-  MARIA_DATA='/tpdata/mariadb'
+  MARIA_DATA='/tpdata/mariadb/'
   mariadb_ip='trojan-panel-mariadb'
   mariadb_port=9507
   mariadb_pas=''
 
   # Trojan Panel
-  TROJAN_PANEL_DATA='/tpdata/trojan-panel'
-  TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile'
-  TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs'
+  TROJAN_PANEL_DATA='/tpdata/trojan-panel/'
+  TROJAN_PANEL_WEBFILE='/tpdata/trojan-panel/webfile/'
+  TROJAN_PANEL_LOGS='/tpdata/trojan-panel/logs/'
   TROJAN_PANEL_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-linux-amd64.tar.gz'
 
   # Trojan Panel UI
-  TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui'
+  TROJAN_PANEL_UI_DATA='/tpdata/trojan-panel-ui/'
   TROJAN_PANEL_UI_URL='https://github.com/trojanpanel/install-script/releases/download/v1.0.0/trojan-panel-ui.tar.gz'
   # Nginx
-  NGINX_DATA='/tpdata/nginx'
+  NGINX_DATA='/tpdata/nginx/'
   NGINX_CONFIG='/tpdata/nginx/default.conf'
 
   # Caddy
-  CADDY_DATA='/tpdata/caddy'
+  CADDY_DATA='/tpdata/caddy/'
   CADDY_Caddyfile='/tpdata/caddy/Caddyfile'
-  CADDY_SRV='/tpdata/caddy/srv'
-  CADDY_ACME='/tpdata/caddy/acme'
+  CADDY_SRV='/tpdata/caddy/srv/'
+  CADDY_ACME='/tpdata/caddy/acme/'
   domain=''
   DOMAIN_FILE='/tpdata/caddy/domain.lock'
   caddy_remote_port=8863
@@ -90,7 +90,7 @@ initVar() {
   trojan_pas=''
   remote_addr='trojan-panel-caddy'
   # trojanGFW
-  TROJANGFW_DATA='/tpdata/trojanGFW'
+  TROJANGFW_DATA='/tpdata/trojanGFW/'
   TROJANGFW_CONFIG='/tpdata/trojanGFW/config.json'
   TROJANGFW_STANDALONE_CONFIG='/tpdata/trojanGFW/standalone_config.json'
   trojanGFW_port=443
