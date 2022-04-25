@@ -326,6 +326,12 @@ function installDocker() {
       exit 0
     fi
   else
+    if [[ -n $(docker network ls | grep "trojan-panel-network") ]]; then
+    echo "Trojan-panel-network created"
+    else
+    echo "Create Trojan-panel-network"
+    docker network create trojan-panel-network
+    fi  
     echoContent skyBlue "---> 你已经安装了Docker"
   fi
 }
