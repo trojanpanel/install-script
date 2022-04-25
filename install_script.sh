@@ -108,7 +108,7 @@ initVar() {
   trojanGO_shadowsocks_password=''
   trojanGO_mux_enable=true
 
-  static_html='https://github.com/trojanpanel/install-script/raw/main/static/html.zip'
+  static_html='https://github.com/trojanpanel/install-script/raw/main/static/html.tar.gz'
 }
 
 function mkdirTools() {
@@ -259,7 +259,7 @@ function installDockerCentOS(){
   yum install -y yum-utils \
   device-mapper-persistent-data \
   lvm2 \
-  unzip
+  tar
   yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   yum install -y docker-ce docker-ce-cli containerd.io
 }
@@ -272,7 +272,7 @@ function installDockerDebian(){
     curl \
     gnupg \
     lsb-release \
-    unzip
+    tar
   curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
@@ -289,7 +289,7 @@ function installDockerUbuntu(){
     curl \
     gnupg \
     lsb-release \
-    unzip
+    tar
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
@@ -582,8 +582,8 @@ function installCaddyTLS() {
     read -r -p '请输入Caddy的转发端口(用于申请证书,默认:8863): ' caddy_remote_port
     [ -z "${caddy_remote_port}" ] && caddy_remote_port=8863
 
-    wget --no-check-certificate -O html.zip ${static_html}
-    unzip -d ${CADDY_SRV} ${cur_dir}/html.zip
+    wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${static_html} \
+    && tar -zxvf ${CADDY_DATA}html.tar.gz -C ${CADDY_SRV}
 
   cat >${CADDY_Caddyfile} <<EOF
 http://${domain}:80 {
