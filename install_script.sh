@@ -442,7 +442,7 @@ EOF
       exit 0
     fi
   else
-    domain=$(cat ${DOMAIN_FILE})
+    domain=$(cat "${DOMAIN_FILE}")
     echo_content skyBlue "---> 你已经安装了Caddy"
   fi
 }
@@ -1585,6 +1585,42 @@ uninstall_hysteria_standalone() {
   fi
 }
 
+failure_testing() {
+  if [[ ! $(docker -v 2>/dev/null) ]]; then
+    echo_content red "---> Docker运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") && -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
+    echo_content red "---> Caddy TLS运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
+    echo_content red "---> MariaDB运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
+    echo_content red "---> Redis运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+    echo_content red "---> Trojan Panel前端运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+    echo_content red "---> Trojan Panel后端运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO$") && -z $(docker ps -q -f "name=^trojan-panel-trojanGO$" -f "status=running") ]]; then
+    echo_content red "---> TrojanGO 数据库版运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$" -f "status=running") ]]; then
+    echo_content red "---> TrojanGO 单机版运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria$" -f "status=running") ]]; then
+    echo_content red "---> Hysteria 数据库版运行异常"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
+    echo_content red "---> Hysteria 单机版运行异常"
+  fi
+  if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "$(CADDY_ACME)${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
+    echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书"
+  fi
+}
+
 # 卸载阿里云内置相关监控
 uninstall_aliyun() {
   # 卸载云监控(Cloudmonitor) Java 版
@@ -1640,6 +1676,8 @@ main() {
   echo_content yellow "11. 安装Hysteria节点 单机版(测试)"
   echo_content yellow "12. 卸载Hysteria节点 数据库版(测试)"
   echo_content yellow "13. 卸载Hysteria节点 单机版(测试)"
+  echo_content green "\n=============================================================="
+  echo_content yellow "14. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1692,6 +1730,9 @@ main() {
     ;;
   13)
     uninstall_hysteria_standalone
+    ;;
+  14)
+    failure_testing
     ;;
   *)
     echo_content red "没有这个选项"
