@@ -1589,8 +1589,14 @@ failure_testing() {
   if [[ ! $(docker -v 2>/dev/null) ]]; then
     echo_content red "---> Docker运行异常"
   fi
-  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") && -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-    echo_content red "---> Caddy TLS运行异常"
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+    if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
+      echo_content red "---> Caddy TLS运行异常"
+    else
+      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "$(CADDY_ACME)${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
+        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
+      fi
+    fi
   fi
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
     echo_content red "---> MariaDB运行异常"
@@ -1615,9 +1621,6 @@ failure_testing() {
   fi
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
     echo_content red "---> Hysteria 单机版运行异常"
-  fi
-  if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "$(CADDY_ACME)${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
-    echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书"
   fi
 }
 
