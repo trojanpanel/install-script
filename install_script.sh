@@ -22,7 +22,7 @@ init_var() {
   # 项目目录
   TP_DATA="/tpdata/"
 
-  STATIC_HTML="https://github.com/trojanpanel/install-script/releases/latest/download/html.tar.gz"
+  STATIC_HTML="https://github.com/trojanpanel/install-script/releases/download/v1.0.0/html.tar.gz"
 
   # MariaDB
   MARIA_DATA="/tpdata/mariadb/"
@@ -574,31 +574,21 @@ install_trojan_panel() {
       docker exec trojan-panel-mariadb mysql -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     fi
 
-    # 下载并解压Trojan Panel后端
-    if [[ ${get_arch} =~ ("x86_64"|"amd64") ]]; then
-      wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL_AMD}
-    elif [[ ${get_arch} =~ ("arm64"|"aarch64") ]]; then
-      wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL_ARM}
-    else
-      echo_content red "仅支持amd64/arm64处理器架构"
-      exit 0
-    fi
-
-    cat >${TROJAN_PANEL_DATA}/Dockerfile <<EOF
-FROM golang:1.17
-WORKDIR ${TROJAN_PANEL_DATA}
-ADD trojan-panel.tar.gz .
-ENTRYPOINT ["./trojan-panel","-host=${mariadb_ip}","-port=${mariadb_port}","-user=${mariadb_user}","-password=${mariadb_pas}","-redisHost=${redis_host}","-redisPort=${redis_port}","-redisPassword=${redis_pass}"]
-EOF
-
-    docker build -t trojan-panel ${TROJAN_PANEL_DATA} && \
+    docker pull jonssonyan/trojan-panel && \
     docker run -d --name trojan-panel --restart always \
     --network=trojan-panel-network \
     -p 8081:8081 \
     -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
     -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
     -v /etc/localtime:/etc/localtime \
-    trojan-panel
+    -e "mariadb_ip=${mariadb_ip}" \
+    -e "mariadb_port=${mariadb_port}" \
+    -e "mariadb_user=${mariadb_user}" \
+    -e "mariadb_pas=${mariadb_pas}" \
+    -e "redis_host=${redis_host}" \
+    -e "redis_port=${redis_port}" \
+    -e "redis_pass=${redis_pass}" \
+    jonssonyan/trojan-panel
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
@@ -611,16 +601,6 @@ EOF
   fi
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
-    # 下载并解压Trojan Panel前端
-    wget --no-check-certificate -O ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz ${TROJAN_PANEL_UI_URL}
-
-    cat >${TROJAN_PANEL_UI_DATA}/Dockerfile <<EOF
-FROM nginx:1.20
-WORKDIR ${TROJAN_PANEL_UI_DATA}
-ADD trojan-panel-ui.tar.gz .
-EXPOSE 80
-EOF
-
     # 配置Nginx
     cat >${NGINX_CONFIG} <<-EOF
 server {
@@ -665,13 +645,13 @@ server {
 }
 EOF
 
-    docker build -t trojan-panel-ui ${TROJAN_PANEL_UI_DATA} && \
+    docker pull jonssonyan/trojan-panel-ui ${TROJAN_PANEL_UI_DATA} && \
     docker run -d --name trojan-panel-ui --restart always \
     --network=trojan-panel-network \
     -p 8888:80 \
     -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
     -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
-    trojan-panel-ui
+    jonssonyan/trojan-panel-ui
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
@@ -1409,22 +1389,6 @@ update_trojan_panel() {
     exit 0
   fi
 
-  # 下载并解压Trojan Panel后端
-  if [[ ${get_arch} =~ ("x86_64"|"amd64") ]]; then
-    wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL_AMD} && \
-    tar -zxvf ${TROJAN_PANEL_DATA}trojan-panel.tar.gz -C ${TROJAN_PANEL_UPDATE_DIR}
-  elif [[ ${get_arch} =~ ("arm64"|"aarch64") ]]; then
-    wget --no-check-certificate -O ${TROJAN_PANEL_DATA}trojan-panel.tar.gz ${TROJAN_PANEL_URL_ARM} && \
-    tar -zxvf ${TROJAN_PANEL_DATA}trojan-panel.tar.gz -C ${TROJAN_PANEL_UPDATE_DIR}
-  else
-    echo_content red "仅支持amd64/arm64处理器架构"
-    exit 0
-  fi
-
-  # 下载并解压Trojan Panel前端
-  wget --no-check-certificate -O ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz ${TROJAN_PANEL_UI_URL} && \
-  tar -zxvf ${TROJAN_PANEL_UI_DATA}trojan-panel-ui.tar.gz -C ${TROJAN_PANEL_UI_UPDATE_DIR}
-
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -1463,10 +1427,32 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
   fi
 
-  docker cp ${TROJAN_PANEL_UPDATE_DIR} trojan-panel:${TROJAN_PANEL_DATA} && \
-  docker restart trojan-panel && \
-  docker cp ${TROJAN_PANEL_UI_UPDATE_DIR} trojan-panel-ui:${TROJAN_PANEL_UI_DATA} && \
-  docker restart trojan-panel-ui
+  docker rm -f trojan-panel && \
+  docker rmi jonssonyan/trojan-panel && \
+  docker pull jonssonyan/trojan-panel && \
+  docker run -d --name trojan-panel --restart always \
+  --network=trojan-panel-network \
+  -p 8081:8081 \
+  -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
+  -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+  -v /etc/localtime:/etc/localtime \
+  -e "mariadb_ip=${mariadb_ip}" \
+  -e "mariadb_port=${mariadb_port}" \
+  -e "mariadb_user=${mariadb_user}" \
+  -e "mariadb_pas=${mariadb_pas}" \
+  -e "redis_host=${redis_host}" \
+  -e "redis_port=${redis_port}" \
+  -e "redis_pass=${redis_pass}" \
+  jonssonyan/trojan-panel && \
+  docker rm -f trojan-panel-ui && \
+  docker rmi jonssonyan/trojan-panel-ui && \
+  docker pull jonssonyan/trojan-panel-ui ${TROJAN_PANEL_UI_DATA} && \
+  docker run -d --name trojan-panel-ui --restart always \
+  --network=trojan-panel-network \
+  -p 8888:80 \
+  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+  -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
+  jonssonyan/trojan-panel-ui
 
   if [[ "$?" == "0" ]]; then
     echo_content skyBlue "---> Trojan Panel更新完成"
