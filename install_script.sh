@@ -645,7 +645,7 @@ server {
 }
 EOF
 
-    docker pull jonssonyan/trojan-panel-ui ${TROJAN_PANEL_UI_DATA} && \
+    docker pull jonssonyan/trojan-panel-ui && \
     docker run -d --name trojan-panel-ui --restart always \
     --network=trojan-panel-network \
     -p 8888:80 \
