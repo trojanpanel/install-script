@@ -1446,7 +1446,7 @@ update_trojan_panel() {
   jonssonyan/trojan-panel && \
   docker rm -f trojan-panel-ui && \
   docker rmi jonssonyan/trojan-panel-ui && \
-  docker pull jonssonyan/trojan-panel-ui ${TROJAN_PANEL_UI_DATA} && \
+  docker pull jonssonyan/trojan-panel-ui && \
   docker run -d --name trojan-panel-ui --restart always \
   --network=trojan-panel-network \
   -p 8888:80 \
