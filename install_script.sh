@@ -42,13 +42,10 @@ init_var() {
   TROJAN_PANEL_WEBFILE="/tpdata/trojan-panel/webfile/"
   TROJAN_PANEL_LOGS="/tpdata/trojan-panel/logs/"
   TROJAN_PANEL_UPDATE_DIR="/tpdata/trojan-panel/update/"
-  TROJAN_PANEL_URL_AMD="https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-linux-amd64.tar.gz"
-  TROJAN_PANEL_URL_ARM="https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-linux-arm64.tar.gz"
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
   TROJAN_PANEL_UI_UPDATE_DIR="/tpdata/trojan-panel-ui/update/"
-  TROJAN_PANEL_UI_URL="https://github.com/trojanpanel/install-script/releases/latest/download/trojan-panel-ui.tar.gz"
   # Nginx
   NGINX_DATA="/tpdata/nginx/"
   NGINX_CONFIG="/tpdata/nginx/default.conf"
