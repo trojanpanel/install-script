@@ -1424,8 +1424,8 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
   fi
 
-  docker rm -f trojan-panel && \
-  docker rmi jonssonyan/trojan-panel && \
+  docker rm -f jonssonyan/trojan-panel && \
+  docker rmi -f jonssonyan/trojan-panel && \
   docker pull jonssonyan/trojan-panel && \
   docker run -d --name trojan-panel --restart always \
   --network=trojan-panel-network \
@@ -1441,8 +1441,8 @@ update_trojan_panel() {
   -e "redis_port=${redis_port}" \
   -e "redis_pass=${redis_pass}" \
   jonssonyan/trojan-panel && \
-  docker rm -f trojan-panel-ui && \
-  docker rmi jonssonyan/trojan-panel-ui && \
+  docker rm -f jonssonyan/trojan-panel-ui && \
+  docker rmi -f jonssonyan/trojan-panel-ui && \
   docker pull jonssonyan/trojan-panel-ui && \
   docker run -d --name trojan-panel-ui --restart always \
   --network=trojan-panel-network \
@@ -1468,12 +1468,12 @@ uninstall_caddy_tls() {
 uninstall_trojan_panel() {
   echo_content green "---> 卸载Trojan Panel"
 
-  docker rm -f trojan-panel && \
-  docker rmi trojan-panel && \
+  docker rm -f jonssonyan/trojan-panel && \
+  docker rmi -f jonssonyan/trojan-panel && \
   rm -rf ${TROJAN_PANEL_DATA}
 
-  docker rm -f trojan-panel-ui && \
-  docker rmi trojan-panel-ui && \
+  docker rm -f jonssonyan/trojan-panel-ui && \
+  docker rmi -f jonssonyan/trojan-panel-ui && \
   rm -rf ${TROJAN_PANEL_UI_DATA} && \
   rm -rf ${NGINX_DATA}
 
