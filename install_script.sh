@@ -17,7 +17,7 @@ init_var() {
   can_google=0
 
   # Docker
-  DOCKER_MIRROR="https://registry.docker-cn.com"
+  DOCKER_MIRROR='"https://registry.docker-cn.com","https://hub-mirror.c.163.com","https://docker.mirrors.ustc.edu.cn"'
 
   # 项目目录
   TP_DATA="/tpdata/"
@@ -41,11 +41,9 @@ init_var() {
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
   TROJAN_PANEL_WEBFILE="/tpdata/trojan-panel/webfile/"
   TROJAN_PANEL_LOGS="/tpdata/trojan-panel/logs/"
-  TROJAN_PANEL_UPDATE_DIR="/tpdata/trojan-panel/update/"
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
-  TROJAN_PANEL_UI_UPDATE_DIR="/tpdata/trojan-panel-ui/update/"
   # Nginx
   NGINX_DATA="/tpdata/nginx/"
   NGINX_CONFIG="/tpdata/nginx/default.conf"
@@ -133,12 +131,10 @@ mkdir_tools() {
 
   # Trojan Panel
   mkdir -p ${TROJAN_PANEL_DATA}
-  mkdir -p ${TROJAN_PANEL_UPDATE_DIR}
   mkdir -p ${TROJAN_PANEL_LOGS}
 
   # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
-  mkdir -p ${TROJAN_PANEL_UI_UPDATE_DIR}
   # # Nginx
   mkdir -p ${NGINX_DATA}
   touch ${NGINX_CONFIG}
@@ -166,7 +162,7 @@ mkdir_tools() {
 }
 
 can_connect() {
-  ping -c2 -i0.3 -W1 "$1" &>/dev/null
+  ping -c2 -i0.3 -W1 "$1" >/dev/null 2>&1
   if [[ "$?" == "0" ]]; then
     return 0
   else
@@ -277,11 +273,11 @@ install_bbr_plus() {
 
 # 安装Docker
 install_docker() {
-  if [[ ! $(docker -v 2>/dev/null) ]]; then
+  if [[ ! $(docker -v >/dev/null 2>&1) ]]; then
     echo_content green "---> 安装Docker"
 
     # 关闭防火墙
-    if [[ "$(firewall-cmd --state 2>/dev/null)" == "running" ]]; then
+    if [[ "$(firewall-cmd --state >/dev/null 2>&1)" == "running" ]]; then
       systemctl stop firewalld.service && systemctl disable firewalld.service
     fi
 
@@ -297,7 +293,7 @@ install_docker() {
       mkdir -p /etc/docker && \
       cat >/etc/docker/daemon.json <<EOF
 {
- "registry-mirrors":["${DOCKER_MIRROR}"]
+ "registry-mirrors":[${DOCKER_MIRROR}]
 }
 EOF
     else
@@ -308,7 +304,7 @@ EOF
     systemctl restart docker && \
     docker network create trojan-panel-network
 
-    if [[ $(docker -v 2>/dev/null) ]]; then
+    if [[ $(docker -v >/dev/null 2>&1) ]]; then
       echo_content skyBlue "---> Docker安装完成"
     else
       echo_content red "---> Docker安装失败"
@@ -557,8 +553,8 @@ install_trojan_panel() {
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" && \
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" 2>/dev/null && \
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" 2>/dev/null
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" >/dev/null 2>&1 && \
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" >/dev/null 2>&1
     fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -574,9 +570,9 @@ install_trojan_panel() {
     done
 
     if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" 2>/dev/null
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
     else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" 2>/dev/null
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
     fi
 
     docker pull jonssonyan/trojan-panel && \
@@ -1394,6 +1390,44 @@ update_trojan_panel() {
     exit 0
   fi
 
+  uninstall_trojan_panel
+
+  docker pull jonssonyan/trojan-panel && \
+  docker run -d --name trojan-panel --restart always \
+  --network=trojan-panel-network \
+  -p 8081:8081 \
+  -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
+  -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+  -v /etc/localtime:/etc/localtime \
+  -e "mariadb_ip=${mariadb_ip}" \
+  -e "mariadb_port=${mariadb_port}" \
+  -e "mariadb_user=${mariadb_user}" \
+  -e "mariadb_pas=${mariadb_pas}" \
+  -e "redis_host=${redis_host}" \
+  -e "redis_port=${redis_port}" \
+  -e "redis_pass=${redis_pass}" \
+  jonssonyan/trojan-panel
+
+  if [[ "$?" == "0" ]]; then
+    echo_content skyBlue "---> Trojan Panel更新完成"
+  else
+    echo_content red "---> Trojan Panel更新失败"
+  fi
+
+  docker pull jonssonyan/trojan-panel-ui && \
+  docker run -d --name trojan-panel-ui --restart always \
+  --network=trojan-panel-network \
+  -p 8888:80 \
+  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+  -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
+  jonssonyan/trojan-panel-ui
+
+  if [[ "$?" == "0" ]]; then
+    echo_content skyBlue "---> Trojan Panel UI更新完成"
+  else
+    echo_content red "---> Trojan Panel UI更新失败"
+  fi
+
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
   read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
@@ -1412,8 +1446,8 @@ update_trojan_panel() {
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" >/dev/null 2>&1
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" >/dev/null 2>&1
   fi
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -1429,42 +1463,9 @@ update_trojan_panel() {
   done
 
   if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall"
+    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
   else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
-  fi
-
-  docker rm -f trojan-panel && \
-  docker rmi -f jonssonyan/trojan-panel && \
-  docker pull jonssonyan/trojan-panel && \
-  docker run -d --name trojan-panel --restart always \
-  --network=trojan-panel-network \
-  -p 8081:8081 \
-  -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
-  -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
-  -v /etc/localtime:/etc/localtime \
-  -e "mariadb_ip=${mariadb_ip}" \
-  -e "mariadb_port=${mariadb_port}" \
-  -e "mariadb_user=${mariadb_user}" \
-  -e "mariadb_pas=${mariadb_pas}" \
-  -e "redis_host=${redis_host}" \
-  -e "redis_port=${redis_port}" \
-  -e "redis_pass=${redis_pass}" \
-  jonssonyan/trojan-panel && \
-  docker rm -f trojan-panel-ui && \
-  docker rmi -f jonssonyan/trojan-panel-ui && \
-  docker pull jonssonyan/trojan-panel-ui && \
-  docker run -d --name trojan-panel-ui --restart always \
-  --network=trojan-panel-network \
-  -p 8888:80 \
-  -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
-  -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
-  jonssonyan/trojan-panel-ui
-
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel更新完成"
-  else
-    echo_content red "---> Trojan Panel更新失败"
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
   fi
 }
 
@@ -1580,7 +1581,7 @@ uninstall_hysteria_standalone() {
 
 failure_testing() {
   echo_content green "---> 故障检测开始"
-  if [[ ! $(docker -v 2>/dev/null) ]]; then
+  if [[ ! $(docker -v >/dev/null 2>&1) ]]; then
     echo_content red "---> Docker运行异常"
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
