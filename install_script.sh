@@ -554,11 +554,11 @@ install_trojan_panel() {
     done
 
     if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
-      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" && \
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" 2>/dev/null && \
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" 2>/dev/null
     fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -574,9 +574,9 @@ install_trojan_panel() {
     done
 
     if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall"
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" 2>/dev/null
     else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" 2>/dev/null
     fi
 
     docker pull jonssonyan/trojan-panel && \
