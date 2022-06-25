@@ -1390,7 +1390,13 @@ update_trojan_panel() {
     exit 0
   fi
 
-  uninstall_trojan_panel
+  docker rm -f trojan-panel && \
+  docker rmi -f jonssonyan/trojan-panel && \
+  rm -rf ${TROJAN_PANEL_DATA}
+
+  docker rm -f trojan-panel-ui && \
+  docker rmi -f jonssonyan/trojan-panel-ui && \
+  rm -rf ${TROJAN_PANEL_UI_DATA}
 
   docker pull jonssonyan/trojan-panel && \
   docker run -d --name trojan-panel --restart always \
