@@ -1390,6 +1390,46 @@ update_trojan_panel() {
     exit 0
   fi
 
+  read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
+  [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+  read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
+  [[ -z "${mariadb_user}" ]] && mariadb_user="root"
+  while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
+    if [[ -z "${mariadb_pas}" ]]; then
+      echo_content red "密码不能为空"
+    else
+      break
+    fi
+  done
+
+  if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+  else
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
+  fi
+
+  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+  [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  [[ -z "${redis_port}" ]] && redis_port=6379
+  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+    if [[ -z "${redis_pass}" ]]; then
+      echo_content red "密码不能为空"
+    else
+      break
+    fi
+  done
+
+  if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
+  else
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+  fi
+
   docker rm -f trojan-panel && \
   docker rmi -f jonssonyan/trojan-panel && \
   rm -rf ${TROJAN_PANEL_DATA}
@@ -1432,46 +1472,6 @@ update_trojan_panel() {
     echo_content skyBlue "---> Trojan Panel UI更新完成"
   else
     echo_content red "---> Trojan Panel UI更新失败"
-  fi
-
-  read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-  [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
-  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
-  read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-  [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-  while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-    if [[ -z "${mariadb_pas}" ]]; then
-      echo_content red "密码不能为空"
-    else
-      break
-    fi
-  done
-
-  if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
-  else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
-  fi
-
-  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-  [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
-  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6379
-  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
-    if [[ -z "${redis_pass}" ]]; then
-      echo_content red "密码不能为空"
-    else
-      break
-    fi
-  done
-
-  if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-  else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
   fi
 }
 
