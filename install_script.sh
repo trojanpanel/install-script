@@ -162,7 +162,7 @@ mkdir_tools() {
 }
 
 can_connect() {
-  ping -c2 -i0.3 -W1 "$1" >/dev/null 2>&1
+  ping -c2 -i0.3 -W1 "$1" &>/dev/null
   if [[ "$?" == "0" ]]; then
     return 0
   else
@@ -273,11 +273,11 @@ install_bbr_plus() {
 
 # 安装Docker
 install_docker() {
-  if [[ ! $(docker -v >/dev/null 2>&1) ]]; then
+  if [[ ! $(docker -v 2>/dev/null) ]]; then
     echo_content green "---> 安装Docker"
 
     # 关闭防火墙
-    if [[ "$(firewall-cmd --state >/dev/null 2>&1)" == "running" ]]; then
+    if [[ "$(firewall-cmd --state 2>/dev/null)" == "running" ]]; then
       systemctl stop firewalld.service && systemctl disable firewalld.service
     fi
 
@@ -304,7 +304,7 @@ EOF
     systemctl restart docker && \
     docker network create trojan-panel-network
 
-    if [[ $(docker -v >/dev/null 2>&1) ]]; then
+    if [[ $(docker -v 2>/dev/null) ]]; then
       echo_content skyBlue "---> Docker安装完成"
     else
       echo_content red "---> Docker安装失败"
@@ -553,8 +553,8 @@ install_trojan_panel() {
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" && \
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" >/dev/null 2>&1 && \
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" >/dev/null 2>&1
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null && \
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
     fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -570,9 +570,9 @@ install_trojan_panel() {
     done
 
     if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
     fi
 
     docker pull jonssonyan/trojan-panel && \
@@ -1452,8 +1452,8 @@ update_trojan_panel() {
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" >/dev/null 2>&1
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" >/dev/null 2>&1
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
   fi
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -1469,9 +1469,9 @@ update_trojan_panel() {
   done
 
   if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
+    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
   else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" >/dev/null 2>&1
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
   fi
 }
 
@@ -1587,7 +1587,7 @@ uninstall_hysteria_standalone() {
 
 failure_testing() {
   echo_content green "---> 故障检测开始"
-  if [[ ! $(docker -v >/dev/null 2>&1) ]]; then
+  if [[ ! $(docker -v 2>/dev/null) ]]; then
     echo_content red "---> Docker运行异常"
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
