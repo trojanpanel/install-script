@@ -553,6 +553,14 @@ install_trojan_panel() {
       fi
     done
 
+    if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    else
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    fi
+
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
@@ -565,10 +573,10 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
-      # 初始化数据库
-      docker exec trojan-panel-mariadb mysql -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-      docker exec trojan-panel-mariadb mysql -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall"
+    else
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
     fi
 
     docker pull jonssonyan/trojan-panel && \
@@ -1388,6 +1396,8 @@ update_trojan_panel() {
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
   [[ -z "${mariadb_user}" ]] && mariadb_user="root"
   while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -1399,11 +1409,11 @@ update_trojan_panel() {
   done
 
   if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
-    docker exec trojan-panel-mariadb mysql -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   fi
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
@@ -1419,12 +1429,12 @@ update_trojan_panel() {
   done
 
   if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
-    docker exec trojan-panel-redis redis-cli -h 127.0.0.1 -p ${redis_port} -a "${redis_pass}" -e "flushall"
+    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall"
   else
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall"
   fi
 
-  docker rm -f jonssonyan/trojan-panel && \
+  docker rm -f trojan-panel && \
   docker rmi -f jonssonyan/trojan-panel && \
   docker pull jonssonyan/trojan-panel && \
   docker run -d --name trojan-panel --restart always \
@@ -1441,7 +1451,7 @@ update_trojan_panel() {
   -e "redis_port=${redis_port}" \
   -e "redis_pass=${redis_pass}" \
   jonssonyan/trojan-panel && \
-  docker rm -f jonssonyan/trojan-panel-ui && \
+  docker rm -f trojan-panel-ui && \
   docker rmi -f jonssonyan/trojan-panel-ui && \
   docker pull jonssonyan/trojan-panel-ui && \
   docker run -d --name trojan-panel-ui --restart always \
@@ -1468,11 +1478,11 @@ uninstall_caddy_tls() {
 uninstall_trojan_panel() {
   echo_content green "---> 卸载Trojan Panel"
 
-  docker rm -f jonssonyan/trojan-panel && \
+  docker rm -f trojan-panel && \
   docker rmi -f jonssonyan/trojan-panel && \
   rm -rf ${TROJAN_PANEL_DATA}
 
-  docker rm -f jonssonyan/trojan-panel-ui && \
+  docker rm -f trojan-panel-ui && \
   docker rmi -f jonssonyan/trojan-panel-ui && \
   rm -rf ${TROJAN_PANEL_UI_DATA} && \
   rm -rf ${NGINX_DATA}
