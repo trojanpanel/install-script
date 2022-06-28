@@ -1260,7 +1260,7 @@ install_hysteria() {
     [[ -z "${hysteria_up_mbps}" ]] && hysteria_up_mbps=100
     read -r -p "请输入单客户端最大下载速度/Mbps(默认:100): " hysteria_down_mbps
     [[ -z "${hysteria_down_mbps}" ]] && hysteria_down_mbps=100
-    read -r -p "请输入Trojan Panel的地址(默认:本机): " trojan_panel_url
+    read -r -p "请输入Trojan Panel的域名(默认:本机): " trojan_panel_url
     [[ -z "${trojan_panel_url}" ]] && trojan_panel_url=${domain}
 
     cat >${HYSTERIA_CONFIG} <<EOF
@@ -1594,7 +1594,7 @@ failure_testing() {
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
         echo_content red "---> Caddy TLS运行异常"
       else
-        if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "$(CADDY_ACME)${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
+        if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
           echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
         fi
       fi
