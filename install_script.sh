@@ -1594,6 +1594,7 @@ failure_testing() {
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
         echo_content red "---> Caddy TLS运行异常"
       else
+        domain=$(cat "${DOMAIN_FILE}")
         if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
           echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
         fi
