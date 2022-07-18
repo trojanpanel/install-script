@@ -1382,13 +1382,13 @@ EOF
 
 # 更新Trojan Panel
 update_trojan_panel() {
-  echo_content green "---> 更新Trojan Panel"
-
   # 判断Trojan Panel是否安装
   if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
     echo_content red "---> 请先安装Trojan Panel"
     exit 0
   fi
+
+  echo_content green "---> 更新Trojan Panel"
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
@@ -1477,24 +1477,68 @@ update_trojan_panel() {
 
 # 卸载Caddy TLS
 uninstall_caddy_tls() {
-  docker rm -f trojan-panel-caddy && \
-  rm -rf ${CADDY_DATA}
+  # 判断Caddy TLS是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+    echo_content green "---> 卸载Caddy TLS"
+
+    docker rm -f trojan-panel-caddy && \
+    rm -rf ${CADDY_DATA}
+
+    echo_content skyBlue "---> Caddy TLS卸载完成"
+  else
+    echo_content red "---> 请先安装Caddy TLS"
+  fi
+}
+
+# 卸载MariaDB
+uninstall_mariadb(){
+  # 判断MariaDB是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+    echo_content green "---> 卸载MariaDB"
+
+    docker rm -f trojan-panel-mariadb && \
+    rm -rf ${MARIA_DATA}
+
+    echo_content skyBlue "---> MariaDB卸载完成"
+  else
+    echo_content red "---> 请先安装MariaDB"
+  fi
+}
+
+# 卸载Redis
+uninstall_redis(){
+  # 判断Redis是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+    echo_content green "---> 卸载Redis"
+
+    docker rm -f trojan-panel-redis && \
+    rm -rf ${REDIS_DATA}
+
+    echo_content skyBlue "---> Redis卸载完成"
+  else
+    echo_content red "---> 请先安装Redis"
+  fi
 }
 
 # 卸载Trojan Panel
 uninstall_trojan_panel() {
-  echo_content green "---> 卸载Trojan Panel"
+  # 判断Trojan Panel是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
+    echo_content green "---> 卸载Trojan Panel"
 
-  docker rm -f trojan-panel && \
-  docker rmi -f jonssonyan/trojan-panel && \
-  rm -rf ${TROJAN_PANEL_DATA}
+    docker rm -f trojan-panel && \
+    docker rmi -f jonssonyan/trojan-panel && \
+    rm -rf ${TROJAN_PANEL_DATA}
 
-  docker rm -f trojan-panel-ui && \
-  docker rmi -f jonssonyan/trojan-panel-ui && \
-  rm -rf ${TROJAN_PANEL_UI_DATA} && \
-  rm -rf ${NGINX_DATA}
+    docker rm -f trojan-panel-ui && \
+    docker rmi -f jonssonyan/trojan-panel-ui && \
+    rm -rf ${TROJAN_PANEL_UI_DATA} && \
+    rm -rf ${NGINX_DATA}
 
-  echo_content skyBlue "---> Trojan Panel卸载完成"
+    echo_content skyBlue "---> Trojan Panel卸载完成"
+  else
+    echo_content red "---> 请先安装Trojan Panel"
+  fi
 }
 
 # 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版
@@ -1684,7 +1728,11 @@ main() {
   echo_content yellow "12. 卸载Hysteria节点 数据库版(测试)"
   echo_content yellow "13. 卸载Hysteria节点 单机版(测试)"
   echo_content green "\n=============================================================="
-  echo_content yellow "14. 故障检测"
+  echo_content yellow "14. 卸载Caddy TLS"
+  echo_content yellow "15. 卸载MariaDB"
+  echo_content yellow "16. 卸载Redis"
+  echo_content green "\n=============================================================="
+  echo_content yellow "17. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1739,6 +1787,15 @@ main() {
     uninstall_hysteria_standalone
     ;;
   14)
+    uninstall_caddy_tls
+    ;;
+  15)
+    uninstall_mariadb
+    ;;
+  16)
+    uninstall_redis
+    ;;
+  17)
     failure_testing
     ;;
   *)
