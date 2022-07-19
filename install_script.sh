@@ -199,12 +199,12 @@ check_sys() {
     exit 0
   fi
 
-  if [[ $(arch) =~ ("x86_64"|"amd64"|"arm64"|"aarch64") ]]; then
+  if [[ $(arch) =~ ("x86_64"|"amd64"|"arm64"|"aarch64"|"arm"|"s390x") ]]; then
     get_arch=$(arch)
   fi
 
   if [[ -z "${get_arch}" ]]; then
-    echo_content red "仅支持amd64/arm64处理器架构"
+    echo_content red "仅支持amd64/arm64/arm/s390x处理器架构"
     exit 0
   fi
 }
