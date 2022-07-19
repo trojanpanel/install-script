@@ -1484,6 +1484,10 @@ uninstall_caddy_tls() {
     docker rm -f trojan-panel-caddy && \
     rm -rf ${CADDY_DATA}
 
+    if [[ -d "/root/.caddy" ]]; then
+      rm -rf  /root/.caddy
+    fi
+
     echo_content skyBlue "---> Caddy TLS卸载完成"
   else
     echo_content red "---> 请先安装Caddy TLS"
