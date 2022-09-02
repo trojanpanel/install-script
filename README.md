@@ -1,6 +1,6 @@
 # Trojan Panel
 
-支持多用户的Trojan可视化管理面板
+支持多用户多协议的可视化管理面板
 
 # System Requirements
 
