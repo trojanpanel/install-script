@@ -293,7 +293,12 @@ install_docker() {
       mkdir -p /etc/docker &&
         cat >/etc/docker/daemon.json <<EOF
 {
- "registry-mirrors":[${DOCKER_MIRROR}]
+  "registry-mirrors":[${DOCKER_MIRROR}],
+  "log-driver":"json-file",
+  "log-opts":{
+      "max-size":"50m",
+      "max-file":"3"
+  }
 }
 EOF
     else
