@@ -348,7 +348,7 @@ install_caddy_tls() {
       if [[ -z ${ssl_option} || ${ssl_option} == 1 ]]; then
 
         echo_content yellow "正在检测域名,请稍后..."
-        ping_ip=$(ping "${domain}" -s1 -c1 | grep "${domain}" | head -n1 | cut -d"(" -f2 | cut -d")" -f1)
+        ping_ip=$(ping "${domain}" -s1 -c1 | grep "ttl=" | head -n1 | cut -d"(" -f2 | cut -d")" -f1)
         curl_ip=$(curl ifconfig.me)
         if [[ "${ping_ip}" != "${curl_ip}" ]]; then
           echo_content yellow "你的域名没有解析到本机IP,请稍后再试"
