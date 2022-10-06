@@ -722,6 +722,8 @@ install_trojan_panel_core() {
       fi
     done
 
+    domain=$(cat "${DOMAIN_FILE}")
+
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
         --network=trojan-panel-network \
@@ -729,6 +731,7 @@ install_trojan_panel_core() {
         -p 8100:8100 \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v /etc/localtime:/etc/localtime \
+        -v ${CADDY_ACME}:${CADDY_ACME} \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
         -e "mariadb_user=${mariadb_user}" \
@@ -738,6 +741,8 @@ install_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
+        -e "crt_path=${CADDY_ACME}${domain}/${domain}.crt" \
+        -e "key_path=${CADDY_ACME}${domain}/${domain}.key" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
