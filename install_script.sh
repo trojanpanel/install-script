@@ -496,7 +496,7 @@ install_trojan_panel() {
     echo_content green "---> 安装Trojan Panel"
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -509,7 +509,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &&
         docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
@@ -518,7 +518,7 @@ install_trojan_panel() {
     fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-    [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
     [[ -z "${redis_port}" ]] && redis_port=6379
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
@@ -529,7 +529,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
       docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
       docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
@@ -637,7 +637,7 @@ install_trojan_panel_core() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-core$") ]]; then
     echo_content green "---> 安装Trojan Panel Core"
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -655,7 +655,7 @@ install_trojan_panel_core() {
     [[ -z "${account_table}" ]] && account_table="account"
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-    [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
     [[ -z "${redis_port}" ]] && redis_port=6379
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
@@ -708,7 +708,7 @@ update_trojan_panel() {
   echo_content green "---> 更新Trojan Panel"
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-  [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+  [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
   read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
   [[ -z "${mariadb_port}" ]] && mariadb_port=3306
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -721,7 +721,7 @@ update_trojan_panel() {
     fi
   done
 
-  if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   else
@@ -730,7 +730,7 @@ update_trojan_panel() {
   fi
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-  [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
   [[ -z "${redis_port}" ]] && redis_port=6379
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
@@ -741,7 +741,7 @@ update_trojan_panel() {
     fi
   done
 
-  if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
     docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
   else
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
