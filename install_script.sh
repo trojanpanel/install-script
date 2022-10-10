@@ -589,7 +589,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://trojan-panel:8081;
+        proxy_pass http://127.0.0.1:8081;
     }
 
     #error_page  404              /404.html;
