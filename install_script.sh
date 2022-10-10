@@ -39,16 +39,14 @@ init_var() {
 
   # MariaDB
   MARIA_DATA="/tpdata/mariadb/"
-  mariadb_ip="trojan-panel-mariadb"
+  mariadb_ip="127.0.0.1"
   mariadb_port=3306
   mariadb_user="root"
   mariadb_pas=""
-  database="trojan_panel_db"
-  account_table="account"
 
   #Redis
   REDIS_DATA="/tpdata/redis/"
-  redis_host="trojan-panel-redis"
+  redis_host="127.0.0.1"
   redis_port=6379
   redis_pass=""
 
@@ -66,6 +64,8 @@ init_var() {
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
   TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
+  database="trojan_panel_db"
+  account_table="account"
 }
 
 echo_content() {
@@ -271,7 +271,6 @@ EOF
 
     systemctl enable docker &&
       systemctl restart docker &&
-      docker network create trojan-panel-network
 
     if [[ $(docker -v 2>/dev/null) ]]; then
       echo_content skyBlue "---> Docker安装完成"
@@ -280,9 +279,6 @@ EOF
       exit 0
     fi
   else
-    if [[ -z $(docker network ls | grep "trojan-panel-network") ]]; then
-      docker network create trojan-panel-network
-    fi
     echo_content skyBlue "---> 你已经安装了Docker"
   fi
 }
@@ -386,9 +382,7 @@ EOF
 
     docker pull teddysun/caddy:1.0.5 &&
       docker run -d --name trojan-panel-caddy --restart always \
-        --network=trojan-panel-network \
-        -p 80:80 \
-        -p ${caddy_remote_port}:${caddy_remote_port} \
+        --network=host \
         -v ${CADDY_Caddyfile}:"/etc/caddy/Caddyfile" \
         -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
@@ -414,8 +408,8 @@ install_mariadb() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 安装MariaDB"
 
-    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
+    read -r -p "请输入数据库的端口(默认:3306): " mariadb_port
+    [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -429,8 +423,7 @@ install_mariadb() {
     if [[ "${mariadb_user}" == "root" ]]; then
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
-          --network=trojan-panel-network \
-          -p ${mariadb_port}:3306 \
+          --network=host \
           -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
@@ -439,8 +432,7 @@ install_mariadb() {
     else
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
-          --network=trojan-panel-network \
-          -p ${mariadb_port}:3306 \
+          --network=host \
           -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
@@ -470,8 +462,8 @@ install_redis() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 安装Redis"
 
-    read -r -p "请输入Redis的端口(默认:6378): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6378
+    read -r -p "请输入Redis的端口(默认:6379): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6379
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
@@ -482,8 +474,7 @@ install_redis() {
 
     docker pull redis:6.2.7 &&
       docker run -d --name trojan-panel-redis --restart always \
-        --network=trojan-panel-network \
-        -p ${redis_port}:6379 \
+        --network=host \
         -v ${REDIS_DATA}:/data redis:6.2.7 \
         redis-server --requirepass "${redis_pass}"
 
@@ -546,8 +537,7 @@ install_trojan_panel() {
 
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
-        --network=trojan-panel-network \
-        -p 8081:8081 \
+        --network=host \
         -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
         -v /etc/localtime:/etc/localtime \
@@ -574,8 +564,8 @@ install_trojan_panel() {
     # 配置Nginx
     cat >${NGINX_CONFIG} <<-EOF
 server {
-    listen       80;
-    listen       443 ssl;
+    listen       8888;
+    listen       8888 ssl;
     server_name  localhost;
 
     #强制ssl
@@ -617,8 +607,7 @@ EOF
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
-        --network=trojan-panel-network \
-        -p 8888:80 \
+        --network=host \
         -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
         -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
         jonssonyan/trojan-panel-ui
@@ -681,9 +670,7 @@ install_trojan_panel_core() {
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
-        --network=trojan-panel-network \
-        -p 443:443 \
-        -p 8100:8100 \
+        --network=host \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v /etc/localtime:/etc/localtime \
         -v ${CADDY_ACME}:${CADDY_ACME} \
@@ -770,8 +757,7 @@ update_trojan_panel() {
 
   docker pull jonssonyan/trojan-panel &&
     docker run -d --name trojan-panel --restart always \
-      --network=trojan-panel-network \
-      -p 8081:8081 \
+      --network=host \
       -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
       -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
       -v /etc/localtime:/etc/localtime \
@@ -792,8 +778,7 @@ update_trojan_panel() {
 
   docker pull jonssonyan/trojan-panel-ui &&
     docker run -d --name trojan-panel-ui --restart always \
-      --network=trojan-panel-network \
-      -p 8888:80 \
+      --network=host \
       -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
       -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
       jonssonyan/trojan-panel-ui
@@ -865,8 +850,7 @@ update_trojan_panel_core() {
 
   docker pull jonssonyan/trojan-panel-core &&
     docker run -d --name trojan-panel-core --restart always \
-      --network=trojan-panel-network \
-      -p 9000-10000:9000-10000 \
+      --network=host \
       -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
       -v /etc/localtime:/etc/localtime \
       -e "mariadb_ip=${mariadb_ip}" \
