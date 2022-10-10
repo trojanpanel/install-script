@@ -564,9 +564,8 @@ install_trojan_panel() {
     # 配置Nginx
     cat >${NGINX_CONFIG} <<-EOF
 server {
-    listen       8888;
-    listen       443 ssl;
-    server_name  localhost;
+    listen       8888 ssl;
+    server_name  ${domain};
 
     #强制ssl
     ssl on;
