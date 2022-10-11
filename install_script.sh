@@ -409,8 +409,6 @@ install_mariadb() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 安装MariaDB"
 
-    read -r -p "请输入数据库的端口(默认:3306): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -463,8 +461,6 @@ install_redis() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 安装Redis"
 
-    read -r -p "请输入Redis的端口(默认:6379): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6379
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
