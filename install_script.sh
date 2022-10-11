@@ -635,6 +635,7 @@ EOF
 install_trojan_panel_core() {
   if [[ -z $(docker ps -q -f "name=^trojan-panel-core$") ]]; then
     echo_content green "---> 安装Trojan Panel Core"
+
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
@@ -817,14 +818,6 @@ update_trojan_panel_core() {
   read -r -p "请输入数据库的用户表名称(默认:account): " account_table
   [[ -z "${account_table}" ]] && account_table="account"
 
-  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
-  else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
-  fi
-
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
@@ -836,12 +829,6 @@ update_trojan_panel_core() {
       break
     fi
   done
-
-  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-  else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-  fi
 
   docker rm -f trojan-panel-core &&
     docker rmi -f jonssonyan/trojan-panel-core &&
