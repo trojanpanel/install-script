@@ -60,6 +60,7 @@ init_var() {
   # Nginx
   NGINX_DATA="/tpdata/nginx/"
   NGINX_CONFIG="/tpdata/nginx/default.conf"
+  trojan_panel_ui_port=8888
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
@@ -561,10 +562,13 @@ install_trojan_panel() {
   fi
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
+    read -r -p "请输入Trojan Panel前端端口(默认:8888): " redis_host
+    [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
+
     # 配置Nginx
     cat >${NGINX_CONFIG} <<-EOF
 server {
-    listen       8888 ssl;
+    listen       ${trojan_panel_ui_port} ssl;
     server_name  ${domain};
 
     #强制ssl
@@ -593,7 +597,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:8888\$uri?\$args;
+    error_page  497              https://\$host:${trojan_panel_ui_port}\$uri?\$args;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -625,7 +629,7 @@ EOF
   echo_content skyBlue "Trojan Panel 安装成功"
   echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
   echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
-  echo_content yellow "管理面板地址: https://${domain}:8888"
+  echo_content yellow "管理面板地址: https://${domain}:${trojan_panel_ui_port}"
   echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
   echo_content yellow "Trojan Panel私钥和证书目录: ${CADDY_ACME}${domain}/"
   echo_content red "\n=============================================================="
