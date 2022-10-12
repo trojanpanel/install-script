@@ -558,7 +558,7 @@ install_trojan_panel() {
   fi
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
-    read -r -p "请输入Trojan Panel前端端口(默认:8888): " redis_host
+    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
 
     # 配置Nginx
