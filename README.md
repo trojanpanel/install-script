@@ -1,6 +1,6 @@
 # Trojan Panel
 
-支持多用户多协议的可视化管理面板
+支持Trojan-Go/Hysteria的多用户Web管理面板
 
 # System Requirements
 
