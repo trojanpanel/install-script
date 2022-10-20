@@ -526,7 +526,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
+    if [[ "${redis_host}" == "127.0.0.1" ]]; then
       docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
       docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
@@ -742,7 +742,7 @@ update_trojan_panel() {
     fi
   done
 
-  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
+  if [[ "${redis_host}" == "127.0.0.1" ]]; then
     docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
   else
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
@@ -988,6 +988,35 @@ failure_testing() {
   echo_content green "---> 故障检测结束"
 }
 
+redis_flush_all() {
+  # 判断Redis是否安装
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+    echo_content green "---> 刷新Redis缓存"
+
+    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+    read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6379
+    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+      if [[ -z "${redis_pass}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
+
+    if [[ "${redis_host}" == "127.0.0.1" ]]; then
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
+    else
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+    fi
+
+    echo_content skyBlue "---> Redis缓存刷新完成"
+  else
+    echo_content red "---> 请先安装Redis"
+  fi
+}
+
 # 卸载阿里云内置相关监控
 uninstall_aliyun() {
   # 卸载云监控(Cloudmonitor) Java 版
@@ -1044,6 +1073,7 @@ main() {
   echo_content yellow "12. 卸载全部Trojan Panel相关的容器"
   echo_content green "\n=============================================================="
   echo_content yellow "13. 故障检测"
+  echo_content yellow "14. 刷新Redis缓存"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1090,6 +1120,9 @@ main() {
     ;;
   13)
     failure_testing
+    ;;
+  14)
+    redis_flush_all
     ;;
   *)
     echo_content red "没有这个选项"
