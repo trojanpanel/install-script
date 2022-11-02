@@ -259,7 +259,7 @@ EOF
     fi
 
     systemctl enable docker &&
-      systemctl restart docker &&
+      systemctl restart docker
 
     if [[ $(docker -v 2>/dev/null) ]]; then
       echo_content skyBlue "---> Docker安装完成"
@@ -274,7 +274,7 @@ EOF
 
 # 安装Caddy TLS
 install_caddy_tls() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 安装Caddy TLS"
 
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
@@ -377,13 +377,13 @@ EOF
         -v ${CADDY_SRV}:${CADDY_SRV} \
         teddysun/caddy:1.0.5
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
       cat >${DOMAIN_FILE} <<EOF
 ${domain}
 EOF
       echo_content skyBlue "---> Caddy安装完成"
     else
-      echo_content red "---> Caddy安装失败"
+      echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -394,7 +394,7 @@ EOF
 
 # 安装TrojanGFW 单机版
 install_trojan_gfw_standalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
     echo_content green "---> 安装TrojanGFW"
 
     read -r -p "请输入TrojanGFW的端口(默认:443): " trojanGFW_port
@@ -467,7 +467,7 @@ EOF
         -v ${CADDY_ACME}:${CADDY_ACME} \
         trojangfw/trojan
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$" -f "status=running") ]]; then
       echo_content skyBlue "---> TrojanGFW 单机版 安装完成"
       echo_content red "\n=============================================================="
       echo_content skyBlue "TrojanGFW+Caddy+Web+TLS节点 单机版 安装成功"
@@ -476,7 +476,7 @@ EOF
       echo_content yellow "TrojanGFW的密码: ${trojan_pas}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> TrojanGFW 单机版 安装失败"
+      echo_content red "---> TrojanGFW 单机版 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -486,7 +486,7 @@ EOF
 
 # 安装TrojanGO 单机版
 install_trojanGO_standalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
     echo_content green "---> 安装TrojanGO 单机版"
 
     read -r -p "请输入TrojanGO的端口(默认:443): " trojanGO_port
@@ -641,7 +641,7 @@ EOF
         -v ${CADDY_ACME}:${CADDY_ACME} \
         p4gefau1t/trojan-go
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$" -f "status=running") ]]; then
       echo_content skyBlue "---> TrojanGO 单机版 安装完成"
       echo_content red "\n=============================================================="
       echo_content skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 单机版 安装成功"
@@ -658,7 +658,7 @@ EOF
       fi
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> TrojanGO 单机版 安装失败"
+      echo_content red "---> TrojanGO 单机版 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -668,7 +668,7 @@ EOF
 
 # 安装Hysteria 单机版
 install_hysteria_standalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
     echo_content green "---> 安装Hysteria 单机版"
 
     echo_content skyBlue "Hysteria的模式如下:"
@@ -720,7 +720,7 @@ EOF
         -v ${CADDY_ACME}:${CADDY_ACME} \
         tobyxdd/hysteria -c /etc/hysteria.json server
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
       echo_content skyBlue "---> Hysteria 单机版 安装完成"
       echo_content red "\n=============================================================="
       echo_content skyBlue "Hysteria节点 单机版 安装成功"
@@ -730,7 +730,7 @@ EOF
       echo_content yellow "Hysteria私钥和证书目录: ${CADDY_ACME}${domain}/"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Hysteria 单机版 安装失败"
+      echo_content red "---> Hysteria 单机版 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
