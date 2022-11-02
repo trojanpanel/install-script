@@ -395,7 +395,7 @@ ${domain}
 EOF
       echo_content skyBlue "---> Caddy安装完成"
     else
-      echo_content red "---> Caddy安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -448,7 +448,7 @@ install_mariadb() {
         echo_content yellow "---> MariaDB ${mariadb_user}的数据库密码(请妥善保存): ${mariadb_pas}"
       fi
     else
-      echo_content red "---> MariaDB安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> MariaDB安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -479,7 +479,7 @@ install_redis() {
       echo_content skyBlue "---> Redis安装完成"
       echo_content yellow "---> Redis的数据库密码(请妥善保存): ${redis_pass}"
     else
-      echo_content red "---> Redis安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> Redis安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -550,11 +550,11 @@ install_trojan_panel() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
     else
-      echo_content red "---> Trojan Panel后端安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> Trojan Panel后端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Trojan Panel"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel后端"
   fi
 
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
@@ -614,11 +614,11 @@ EOF
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
     else
-      echo_content red "---> Trojan Panel前端安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> Trojan Panel前端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Trojan Panel UI"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel前端"
   fi
 
   echo_content red "\n=============================================================="
@@ -690,7 +690,7 @@ install_trojan_panel_core() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
     else
-      echo_content red "---> Trojan Panel Core后端安装失败或运行异常,请尝试卸载重装"
+      echo_content red "---> Trojan Panel Core后端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -771,10 +771,10 @@ update_trojan_panel() {
       -e "redis_pass=${redis_pass}" \
       jonssonyan/trojan-panel
 
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel更新完成"
+  if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+    echo_content skyBlue "---> Trojan Panel后端更新完成"
   else
-    echo_content red "---> Trojan Panel更新失败"
+    echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
   fi
 
   docker pull jonssonyan/trojan-panel-ui &&
@@ -784,10 +784,10 @@ update_trojan_panel() {
       -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
       jonssonyan/trojan-panel-ui
 
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel UI更新完成"
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+    echo_content skyBlue "---> Trojan Panel前端更新完成"
   else
-    echo_content red "---> Trojan Panel UI更新失败"
+    echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
   fi
 }
 
