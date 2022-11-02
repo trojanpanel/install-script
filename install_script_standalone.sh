@@ -741,7 +741,7 @@ EOF
 # 卸载Caddy TLS
 uninstall_caddy_tls() {
   # 判断Caddy TLS是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 卸载Caddy TLS"
 
     docker rm -f trojan-panel-caddy &&
@@ -755,7 +755,7 @@ uninstall_caddy_tls() {
 
 # 卸载TrojanGFW 单机版
 uninstall_trojan_gfw_standalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
     echo_content green "---> 卸载TrojanGFW 单机版"
 
     docker rm -f trojan-panel-trojanGFW-standalone &&
@@ -770,7 +770,7 @@ uninstall_trojan_gfw_standalone() {
 
 # 卸载TrojanGO 单机版
 uninstall_trojanGO_standalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
     echo_content green "---> 卸载TrojanGO 单机版"
 
     docker rm -f trojan-panel-trojanGO-standalone &&
@@ -785,7 +785,7 @@ uninstall_trojanGO_standalone() {
 
 # 卸载Hysteria节点 单机版
 uninstall_hysteria_standalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
     echo_content green "---> 卸载Hysteria节点 单机版"
 
     docker rm -f trojan-panel-hysteria-standalone &&
@@ -802,7 +802,7 @@ uninstall_hysteria_standalone() {
 uninstall_all() {
   echo_content green "---> 卸载全部Trojan Panel相关的容器"
 
-  docker rm -f "$(docker ps -q -f "name=^trojan-panel")" &&
+  docker rm -f "$(docker ps -a -q -f "name=^trojan-panel")" &&
     docker rmi -f "$(docker images | grep "^trojan-panel" | awk '{print $3}')" &&
     rm -rf ${TP_DATA}
 

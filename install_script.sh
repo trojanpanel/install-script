@@ -863,7 +863,7 @@ update_trojan_panel_core() {
 # 卸载Caddy TLS
 uninstall_caddy_tls() {
   # 判断Caddy TLS是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 卸载Caddy TLS"
 
     docker rm -f trojan-panel-caddy &&
@@ -878,7 +878,7 @@ uninstall_caddy_tls() {
 # 卸载MariaDB
 uninstall_mariadb() {
   # 判断MariaDB是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 卸载MariaDB"
 
     docker rm -f trojan-panel-mariadb &&
@@ -893,7 +893,7 @@ uninstall_mariadb() {
 # 卸载Redis
 uninstall_redis() {
   # 判断Redis是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 卸载Redis"
 
     docker rm -f trojan-panel-redis &&
@@ -908,7 +908,7 @@ uninstall_redis() {
 # 卸载Trojan Panel
 uninstall_trojan_panel() {
   # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
     echo_content green "---> 卸载Trojan Panel"
 
     docker rm -f trojan-panel &&
@@ -929,7 +929,7 @@ uninstall_trojan_panel() {
 # 卸载Trojan Panel Core
 uninstall_trojan_panel_core() {
   # 判断Trojan Panel Core是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-core$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
     echo_content green "---> 卸载Trojan Panel Core"
 
     docker rm -f trojan-panel-core &&
@@ -946,7 +946,7 @@ uninstall_trojan_panel_core() {
 uninstall_all() {
   echo_content green "---> 卸载全部Trojan Panel相关的容器"
 
-  docker rm -f "$(docker ps -q -f "name=^trojan-panel")" &&
+  docker rm -f "$(docker ps -a -q -f "name=^trojan-panel")" &&
     docker rmi -f "$(docker images | grep "^jonssonyan/trojan-panel" | awk '{print $3}')" &&
     rm -rf ${TP_DATA}
 
