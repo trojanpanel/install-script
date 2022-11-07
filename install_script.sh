@@ -1073,13 +1073,17 @@ main() {
   echo_content yellow "7. 更新Trojan Panel Core"
   echo_content yellow "8. 卸载Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "9. 卸载Caddy TLS"
-  echo_content yellow "10. 卸载MariaDB"
-  echo_content yellow "11. 卸载Redis"
-  echo_content yellow "12. 卸载全部Trojan Panel相关的容器"
+  echo_content yellow "9. 安装Caddy TLS"
+  echo_content yellow "10. 安装MariaDB"
+  echo_content yellow "11. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "13. 故障检测"
-  echo_content yellow "14. 刷新Redis缓存"
+  echo_content yellow "12. 卸载Caddy TLS"
+  echo_content yellow "13. 卸载MariaDB"
+  echo_content yellow "14. 卸载Redis"
+  echo_content yellow "15. 卸载全部Trojan Panel相关的容器"
+  echo_content green "\n=============================================================="
+  echo_content yellow "16. 故障检测"
+  echo_content yellow "17. 刷新Redis缓存"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1113,21 +1117,30 @@ main() {
     uninstall_trojan_panel_core
     ;;
   9)
-    uninstall_caddy_tls
+    install_caddy_tls
     ;;
   10)
-    uninstall_mariadb
+    install_mariadb
     ;;
   11)
-    uninstall_redis
+    install_redis
     ;;
   12)
-    uninstall_all
+    uninstall_caddy_tls
     ;;
   13)
-    failure_testing
+    uninstall_mariadb
     ;;
   14)
+    uninstall_redis
+    ;;
+  15)
+    uninstall_all
+    ;;
+  16)
+    failure_testing
+    ;;
+  17)
     redis_flush_all
     ;;
   *)
