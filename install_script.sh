@@ -946,8 +946,8 @@ uninstall_trojan_panel_core() {
 uninstall_all() {
   echo_content green "---> 卸载全部Trojan Panel相关的容器"
 
-  docker rm -f "$(docker ps -a -q -f "name=^trojan-panel")" &&
-    docker rmi -f "$(docker images | grep "^jonssonyan/trojan-panel" | awk '{print $3}')" &&
+  docker rm -f $(docker ps -a -q -f "name=^trojan-panel") &&
+    docker rmi -f $(docker images | grep "^jonssonyan/trojan-panel" | awk '{print $3}') &&
     rm -rf ${TP_DATA}
 
   echo_content skyBlue "---> 卸载全部Trojan Panel相关的容器完成"
