@@ -1,6 +1,6 @@
 # Trojan Panel
 
-支持多用户多协议的可视化管理面板
+支持Xray/Trojan-Go/Hysteria的多用户Web管理面板
 
 # System Requirements
 
@@ -22,11 +22,7 @@ source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_
 
 # Features
 
-1. 3分钟傻瓜式一键安装所有服务，占内存小
-2. 自动申请/续签证书
-3. 功能强大的多用户可视化管理面板，支持用户管理、节点管理、邮件管理、黑名单管理、自定义伪装网站、系统看板等
-4. 节点类型支持多协议，例如: trojan-go、hysteria
-5. 支持数据库版节点集群和单机版节点
+[使用教程](https://trojanpanel.github.io/tutorial/using-tutorials.html)
 
 # Documentation
 
@@ -43,8 +39,9 @@ source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_
 
 # Thanks
 
-- [trojan-gfw](https://github.com/trojan-gfw/trojan)
+- [trojan](https://github.com/trojan-gfw/trojan)
 - [trojan-go](https://github.com/p4gefau1t/trojan-go)
+- [Xray-core](https://github.com/XTLS/Xray-core)
 - [hysteria](https://github.com/HyNetwork/hysteria)
 
 ## Stargazers over time

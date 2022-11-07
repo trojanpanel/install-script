@@ -24,30 +24,6 @@ init_var() {
 
   STATIC_HTML="https://github.com/trojanpanel/install-script/releases/download/v1.0.0/html.tar.gz"
 
-  # MariaDB
-  MARIA_DATA="/tpdata/mariadb/"
-  mariadb_ip="trojan-panel-mariadb"
-  mariadb_port=9507
-  mariadb_user="root"
-  mariadb_pas=""
-
-  #Redis
-  REDIS_DATA="/tpdata/redis/"
-  redis_host="trojan-panel-redis"
-  redis_port=6378
-  redis_pass=""
-
-  # Trojan Panel
-  TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
-  TROJAN_PANEL_WEBFILE="/tpdata/trojan-panel/webfile/"
-  TROJAN_PANEL_LOGS="/tpdata/trojan-panel/logs/"
-
-  # Trojan Panel UI
-  TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
-  # Nginx
-  NGINX_DATA="/tpdata/nginx/"
-  NGINX_CONFIG="/tpdata/nginx/default.conf"
-
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
   CADDY_Caddyfile="/tpdata/caddy/Caddyfile"
@@ -61,36 +37,36 @@ init_var() {
   key_path=""
   ssl_option=1
 
-  # trojanGFW
-  TROJANGFW_DATA="/tpdata/trojanGFW/"
-  TROJANGFW_CONFIG="/tpdata/trojanGFW/config.json"
-  TROJANGFW_STANDALONE_CONFIG="/tpdata/trojanGFW/standalone_config.json"
-  trojanGFW_port=443
-  # trojanGO
-  TROJANGO_DATA="/tpdata/trojanGO/"
-  TROJANGO_CONFIG="/tpdata/trojanGO/config.json"
-  TROJANGO_STANDALONE_CONFIG="/tpdata/trojanGO/standalone_config.json"
-  trojanGO_port=443
-  trojanGO_websocket_enable=false
-  trojanGO_websocket_path="trojan-panel-websocket-path"
-  trojanGO_shadowsocks_enable=false
-  trojanGO_shadowsocks_method="AES-128-GCM"
-  trojanGO_shadowsocks_password=""
-  trojanGO_mux_enable=true
-  # trojan
-  trojan_pas=""
-  remote_addr="trojan-panel-caddy"
+  # MariaDB
+  MARIA_DATA="/tpdata/mariadb/"
+  mariadb_ip="127.0.0.1"
+  mariadb_port=3306
+  mariadb_user="root"
+  mariadb_pas=""
 
-  # hysteria
-  HYSTERIA_DATA="/tpdata/hysteria/"
-  HYSTERIA_CONFIG="/tpdata/hysteria/config.json"
-  HYSTERIA_STANDALONE_CONFIG="/tpdata/hysteria/standalone_config.json"
-  hysteria_port=443
-  hysteria_password=""
-  hysteria_protocol="udp"
-  hysteria_up_mbps=100
-  hysteria_down_mbps=100
-  trojan_panel_url=""
+  #Redis
+  REDIS_DATA="/tpdata/redis/"
+  redis_host="127.0.0.1"
+  redis_port=6379
+  redis_pass=""
+
+  # Trojan Panel
+  TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
+  TROJAN_PANEL_WEBFILE="/tpdata/trojan-panel/webfile/"
+  TROJAN_PANEL_LOGS="/tpdata/trojan-panel/logs/"
+
+  # Trojan Panel UI
+  TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
+  # Nginx
+  NGINX_DATA="/tpdata/nginx/"
+  NGINX_CONFIG="/tpdata/nginx/default.conf"
+  trojan_panel_ui_port=8888
+
+  # Trojan Panel Core
+  TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
+  TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
+  database="trojan_panel_db"
+  account_table="account"
 }
 
 echo_content() {
@@ -123,6 +99,12 @@ mkdir_tools() {
   # 项目目录
   mkdir -p ${TP_DATA}
 
+  # Caddy
+  mkdir -p ${CADDY_DATA}
+  touch ${CADDY_Caddyfile}
+  mkdir -p ${CADDY_SRV}
+  mkdir -p ${CADDY_ACME}
+
   # MariaDB
   mkdir -p ${MARIA_DATA}
 
@@ -139,26 +121,9 @@ mkdir_tools() {
   mkdir -p ${NGINX_DATA}
   touch ${NGINX_CONFIG}
 
-  # Caddy
-  mkdir -p ${CADDY_DATA}
-  touch ${CADDY_Caddyfile}
-  mkdir -p ${CADDY_SRV}
-  mkdir -p ${CADDY_ACME}
-
-  # trojanGFW
-  mkdir -p ${TROJANGFW_DATA}
-  touch ${TROJANGFW_CONFIG}
-  touch ${TROJANGFW_STANDALONE_CONFIG}
-
-  # trojanGO
-  mkdir -p ${TROJANGO_DATA}
-  touch ${TROJANGO_CONFIG}
-  touch ${TROJANGO_STANDALONE_CONFIG}
-
-  # hysteria
-  mkdir -p ${HYSTERIA_DATA}
-  touch ${HYSTERIA_CONFIG}
-  touch ${HYSTERIA_STANDALONE_CONFIG}
+  # Trojan Panel Core
+  mkdir -p ${TROJAN_PANEL_CORE_DATA}
+  mkdir -p ${TROJAN_PANEL_CORE_LOGS}
 }
 
 can_connect() {
@@ -306,8 +271,7 @@ EOF
     fi
 
     systemctl enable docker &&
-      systemctl restart docker &&
-      docker network create trojan-panel-network
+      systemctl restart docker
 
     if [[ $(docker -v 2>/dev/null) ]]; then
       echo_content skyBlue "---> Docker安装完成"
@@ -316,16 +280,13 @@ EOF
       exit 0
     fi
   else
-    if [[ -z $(docker network ls | grep "trojan-panel-network") ]]; then
-      docker network create trojan-panel-network
-    fi
     echo_content skyBlue "---> 你已经安装了Docker"
   fi
 }
 
 # 安装Caddy TLS
 install_caddy_tls() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 安装Caddy TLS"
 
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
@@ -422,21 +383,19 @@ EOF
 
     docker pull teddysun/caddy:1.0.5 &&
       docker run -d --name trojan-panel-caddy --restart always \
-        --network=trojan-panel-network \
-        -p 80:80 \
-        -p ${caddy_remote_port}:${caddy_remote_port} \
+        --network=host \
         -v ${CADDY_Caddyfile}:"/etc/caddy/Caddyfile" \
         -v ${CADDY_ACME}:"/root/.caddy/acme/acme-v02.api.letsencrypt.org/sites/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         teddysun/caddy:1.0.5
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
       cat >${DOMAIN_FILE} <<EOF
 ${domain}
 EOF
       echo_content skyBlue "---> Caddy安装完成"
     else
-      echo_content red "---> Caddy安装失败"
+      echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -447,11 +406,9 @@ EOF
 
 # 安装MariaDB
 install_mariadb() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 安装MariaDB"
 
-    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -465,8 +422,7 @@ install_mariadb() {
     if [[ "${mariadb_user}" == "root" ]]; then
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
-          --network=trojan-panel-network \
-          -p ${mariadb_port}:3306 \
+          --network=host \
           -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
@@ -475,8 +431,7 @@ install_mariadb() {
     else
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
-          --network=trojan-panel-network \
-          -p ${mariadb_port}:3306 \
+          --network=host \
           -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
@@ -486,14 +441,14 @@ install_mariadb() {
           mariadb:10.7.3
     fi
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
       echo_content skyBlue "---> MariaDB安装完成"
       echo_content yellow "---> MariaDB root的数据库密码(请妥善保存): ${mariadb_pas}"
       if [[ "${mariadb_user}" != "root" ]]; then
         echo_content yellow "---> MariaDB ${mariadb_user}的数据库密码(请妥善保存): ${mariadb_pas}"
       fi
     else
-      echo_content red "---> MariaDB安装失败"
+      echo_content red "---> MariaDB安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -503,11 +458,9 @@ install_mariadb() {
 
 # 安装Redis
 install_redis() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 安装Redis"
 
-    read -r -p "请输入Redis的端口(默认:6378): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
@@ -518,16 +471,15 @@ install_redis() {
 
     docker pull redis:6.2.7 &&
       docker run -d --name trojan-panel-redis --restart always \
-        --network=trojan-panel-network \
-        -p ${redis_port}:6379 \
+        --network=host \
         -v ${REDIS_DATA}:/data redis:6.2.7 \
         redis-server --requirepass "${redis_pass}"
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
       echo_content skyBlue "---> Redis安装完成"
       echo_content yellow "---> Redis的数据库密码(请妥善保存): ${redis_pass}"
     else
-      echo_content red "---> Redis安装失败"
+      echo_content red "---> Redis安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
@@ -537,11 +489,11 @@ install_redis() {
 
 # 安装TrojanPanel
 install_trojan_panel() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
-    echo_content green "---> 安装TrojanPanel"
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
+    echo_content green "---> 安装Trojan Panel"
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -554,7 +506,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
       docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &&
         docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
@@ -563,7 +515,7 @@ install_trojan_panel() {
     fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-    [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
     [[ -z "${redis_port}" ]] && redis_port=6379
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
@@ -574,7 +526,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+    if [[ "${redis_host}" == "127.0.0.1" ]]; then
       docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
       docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
@@ -582,8 +534,7 @@ install_trojan_panel() {
 
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
-        --network=trojan-panel-network \
-        -p 8081:8081 \
+        --network=host \
         -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
         -v /etc/localtime:/etc/localtime \
@@ -596,23 +547,25 @@ install_trojan_panel() {
         -e "redis_pass=${redis_pass}" \
         jonssonyan/trojan-panel
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
     else
-      echo_content red "---> Trojan Panel后端安装失败"
+      echo_content red "---> Trojan Panel后端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Trojan Panel"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel后端"
   fi
 
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
+    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
+    [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
+
     # 配置Nginx
     cat >${NGINX_CONFIG} <<-EOF
 server {
-    listen       80;
-    listen       443 ssl;
-    server_name  localhost;
+    listen       ${trojan_panel_ui_port} ssl;
+    server_name  ${domain};
 
     #强制ssl
     ssl on;
@@ -635,12 +588,12 @@ server {
     }
 
     location /api {
-        proxy_pass http://trojan-panel:8081;
+        proxy_pass http://127.0.0.1:8081;
     }
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:8888\$uri?\$args;
+    error_page  497              https://\$host:${trojan_panel_ui_port}\$uri?\$args;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -653,41 +606,38 @@ EOF
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
-        --network=trojan-panel-network \
-        -p 8888:80 \
+        --network=host \
         -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
         -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
         jonssonyan/trojan-panel-ui
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$") ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
     else
-      echo_content red "---> Trojan Panel前端安装失败"
+      echo_content red "---> Trojan Panel前端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Trojan Panel UI"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel前端"
   fi
 
   echo_content red "\n=============================================================="
   echo_content skyBlue "Trojan Panel 安装成功"
   echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
   echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
-  echo_content yellow "管理面板地址: https://${domain}:8888"
+  echo_content yellow "管理面板地址: https://${domain}:${trojan_panel_ui_port}"
   echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
   echo_content yellow "Trojan Panel私钥和证书目录: ${CADDY_ACME}${domain}/"
   echo_content red "\n=============================================================="
 }
 
-# 安装TrojanGFW 数据库版
-installTrojanGFW() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]]; then
-    echo_content green "---> 安装TrojanGFW"
+# 安装Trojan Panel Core
+install_trojan_panel_core() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
+    echo_content green "---> 安装Trojan Panel Core"
 
-    read -r -p "请输入TrojanGFW的端口(默认:443): " trojanGFW_port
-    [[ -z "${trojanGFW_port}" ]] && trojanGFW_port=443
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=3306
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -699,696 +649,59 @@ installTrojanGFW() {
         break
       fi
     done
+    read -r -p "请输入数据库名称(默认:trojan_panel_db): " database
+    [[ -z "${database}" ]] && database="trojan_panel_db"
+    read -r -p "请输入数据库的用户表名称(默认:account): " account_table
+    [[ -z "${account_table}" ]] && account_table="account"
 
-    cat >${TROJANGFW_CONFIG} <<EOF
-    {
-    "run_type": "server",
-    "local_addr": "0.0.0.0",
-    "local_port": ${trojanGFW_port},
-    "remote_addr": "${remote_addr}",
-    "remote_port": 80,
-    "password": [],
-    "log_level": 1,
-    "ssl": {
-        "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-        "key": "${CADDY_ACME}${domain}/${domain}.key",
-        "key_password": "",
-        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
-        "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
-        "prefer_server_cipher": true,
-        "alpn": [
-            "http/1.1"
-        ],
-        "alpn_port_override": {
-            "h2": 81
-        },
-        "reuse_session": true,
-        "session_ticket": false,
-        "session_timeout": 600,
-        "plain_http_response": "",
-        "curves": "",
-        "dhparam": ""
-    },
-    "tcp": {
-        "prefer_ipv4": false,
-        "no_delay": true,
-        "keep_alive": true,
-        "reuse_port": false,
-        "fast_open": false,
-        "fast_open_qlen": 20
-    },
-    "mysql": {
-        "enabled": true,
-        "server_addr": "${mariadb_ip}",
-        "server_port": ${mariadb_port},
-        "database": "trojan_panel_db",
-        "username": "${mariadb_user}",
-        "password": "${mariadb_pas}",
-        "key": "",
-        "cert": "",
-        "ca": ""
-    }
-}
-EOF
-
-    docker pull trojangfw/trojan &&
-      docker run -d --name trojan-panel-trojanGFW --restart always \
-        --network=trojan-panel-network \
-        -p ${trojanGFW_port}:${trojanGFW_port} \
-        -v ${TROJANGFW_CONFIG}:"/config/config.json" \
-        -v ${CADDY_ACME}:${CADDY_ACME} \
-        trojangfw/trojan
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]]; then
-      echo_content skyBlue "---> TrojanGFW 数据库版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGFW+Caddy+Web+TLS节点 数据库版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "TrojanGFW的端口: ${trojanGFW_port}"
-      echo_content yellow "TrojanGFW的密码: 用户名&密码"
-      echo_content red "\n=============================================================="
-    else
-      echo_content red "---> TrojanGFW 数据库版 安装失败"
-      exit 0
-    fi
-  else
-    echo_content skyBlue "---> 你已经安装了TrojanGFW 数据库版"
-  fi
-}
-
-# 安装TrojanGFW 单机版
-installTrojanGFWStandalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-    echo_content green "---> 安装TrojanGFW"
-
-    read -r -p "请输入TrojanGFW的端口(默认:443): " trojanGFW_port
-    [[ -n ${trojanGFW_port} ]] && trojanGFW_port=443
-    while read -r -p "请输入TrojanGFW的密码(必填): " trojan_pas; do
-      if [[ -z "${trojan_pas}" ]]; then
+    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+    read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6379
+    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+      if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
       else
         break
       fi
     done
 
-    cat >${TROJANGFW_STANDALONE_CONFIG} <<EOF
-    {
-    "run_type": "server",
-    "local_addr": "0.0.0.0",
-    "local_port": ${trojanGFW_port},
-    "remote_addr": "${remote_addr}",
-    "remote_port": 80,
-    "password": [
-        "${trojan_pas}"
-    ],
-    "log_level": 1,
-    "ssl": {
-        "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-        "key": "${CADDY_ACME}${domain}/${domain}.key",
-        "key_password": "",
-        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
-        "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
-        "prefer_server_cipher": true,
-        "alpn": [
-            "http/1.1"
-        ],
-        "alpn_port_override": {
-            "h2": 81
-        },
-        "reuse_session": true,
-        "session_ticket": false,
-        "session_timeout": 600,
-        "plain_http_response": "",
-        "curves": "",
-        "dhparam": ""
-    },
-    "tcp": {
-        "prefer_ipv4": false,
-        "no_delay": true,
-        "keep_alive": true,
-        "reuse_port": false,
-        "fast_open": false,
-        "fast_open_qlen": 20
-    },
-    "mysql": {
-        "enabled": false,
-        "server_addr": "127.0.0.1",
-        "server_port": 3306,
-        "database": "",
-        "username": "",
-        "password": "",
-        "key": "",
-        "cert": "",
-        "ca": ""
-    }
-}
-EOF
+    domain=$(cat "${DOMAIN_FILE}")
 
-    docker pull trojangfw/trojan &&
-      docker run -d --name trojan-panel-trojanGFW-standalone --restart always \
-        --network=trojan-panel-network \
-        -p ${trojanGFW_port}:${trojanGFW_port} \
-        -v ${TROJANGFW_STANDALONE_CONFIG}:"/config/config.json" \
+    docker pull jonssonyan/trojan-panel-core &&
+      docker run -d --name trojan-panel-core --restart always \
+        --network=host \
+        -v ${TROJAN_PANEL_CORE_DATA}bin:${TROJAN_PANEL_CORE_DATA}bin \
+        -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${CADDY_ACME}:${CADDY_ACME} \
-        trojangfw/trojan
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-      echo_content skyBlue "---> TrojanGFW 单机版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGFW+Caddy+Web+TLS节点 单机版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "TrojanGFW的端口: ${trojanGFW_port}"
-      echo_content yellow "TrojanGFW的密码: ${trojan_pas}"
-      echo_content red "\n=============================================================="
+        -v /etc/localtime:/etc/localtime \
+        -e "mariadb_ip=${mariadb_ip}" \
+        -e "mariadb_port=${mariadb_port}" \
+        -e "mariadb_user=${mariadb_user}" \
+        -e "mariadb_pas=${mariadb_pas}" \
+        -e "database=${database}" \
+        -e "account-table=${account_table}" \
+        -e "redis_host=${redis_host}" \
+        -e "redis_port=${redis_port}" \
+        -e "redis_pass=${redis_pass}" \
+        -e "crt_path=${CADDY_ACME}${domain}/${domain}.crt" \
+        -e "key_path=${CADDY_ACME}${domain}/${domain}.key" \
+        jonssonyan/trojan-panel-core
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Trojan Panel Core安装完成"
     else
-      echo_content red "---> TrojanGFW 单机版 安装失败"
+      echo_content red "---> Trojan Panel Core后端安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了TrojanGFW 单机版"
-  fi
-}
-
-# 安装TrojanGO 数据库版
-install_trojanGO() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
-    echo_content green "---> 安装TrojanGO 数据库版"
-
-    read -r -p "请输入TrojanGO的端口(默认:443): " trojanGO_port
-    [[ -z "${trojanGO_port}" ]] && trojanGO_port=443
-    read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
-    read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=3306
-    read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-    [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-      if [[ -z "${mariadb_pas}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-
-    while read -r -p "是否开启多路复用?(false/关闭 true/开启 默认:true/开启): " trojanGO_mux_enable; do
-      if [[ -z "${trojanGO_mux_enable}" || ${trojanGO_mux_enable} == true ]]; then
-        trojanGO_mux_enable=true
-        break
-      else
-        if [[ ${trojanGO_mux_enable} != false ]]; then
-          echo_content red "不可以输入除false和true之外的其他字符"
-        else
-          break
-        fi
-      fi
-    done
-
-    while read -r -p "是否开启Websocket?(false/关闭 true/开启 默认:false/关闭): " trojanGO_websocket_enable; do
-      if [[ -z "${trojanGO_websocket_enable}" || ${trojanGO_websocket_enable} == false ]]; then
-        trojanGO_websocket_enable=false
-        break
-      else
-        if [[ ${trojanGO_websocket_enable} != true ]]; then
-          echo_content red "不可以输入除false和true之外的其他字符"
-        else
-          read -r -p "请输入Websocket路径(默认:trojan-panel-websocket-path): " trojanGO_websocket_path
-          [[ -z "${trojanGO_websocket_path}" ]] && trojanGO_websocket_path="trojan-panel-websocket-path"
-          break
-        fi
-      fi
-    done
-
-    while read -r -p "是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭): " trojanGO_shadowsocks_enable; do
-      if [[ -z "${trojanGO_shadowsocks_enable}" || ${trojanGO_shadowsocks_enable} == false ]]; then
-        trojanGO_shadowsocks_enable=false
-        break
-      else
-        if [[ ${trojanGO_shadowsocks_enable} != true ]]; then
-          echo_content yellow "不可以输入除false和true之外的其他字符"
-        else
-          echo_content skyBlue "Shadowsocks AEAD加密方式如下:"
-          echo_content yellow "1. AES-128-GCM(默认)"
-          echo_content yellow "2. CHACHA20-IETF-POLY1305"
-          echo_content yellow "3. AES-256-GCM"
-          read -r -p "请输入Shadowsocks AEAD加密方式(默认:1): " select_method_type
-          [[ -z "${select_method_type}" ]] && select_method_type=1
-          case ${select_method_type} in
-          1)
-            trojanGO_shadowsocks_method="AES-128-GCM"
-            ;;
-          2)
-            trojanGO_shadowsocks_method="CHACHA20-IETF-POLY1305"
-            ;;
-          3)
-            trojanGO_shadowsocks_method="AES-256-GCM"
-            ;;
-          *)
-            trojanGO_shadowsocks_method="AES-128-GCM"
-            ;;
-          esac
-
-          while read -r -p "请输入Shadowsocks AEAD加密密码(必填): " trojanGO_shadowsocks_password; do
-            if [[ -z "${trojanGO_shadowsocks_password}" ]]; then
-              echo_content red "密码不能为空"
-            else
-              break
-            fi
-          done
-          break
-        fi
-      fi
-    done
-
-    cat >${TROJANGO_CONFIG} <<EOF
-{
-  "run_type": "server",
-  "local_addr": "0.0.0.0",
-  "local_port": ${trojanGO_port},
-  "remote_addr": "${remote_addr}",
-  "remote_port": 80,
-  "log_level": 1,
-  "log_file": "",
-  "password": [],
-  "disable_http_check": false,
-  "udp_timeout": 60,
-  "ssl": {
-    "verify": true,
-    "verify_hostname": true,
-    "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-    "key": "${CADDY_ACME}${domain}/${domain}.key",
-    "key_password": "",
-    "cipher": "",
-    "curves": "",
-    "prefer_server_cipher": false,
-    "sni": "",
-    "alpn": [
-      "http/1.1"
-    ],
-    "session_ticket": true,
-    "reuse_session": true,
-    "plain_http_response": "",
-    "fallback_addr": "",
-    "fallback_port": 80,
-    "fingerprint": ""
-  },
-  "tcp": {
-    "no_delay": true,
-    "keep_alive": true,
-    "prefer_ipv4": false
-  },
-  "mux": {
-    "enabled": ${trojanGO_mux_enable},
-    "concurrency": 8,
-    "idle_timeout": 60
-  },
-  "websocket": {
-    "enabled": ${trojanGO_websocket_enable},
-    "path": "/${trojanGO_websocket_path}",
-    "host": "${domain}"
-  },
-  "shadowsocks": {
-    "enabled": ${trojanGO_shadowsocks_enable},
-    "method": "${trojanGO_shadowsocks_method}",
-    "password": "${trojanGO_shadowsocks_password}"
-  },
-  "mysql": {
-    "enabled": true,
-    "server_addr": "${mariadb_ip}",
-    "server_port": ${mariadb_port},
-    "database": "trojan_panel_db",
-    "username": "${mariadb_user}",
-    "password": "${mariadb_pas}",
-    "check_rate": 60
-  }
-}
-EOF
-
-    docker pull p4gefau1t/trojan-go &&
-      docker run -d --name trojan-panel-trojanGO --restart=always \
-        --network=trojan-panel-network \
-        -p ${trojanGO_port}:${trojanGO_port} \
-        -v ${TROJANGO_CONFIG}:"/etc/trojan-go/config.json" \
-        -v ${CADDY_ACME}:${CADDY_ACME} \
-        p4gefau1t/trojan-go
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
-      echo_content skyBlue "---> TrojanGO 数据库版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 数据库版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "TrojanGO的端口: ${trojanGO_port}"
-      echo_content yellow "TrojanGO的密码: 用户名&密码"
-      echo_content yellow "TrojanGO私钥和证书目录: ${CADDY_ACME}${domain}/"
-      if [[ ${trojanGO_websocket_enable} == true ]]; then
-        echo_content yellow "Websocket路径: ${trojanGO_websocket_path}"
-      fi
-      if [[ ${trojanGO_shadowsocks_enable} == true ]]; then
-        echo_content yellow "Shadowsocks AEAD加密方式: ${trojanGO_shadowsocks_method}"
-        echo_content yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
-      fi
-      echo_content red "\n=============================================================="
-    else
-      echo_content red "---> TrojanGO 数据库版 安装失败"
-      exit 0
-    fi
-  else
-    echo_content skyBlue "---> 你已经安装了TrojanGO 数据库版"
-  fi
-}
-
-# 安装TrojanGO 单机版
-install_trojanGO_standalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
-    echo_content green "---> 安装TrojanGO 单机版"
-
-    read -r -p "请输入TrojanGO的端口(默认:443): " trojanGO_port
-    [[ -z "${trojanGO_port}" ]] && trojanGO_port=443
-    while read -r -p "请输入TrojanGO的密码(必填): " trojan_pas; do
-      if [[ -z "${trojan_pas}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-
-    while read -r -p "是否开启多路复用?(false/关闭 true/开启 默认:true/开启): " trojanGO_mux_enable; do
-      if [[ -z "${trojanGO_mux_enable}" || ${trojanGO_mux_enable} == true ]]; then
-        trojanGO_mux_enable=true
-        break
-      else
-        if [[ ${trojanGO_mux_enable} != false ]]; then
-          echo_content red "不可以输入除false和true之外的其他字符"
-        else
-          break
-        fi
-      fi
-    done
-
-    while read -r -p "是否开启Websocket?(false/关闭 true/开启 默认:false/关闭): " trojanGO_websocket_enable; do
-      if [[ -z "${trojanGO_websocket_enable}" || ${trojanGO_websocket_enable} == false ]]; then
-        trojanGO_websocket_enable=false
-        break
-      else
-        if [[ ${trojanGO_websocket_enable} != true ]]; then
-          echo_content red "不可以输入除false和true之外的其他字符"
-        else
-          read -r -p "请输入Websocket路径(默认:trojan-panel-websocket-path): " trojanGO_websocket_path
-          [[ -z "${trojanGO_websocket_path}" ]] && trojanGO_websocket_path="trojan-panel-websocket-path"
-          break
-        fi
-      fi
-    done
-
-    while read -r -p "是否启用Shadowsocks AEAD加密?(false/关闭 true/开启 默认:false/关闭): " trojanGO_shadowsocks_enable; do
-      if [[ -z "${trojanGO_shadowsocks_enable}" || ${trojanGO_shadowsocks_enable} == false ]]; then
-        trojanGO_shadowsocks_enable=false
-        break
-      else
-        if [[ ${trojanGO_shadowsocks_enable} != true ]]; then
-          echo_content yellow "不可以输入除false和true之外的其他字符"
-        else
-          echo_content skyBlue "Shadowsocks AEAD加密方式如下:"
-          echo_content yellow "1. AES-128-GCM(默认)"
-          echo_content yellow "2. CHACHA20-IETF-POLY1305"
-          echo_content yellow "3. AES-256-GCM"
-          read -r -p "请输入Shadowsocks AEAD加密方式(默认:1): " select_method_type
-          [[ -z "${select_method_type}" ]] && select_method_type=1
-          case ${select_method_type} in
-          1)
-            trojanGO_shadowsocks_method="AES-128-GCM"
-            ;;
-          2)
-            trojanGO_shadowsocks_method="CHACHA20-IETF-POLY1305"
-            ;;
-          3)
-            trojanGO_shadowsocks_method="AES-256-GCM"
-            ;;
-          *)
-            trojanGO_shadowsocks_method="AES-128-GCM"
-            ;;
-          esac
-
-          while read -r -p "请输入Shadowsocks AEAD加密密码(必填): " trojanGO_shadowsocks_password; do
-            if [[ -z "${trojanGO_shadowsocks_password}" ]]; then
-              echo_content red "密码不能为空"
-            else
-              break
-            fi
-          done
-          break
-        fi
-      fi
-    done
-
-    cat >${TROJANGO_STANDALONE_CONFIG} <<EOF
-{
-  "run_type": "server",
-  "local_addr": "0.0.0.0",
-  "local_port": ${trojanGO_port},
-  "remote_addr": "${remote_addr}",
-  "remote_port": 80,
-  "log_level": 1,
-  "log_file": "",
-  "password": [
-      "${trojan_pas}"
-  ],
-  "disable_http_check": false,
-  "udp_timeout": 60,
-  "ssl": {
-    "verify": true,
-    "verify_hostname": true,
-    "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-    "key": "${CADDY_ACME}${domain}/${domain}.key",
-    "key_password": "",
-    "cipher": "",
-    "curves": "",
-    "prefer_server_cipher": false,
-    "sni": "",
-    "alpn": [
-      "http/1.1"
-    ],
-    "session_ticket": true,
-    "reuse_session": true,
-    "plain_http_response": "",
-    "fallback_addr": "",
-    "fallback_port": 80,
-    "fingerprint": ""
-  },
-  "tcp": {
-    "no_delay": true,
-    "keep_alive": true,
-    "prefer_ipv4": false
-  },
-    "mux": {
-    "enabled": ${trojanGO_mux_enable},
-    "concurrency": 8,
-    "idle_timeout": 60
-  },
-  "websocket": {
-    "enabled": ${trojanGO_websocket_enable},
-    "path": "/${trojanGO_websocket_path}",
-    "host": "${domain}"
-  },
-  "shadowsocks": {
-    "enabled": ${trojanGO_shadowsocks_enable},
-    "method": "${trojanGO_shadowsocks_method}",
-    "password": "${trojanGO_shadowsocks_password}"
-  },
-  "mysql": {
-    "enabled": false,
-    "server_addr": "localhost",
-    "server_port": 3306,
-    "database": "",
-    "username": "",
-    "password": "",
-    "check_rate": 60
-  }
-}
-EOF
-
-    docker pull p4gefau1t/trojan-go &&
-      docker run -d --name trojan-panel-trojanGO-standalone --restart=always \
-        --network=trojan-panel-network \
-        -p ${trojanGO_port}:${trojanGO_port} \
-        -v ${TROJANGO_STANDALONE_CONFIG}:"/etc/trojan-go/config.json" \
-        -v ${CADDY_ACME}:${CADDY_ACME} \
-        p4gefau1t/trojan-go
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
-      echo_content skyBlue "---> TrojanGO 单机版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 单机版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "TrojanGO的端口: ${trojanGO_port}"
-      echo_content yellow "TrojanGO的密码: ${trojan_pas}"
-      echo_content yellow "TrojanGO私钥和证书目录: ${CADDY_ACME}${domain}/"
-      if [[ ${trojanGO_websocket_enable} == true ]]; then
-        echo_content yellow "Websocket路径: ${trojanGO_websocket_path}"
-      fi
-      if [[ ${trojanGO_shadowsocks_enable} == true ]]; then
-        echo_content yellow "Shadowsocks AEAD加密方式: ${trojanGO_shadowsocks_method}"
-        echo_content yellow "Shadowsocks AEAD加密密码: ${trojanGO_shadowsocks_password}"
-      fi
-      echo_content red "\n=============================================================="
-    else
-      echo_content red "---> TrojanGO 单机版 安装失败"
-      exit 0
-    fi
-  else
-    echo_content skyBlue "---> 你已经了安装了TrojanGO 单机版"
-  fi
-}
-
-install_hysteria() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-hysteria$") ]]; then
-    echo_content green "---> 安装Hysteria 数据库版"
-
-    echo_content skyBlue "Hysteria的模式如下:"
-    echo_content yellow "1. udp(默认)"
-    echo_content yellow "2. faketcp"
-    read -r -p "请输入Hysteria的模式(默认:1): " selectProtocolType
-    [[ -z "${selectProtocolType}" ]] && selectProtocolType=1
-    case ${selectProtocolType} in
-    1)
-      hysteria_protocol="udp"
-      ;;
-    2)
-      hysteria_protocol="faketcp"
-      ;;
-    *)
-      hysteria_protocol="udp"
-      ;;
-    esac
-    read -r -p "请输入Hysteria的端口(默认:443): " hysteria_port
-    [[ -z "${hysteria_port}" ]] && hysteria_port=443
-    read -r -p "请输入单客户端最大上传速度/Mbps(默认:100): " hysteria_up_mbps
-    [[ -z "${hysteria_up_mbps}" ]] && hysteria_up_mbps=100
-    read -r -p "请输入单客户端最大下载速度/Mbps(默认:100): " hysteria_down_mbps
-    [[ -z "${hysteria_down_mbps}" ]] && hysteria_down_mbps=100
-    read -r -p "请输入Trojan Panel的域名(默认:本机): " trojan_panel_url
-    [[ -z "${trojan_panel_url}" ]] && trojan_panel_url=${domain}
-
-    cat >${HYSTERIA_CONFIG} <<EOF
-{
-  "listen": ":${hysteria_port}",
-  "protocol": "${hysteria_protocol}",
-  "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-  "key": "${CADDY_ACME}${domain}/${domain}.key",
-  "up_mbps": ${hysteria_up_mbps},
-  "down_mbps": ${hysteria_down_mbps},
-  "auth": {
-    "mode": "external",
-    "config": {
-      "http": "https://${trojan_panel_url}:8888/api/auth/hysteria"
-    }
-  },
-  "prometheus_listen": ":8801"
-}
-EOF
-
-    docker pull tobyxdd/hysteria &&
-      docker run -d --name trojan-panel-hysteria --restart=always \
-        --network=trojan-panel-network \
-        -p ${hysteria_port}:${hysteria_port}/udp \
-        -p 8801:8801 \
-        -v ${HYSTERIA_CONFIG}:/etc/hysteria.json \
-        -v ${CADDY_ACME}:${CADDY_ACME} \
-        tobyxdd/hysteria -c /etc/hysteria.json server
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria$") ]]; then
-      echo_content skyBlue "---> Hysteria 数据版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "Hysteria节点 数据版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "Hysteria的端口: ${hysteria_port}"
-      echo_content yellow "Hysteria的密码: 用户名&密码"
-      echo_content yellow "Hysteria私钥和证书目录: ${CADDY_ACME}${domain}/"
-      echo_content red "\n=============================================================="
-    else
-      echo_content red "---> Hysteria 数据版 安装失败"
-      exit 0
-    fi
-  else
-    echo_content skyBlue "---> 你已经安装了Hysteria 数据版"
-  fi
-}
-
-install_hysteria_standalone() {
-  if [[ -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
-    echo_content green "---> 安装Hysteria 单机版"
-
-    echo_content skyBlue "Hysteria的模式如下:"
-    echo_content yellow "1. udp(默认)"
-    echo_content yellow "2. faketcp"
-    read -r -p "请输入Hysteria的模式(默认:1): " selectProtocolType
-    [[ -z "${selectProtocolType}" ]] && selectProtocolType=1
-    case ${selectProtocolType} in
-    1)
-      hysteria_protocol="udp"
-      ;;
-    2)
-      hysteria_protocol="faketcp"
-      ;;
-    *)
-      hysteria_protocol="udp"
-      ;;
-    esac
-    read -r -p "请输入Hysteria的端口(默认:443): " hysteria_port
-    [[ -z ${hysteria_port} ]] && hysteria_port=443
-    read -r -p "请输入单客户端最大上传速度/Mbps(默认:100): " hysteria_up_mbps
-    [[ -z "${hysteria_up_mbps}" ]] && hysteria_up_mbps=100
-    read -r -p "请输入单客户端最大下载速度/Mbps(默认:100): " hysteria_down_mbps
-    [[ -z "${hysteria_down_mbps}" ]] && hysteria_down_mbps=100
-    while read -r -p "请输入Hysteria的密码(必填): " hysteria_password; do
-      if [[ -z ${hysteria_password} ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-
-    cat >${HYSTERIA_STANDALONE_CONFIG} <<EOF
-{
-  "listen": ":${hysteria_port}",
-  "protocol": "${hysteria_protocol}",
-  "cert": "${CADDY_ACME}${domain}/${domain}.crt",
-  "key": "${CADDY_ACME}${domain}/${domain}.key",
-  "up_mbps": ${hysteria_up_mbps},
-  "down_mbps": ${hysteria_down_mbps},
-  "obfs": "${hysteria_password}"
-}
-EOF
-
-    docker pull tobyxdd/hysteria &&
-      docker run -d --name trojan-panel-hysteria-standalone --restart=always \
-        --network=trojan-panel-network \
-        -p ${hysteria_port}:${hysteria_port}/udp \
-        -v ${HYSTERIA_STANDALONE_CONFIG}:/etc/hysteria.json \
-        -v ${CADDY_ACME}:${CADDY_ACME} \
-        tobyxdd/hysteria -c /etc/hysteria.json server
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
-      echo_content skyBlue "---> Hysteria 单机版 安装完成"
-      echo_content red "\n=============================================================="
-      echo_content skyBlue "Hysteria节点 单机版 安装成功"
-      echo_content yellow "域名: ${domain}"
-      echo_content yellow "Hysteria的端口: ${hysteria_port}"
-      echo_content yellow "Hysteria的密码: ${hysteria_password}"
-      echo_content yellow "Hysteria私钥和证书目录: ${CADDY_ACME}${domain}/"
-      echo_content red "\n=============================================================="
-    else
-      echo_content red "---> Hysteria 单机版 安装失败"
-      exit 0
-    fi
-  else
-    echo_content skyBlue "---> 你已经安装了Hysteria 单机版"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel Core"
   fi
 }
 
 # 更新Trojan Panel
 update_trojan_panel() {
   # 判断Trojan Panel是否安装
-  if [[ -z $(docker ps -q -f "name=^trojan-panel$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
     echo_content red "---> 请先安装Trojan Panel"
     exit 0
   fi
@@ -1396,7 +709,7 @@ update_trojan_panel() {
   echo_content green "---> 更新Trojan Panel"
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-  [[ -z "${mariadb_ip}" ]] && mariadb_ip="trojan-panel-mariadb"
+  [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
   read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
   [[ -z "${mariadb_port}" ]] && mariadb_port=3306
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
@@ -1409,7 +722,7 @@ update_trojan_panel() {
     fi
   done
 
-  if [[ "${mariadb_ip}" == "trojan-panel-mariadb" ]]; then
+  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
     docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
   else
@@ -1418,7 +731,7 @@ update_trojan_panel() {
   fi
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-  [[ -z "${redis_host}" ]] && redis_host="trojan-panel-redis"
+  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
   [[ -z "${redis_port}" ]] && redis_port=6379
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
@@ -1429,7 +742,7 @@ update_trojan_panel() {
     fi
   done
 
-  if [[ "${mariadb_ip}" == "trojan-panel-redis" ]]; then
+  if [[ "${redis_host}" == "127.0.0.1" ]]; then
     docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
   else
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
@@ -1445,8 +758,7 @@ update_trojan_panel() {
 
   docker pull jonssonyan/trojan-panel &&
     docker run -d --name trojan-panel --restart always \
-      --network=trojan-panel-network \
-      -p 8081:8081 \
+      --network=host \
       -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
       -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
       -v /etc/localtime:/etc/localtime \
@@ -1459,31 +771,99 @@ update_trojan_panel() {
       -e "redis_pass=${redis_pass}" \
       jonssonyan/trojan-panel
 
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel更新完成"
+  if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+    echo_content skyBlue "---> Trojan Panel后端更新完成"
   else
-    echo_content red "---> Trojan Panel更新失败"
+    echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
   fi
 
   docker pull jonssonyan/trojan-panel-ui &&
     docker run -d --name trojan-panel-ui --restart always \
-      --network=trojan-panel-network \
-      -p 8888:80 \
+      --network=host \
       -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
       -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
       jonssonyan/trojan-panel-ui
 
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel UI更新完成"
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+    echo_content skyBlue "---> Trojan Panel前端更新完成"
   else
-    echo_content red "---> Trojan Panel UI更新失败"
+    echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+  fi
+}
+
+# 更新Trojan Panel Core
+update_trojan_panel_core() {
+  # 判断Trojan Panel Core是否安装
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
+    echo_content red "---> 请先安装Trojan Panel Core"
+    exit 0
+  fi
+
+  echo_content green "---> 更新Trojan Panel Core"
+
+  read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
+  [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
+  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+  read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
+  [[ -z "${mariadb_user}" ]] && mariadb_user="root"
+  while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
+    if [[ -z "${mariadb_pas}" ]]; then
+      echo_content red "密码不能为空"
+    else
+      break
+    fi
+  done
+  read -r -p "请输入数据库名称(默认:trojan_panel_db): " database
+  [[ -z "${database}" ]] && database="trojan_panel_db"
+  read -r -p "请输入数据库的用户表名称(默认:account): " account_table
+  [[ -z "${account_table}" ]] && account_table="account"
+
+  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  [[ -z "${redis_port}" ]] && redis_port=6379
+  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+    if [[ -z "${redis_pass}" ]]; then
+      echo_content red "密码不能为空"
+    else
+      break
+    fi
+  done
+
+  docker rm -f trojan-panel-core &&
+    docker rmi -f jonssonyan/trojan-panel-core &&
+    rm -rf ${TROJAN_PANEL_CORE_DATA}
+
+  docker pull jonssonyan/trojan-panel-core &&
+    docker run -d --name trojan-panel-core --restart always \
+      --network=host \
+      -v ${TROJAN_PANEL_CORE_DATA}bin:${TROJAN_PANEL_CORE_DATA}bin \
+      -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
+      -v ${CADDY_ACME}:${CADDY_ACME} \
+      -v /etc/localtime:/etc/localtime \
+      -e "mariadb_ip=${mariadb_ip}" \
+      -e "mariadb_port=${mariadb_port}" \
+      -e "mariadb_user=${mariadb_user}" \
+      -e "mariadb_pas=${mariadb_pas}" \
+      -e "database=${database}" \
+      -e "account-table=${account_table}" \
+      -e "redis_host=${redis_host}" \
+      -e "redis_port=${redis_port}" \
+      -e "redis_pass=${redis_pass}" \
+      jonssonyan/trojan-panel-core
+
+  if [[ "$?" == "0" ]]; then
+    echo_content skyBlue "---> Trojan Panel Core更新完成"
+  else
+    echo_content red "---> Trojan Panel Core更新失败"
   fi
 }
 
 # 卸载Caddy TLS
 uninstall_caddy_tls() {
   # 判断Caddy TLS是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 卸载Caddy TLS"
 
     docker rm -f trojan-panel-caddy &&
@@ -1498,7 +878,7 @@ uninstall_caddy_tls() {
 # 卸载MariaDB
 uninstall_mariadb() {
   # 判断MariaDB是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 卸载MariaDB"
 
     docker rm -f trojan-panel-mariadb &&
@@ -1513,7 +893,7 @@ uninstall_mariadb() {
 # 卸载Redis
 uninstall_redis() {
   # 判断Redis是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 卸载Redis"
 
     docker rm -f trojan-panel-redis &&
@@ -1528,7 +908,7 @@ uninstall_redis() {
 # 卸载Trojan Panel
 uninstall_trojan_panel() {
   # 判断Trojan Panel是否安装
-  if [[ -n $(docker ps -q -f "name=^trojan-panel$") ]]; then
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
     echo_content green "---> 卸载Trojan Panel"
 
     docker rm -f trojan-panel &&
@@ -1546,104 +926,34 @@ uninstall_trojan_panel() {
   fi
 }
 
-# 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版
-uninstallTrojanGFW() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW$") ]]; then
-    echo_content green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 数据库版"
+# 卸载Trojan Panel Core
+uninstall_trojan_panel_core() {
+  # 判断Trojan Panel Core是否安装
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
+    echo_content green "---> 卸载Trojan Panel Core"
 
-    docker rm -f trojan-panel-trojanGFW &&
-      docker rmi -f trojangfw/trojan &&
-      rm -f ${TROJANGFW_CONFIG}
+    docker rm -f trojan-panel-core &&
+      docker rmi -f jonssonyan/trojan-panel-core &&
+      rm -rf ${TROJAN_PANEL_CORE_DATA}
 
-    echo_content skyBlue "---> TrojanGFW+Caddy+Web+TLS节点 数据库版卸载完成"
+    echo_content skyBlue "---> Trojan Panel Core卸载完成"
   else
-    echo_content red "---> 请先安装TrojanGFW+Caddy+Web+TLS节点 数据库版"
+    echo_content red "---> 请先安装Trojan Panel Core"
   fi
 }
 
-# 卸载TrojanGFW+Caddy+Web+TLS节点 单机版
-uninstallTrojanGFWStandalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-    echo_content green "---> 卸载TrojanGFW+Caddy+Web+TLS节点 单机版"
-
-    docker rm -f trojan-panel-trojanGFW-standalone &&
-      docker rmi -f trojangfw/trojan &&
-      rm -f ${TROJANGFW_STANDALONE_CONFIG}
-
-    echo_content skyBlue "---> TrojanGFW+Caddy+Web+TLS节点 单机版卸载完成"
-  else
-    echo_content red "---> 请先安装TrojanGFW+Caddy+Web+TLS节点 单机版"
-  fi
-}
-
-# 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版
-uninstall_trojanGO() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO$") ]]; then
-    echo_content green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-
-    docker rm -f trojan-panel-trojanGO &&
-      docker rmi -f p4gefau1t/trojan-go &&
-      rm -f ${TROJANGO_CONFIG}
-
-    echo_content skyBlue "---> TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版卸载完成"
-  else
-    echo_content red "---> 请先安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-  fi
-}
-
-# 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版
-uninstall_trojanGO_standalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
-    echo_content green "---> 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
-
-    docker rm -f trojan-panel-trojanGO-standalone &&
-      docker rmi -f p4gefau1t/trojan-go &&
-      rm -f ${TROJANGO_STANDALONE_CONFIG}
-
-    echo_content skyBlue "---> TrojanGo+Caddy+Web+TLS+Websocket节点 单机版卸载完成"
-  else
-    echo_content red "---> 请先安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
-  fi
-}
-
-uninstall_hysteria() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria") ]]; then
-    echo_content green "---> 卸载Hysteria节点 数据库版"
-
-    docker rm -f trojan-panel-hysteria &&
-      docker rmi -f tobyxdd/hysteria &&
-      rm -f ${HYSTERIA_CONFIG}
-
-    echo_content skyBlue "---> Hysteria节点 数据库版卸载完成"
-  else
-    echo_content red "---> 请先安装Hysteria节点 数据库版"
-  fi
-}
-
-uninstall_hysteria_standalone() {
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
-    echo_content green "---> 卸载Hysteria节点 单机版"
-
-    docker rm -f trojan-panel-hysteria-standalone &&
-      docker rmi -f tobyxdd/hysteria &&
-      rm -f ${HYSTERIA_STANDALONE_CONFIG}
-
-    echo_content skyBlue "---> Hysteria节点 单机版卸载完成"
-  else
-    echo_content red "---> 请先安装Hysteria节点 单机版"
-  fi
-}
-
+# 卸载全部Trojan Panel相关的容器
 uninstall_all() {
   echo_content green "---> 卸载全部Trojan Panel相关的容器"
 
-  docker rm -f "$(docker ps -q -f "name=^trojan-panel")" &&
-    docker rmi -f "$(docker images | grep "^trojan-panel" | awk '{print $3}')" &&
+  docker rm -f $(docker ps -a -q -f "name=^trojan-panel") &&
+    docker rmi -f $(docker images | grep "^jonssonyan/trojan-panel" | awk '{print $3}') &&
     rm -rf ${TP_DATA}
 
   echo_content skyBlue "---> 卸载全部Trojan Panel相关的容器完成"
 }
 
+# 故障检测
 failure_testing() {
   echo_content green "---> 故障检测开始"
   if [[ ! $(docker -v 2>/dev/null) ]]; then
@@ -1665,26 +975,52 @@ failure_testing() {
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
       echo_content red "---> Redis运行异常"
     fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel前端运行异常"
-    fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content red "---> Trojan Panel后端运行异常"
     fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO$") && -z $(docker ps -q -f "name=^trojan-panel-trojanGO$" -f "status=running") ]]; then
-      echo_content red "---> TrojanGO 数据库版运行异常"
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+      echo_content red "---> Trojan Panel前端运行异常"
     fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$" -f "status=running") ]]; then
-      echo_content red "---> TrojanGO 单机版运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria$" -f "status=running") ]]; then
-      echo_content red "---> Hysteria 数据库版运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
-      echo_content red "---> Hysteria 单机版运行异常"
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
+      echo_content red "---> Trojan Panel Core运行异常"
     fi
   fi
   echo_content green "---> 故障检测结束"
+}
+
+redis_flush_all() {
+  # 判断Redis是否安装
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
+    echo_content red "---> 请先安装Redis"
+    exit 0
+  fi
+
+  if [[ -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
+    echo_content red "---> Redis运行异常"
+    exit 0
+  fi
+
+  echo_content green "---> 刷新Redis缓存"
+
+  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  [[ -z "${redis_port}" ]] && redis_port=6379
+  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+    if [[ -z "${redis_pass}" ]]; then
+      echo_content red "密码不能为空"
+    else
+      break
+    fi
+  done
+
+  if [[ "${redis_host}" == "127.0.0.1" ]]; then
+    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
+  else
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+  fi
+
+  echo_content skyBlue "---> Redis缓存刷新完成"
 }
 
 # 卸载阿里云内置相关监控
@@ -1733,22 +1069,21 @@ main() {
   echo_content yellow "4. 更新Trojan Panel(注意: 会清除数据)"
   echo_content yellow "5. 卸载Trojan Panel"
   echo_content green "\n=============================================================="
-  echo_content yellow "6. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-  echo_content yellow "7. 安装TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
-  echo_content yellow "8. 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 数据库版"
-  echo_content yellow "9. 卸载TrojanGo+Caddy+Web+TLS+Websocket节点 单机版"
+  echo_content yellow "6. 安装Trojan Panel Core"
+  echo_content yellow "7. 更新Trojan Panel Core"
+  echo_content yellow "8. 卸载Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "10. 安装Hysteria节点 数据库版(测试)"
-  echo_content yellow "11. 安装Hysteria节点 单机版(测试)"
-  echo_content yellow "12. 卸载Hysteria节点 数据库版(测试)"
-  echo_content yellow "13. 卸载Hysteria节点 单机版(测试)"
+  echo_content yellow "9. 安装Caddy TLS"
+  echo_content yellow "10. 安装MariaDB"
+  echo_content yellow "11. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "14. 卸载Caddy TLS"
-  echo_content yellow "15. 卸载MariaDB"
-  echo_content yellow "16. 卸载Redis"
-  echo_content yellow "17. 卸载全部Trojan Panel相关的容器"
+  echo_content yellow "12. 卸载Caddy TLS"
+  echo_content yellow "13. 卸载MariaDB"
+  echo_content yellow "14. 卸载Redis"
+  echo_content yellow "15. 卸载全部Trojan Panel相关的容器"
   echo_content green "\n=============================================================="
-  echo_content yellow "18. 故障检测"
+  echo_content yellow "16. 故障检测"
+  echo_content yellow "17. 刷新Redis缓存"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1773,49 +1108,40 @@ main() {
   6)
     install_docker
     install_caddy_tls
-    install_trojanGO
+    install_trojan_panel_core
     ;;
   7)
-    install_docker
-    install_caddy_tls
-    install_trojanGO_standalone
+    update_trojan_panel_core
     ;;
   8)
-    uninstall_trojanGO
+    uninstall_trojan_panel_core
     ;;
   9)
-    uninstall_trojanGO_standalone
+    install_caddy_tls
     ;;
   10)
-    install_docker
-    install_caddy_tls
-    install_hysteria
+    install_mariadb
     ;;
   11)
-    install_docker
-    install_caddy_tls
-    install_hysteria_standalone
+    install_redis
     ;;
   12)
-    uninstall_hysteria
-    ;;
-  13)
-    uninstall_hysteria_standalone
-    ;;
-  14)
     uninstall_caddy_tls
     ;;
-  15)
+  13)
     uninstall_mariadb
     ;;
-  16)
+  14)
     uninstall_redis
     ;;
-  17)
+  15)
     uninstall_all
     ;;
-  18)
+  16)
     failure_testing
+    ;;
+  17)
+    redis_flush_all
     ;;
   *)
     echo_content red "没有这个选项"
