@@ -626,7 +626,9 @@ install_trojan_panel_core() {
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
-        -v ${TROJAN_PANEL_CORE_DATA}bin:${TROJAN_PANEL_CORE_DATA}bin \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/trojango/config:${TROJAN_PANEL_CORE_DATA}bin/trojango/config \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${CADDY_ACME}:${CADDY_ACME} \
         -v /etc/localtime:/etc/localtime \
