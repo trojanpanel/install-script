@@ -186,54 +186,9 @@ depend_install() {
     systemd
 }
 
-# 安装BBRPlus 仅支持CentOS系统
-install_bbr_plus() {
-  kernel_version="4.14.129-bbrplus"
-  if [[ ! -f /etc/redhat-release ]]; then
-    echo_content yellow "仅支持CentOS系统"
-    exit 0
-  fi
-
-  if [[ "$(uname -r)" == "${kernel_version}" ]]; then
-    echo_content yellow "内核已经安装，无需重复执行"
-    exit 0
-  fi
-
-  # 卸载原加速
-  echo_content green "卸载加速..."
-  sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-  sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-  if [[ -e /appex/bin/serverSpeeder.sh ]]; then
-    wget --no-check-certificate -O appex.sh https://raw.githubusercontent.com/0oVicero0/serverSpeeder_Install/master/appex.sh && chmod +x appex.sh && bash appex.sh uninstall
-    rm -f appex.sh
-  fi
-  echo_content green "下载内核..."
-  wget https://github.com/cx9208/bbrplus/raw/master/centos7/x86_64/kernel-${kernel_version}.rpm
-  echo_content green "安装内核..."
-  yum install -y kernel-${kernel_version}.rpm
-
-  # 检查内核是否安装成功
-  list="$(awk -F\' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg)"
-  target="CentOS Linux (${kernel_version})"
-  result=$(echo "${list}" | grep "${target}")
-  if [[ -z "${result}" ]]; then
-    echo_content red "内核安装失败"
-    exit 1
-  fi
-
-  echo_content green "切换内核..."
-  grub2-set-default "CentOS Linux (${kernel_version}) 7 (Core)"
-  echo_content green "启用模块..."
-  echo "net.core.default_qdisc=fq" >>/etc/sysctl.conf
-  echo "net.ipv4.tcp_congestion_control=bbrplus" >>/etc/sysctl.conf
-  rm -f kernel-${kernel_version}.rpm
-
-  read -r -p "BBRPlusPlus安装完成，现在重启 ? [Y/n] :" yn
-  [[ -z "${yn}" ]] && yn="y"
-  if [[ $yn == [Yy] ]]; then
-    echo_content green "重启中..."
-    reboot
-  fi
+# 安装网络加速
+install_linux_net_speed() {
+  bash <(curl -Lso- https://git.io/kernel.sh)
 }
 
 # 安装Docker
@@ -1023,31 +978,6 @@ redis_flush_all() {
   echo_content skyBlue "---> Redis缓存刷新完成"
 }
 
-# 卸载阿里云内置相关监控
-uninstall_aliyun() {
-  # 卸载云监控(Cloudmonitor) Java 版
-  /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh stop &&
-    /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh remove &&
-    rm -rf /usr/local/cloudmonitor
-  # 卸载云盾(安骑士)
-  wget --no-check-certificate -O uninstall.sh http://update.aegis.aliyun.com/download/uninstall.sh && chmod +x uninstall.sh && ./uninstall.sh
-  wget --no-check-certificate -O quartz_uninstall.sh http://update.aegis.aliyun.com/download/quartz_uninstall.sh && chmod +x quartz_uninstall.sh && ./quartz_uninstall.sh
-  pkill aliyun-service
-  rm -fr /etc/init.d/agentwatch /usr/sbin/aliyun-service
-  rm -rf /usr/local/aegis*
-  iptables -I INPUT -s 140.205.201.0/28 -j DROP
-  iptables -I INPUT -s 140.205.201.16/29 -j DROP
-  iptables -I INPUT -s 140.205.201.32/28 -j DROP
-  iptables -I INPUT -s 140.205.225.192/29 -j DROP
-  iptables -I INPUT -s 140.205.225.200/30 -j DROP
-  iptables -I INPUT -s 140.205.225.184/29 -j DROP
-  iptables -I INPUT -s 140.205.225.183/32 -j DROP
-  iptables -I INPUT -s 140.205.225.206/32 -j DROP
-  iptables -I INPUT -s 140.205.225.205/32 -j DROP
-  iptables -I INPUT -s 140.205.225.195/32 -j DROP
-  iptables -I INPUT -s 140.205.225.204/32 -j DROP
-}
-
 main() {
   cd "$HOME" || exit 0
   init_var
@@ -1062,85 +992,81 @@ main() {
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel/install-script"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 卸载阿里云盾(仅支持阿里云服务器)"
-  echo_content yellow "2. 安装BBRPlus(仅支持CentOS系统)"
+  echo_content yellow "1. 安装网络加速"
   echo_content green "\n=============================================================="
-  echo_content yellow "3. 安装Trojan Panel"
-  echo_content yellow "4. 更新Trojan Panel(注意: 会清除数据)"
-  echo_content yellow "5. 卸载Trojan Panel"
+  echo_content yellow "2. 安装Trojan Panel"
+  echo_content yellow "3. 更新Trojan Panel(注意: 会清除数据)"
+  echo_content yellow "4. 卸载Trojan Panel"
   echo_content green "\n=============================================================="
-  echo_content yellow "6. 安装Trojan Panel Core"
-  echo_content yellow "7. 更新Trojan Panel Core"
-  echo_content yellow "8. 卸载Trojan Panel Core"
+  echo_content yellow "5. 安装Trojan Panel Core"
+  echo_content yellow "6. 更新Trojan Panel Core"
+  echo_content yellow "7. 卸载Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "9. 安装Caddy TLS"
-  echo_content yellow "10. 安装MariaDB"
-  echo_content yellow "11. 安装Redis"
+  echo_content yellow "8. 安装Caddy TLS"
+  echo_content yellow "9. 安装MariaDB"
+  echo_content yellow "10. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "12. 卸载Caddy TLS"
-  echo_content yellow "13. 卸载MariaDB"
-  echo_content yellow "14. 卸载Redis"
-  echo_content yellow "15. 卸载全部Trojan Panel相关的容器"
+  echo_content yellow "11. 卸载Caddy TLS"
+  echo_content yellow "12. 卸载MariaDB"
+  echo_content yellow "13. 卸载Redis"
+  echo_content yellow "14. 卸载全部Trojan Panel相关的容器"
   echo_content green "\n=============================================================="
-  echo_content yellow "16. 故障检测"
-  echo_content yellow "17. 刷新Redis缓存"
+  echo_content yellow "15. 故障检测"
+  echo_content yellow "16. 刷新Redis缓存"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
-    uninstall_aliyun
+    install_linux_net_speed
     ;;
   2)
-    install_bbr_plus
-    ;;
-  3)
     install_docker
     install_caddy_tls
     install_mariadb
     install_redis
     install_trojan_panel
     ;;
-  4)
+  3)
     update_trojan_panel
     ;;
-  5)
+  4)
     uninstall_trojan_panel
     ;;
-  6)
+  5)
     install_docker
     install_caddy_tls
     install_trojan_panel_core
     ;;
-  7)
+  6)
     update_trojan_panel_core
     ;;
-  8)
+  7)
     uninstall_trojan_panel_core
     ;;
-  9)
+  8)
     install_caddy_tls
     ;;
-  10)
+  9)
     install_mariadb
     ;;
-  11)
+  10)
     install_redis
     ;;
-  12)
+  11)
     uninstall_caddy_tls
     ;;
-  13)
+  12)
     uninstall_mariadb
     ;;
-  14)
+  13)
     uninstall_redis
     ;;
-  15)
+  14)
     uninstall_all
     ;;
-  16)
+  15)
     failure_testing
     ;;
-  17)
+  16)
     redis_flush_all
     ;;
   *)
