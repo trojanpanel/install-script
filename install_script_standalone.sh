@@ -174,54 +174,9 @@ depend_install() {
     systemd
 }
 
-# 安装BBRPlus 仅支持CentOS系统
-install_bbr_plus() {
-  kernel_version="4.14.129-bbrplus"
-  if [[ ! -f /etc/redhat-release ]]; then
-    echo_content yellow "仅支持CentOS系统"
-    exit 0
-  fi
-
-  if [[ "$(uname -r)" == "${kernel_version}" ]]; then
-    echo_content yellow "内核已经安装，无需重复执行"
-    exit 0
-  fi
-
-  # 卸载原加速
-  echo_content green "卸载加速..."
-  sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-  sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-  if [[ -e /appex/bin/serverSpeeder.sh ]]; then
-    wget --no-check-certificate -O appex.sh https://raw.githubusercontent.com/0oVicero0/serverSpeeder_Install/master/appex.sh && chmod +x appex.sh && bash appex.sh uninstall
-    rm -f appex.sh
-  fi
-  echo_content green "下载内核..."
-  wget https://github.com/cx9208/bbrplus/raw/master/centos7/x86_64/kernel-${kernel_version}.rpm
-  echo_content green "安装内核..."
-  yum install -y kernel-${kernel_version}.rpm
-
-  # 检查内核是否安装成功
-  list="$(awk -F\' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg)"
-  target="CentOS Linux (${kernel_version})"
-  result=$(echo "${list}" | grep "${target}")
-  if [[ -z "${result}" ]]; then
-    echo_content red "内核安装失败"
-    exit 1
-  fi
-
-  echo_content green "切换内核..."
-  grub2-set-default "CentOS Linux (${kernel_version}) 7 (Core)"
-  echo_content green "启用模块..."
-  echo "net.core.default_qdisc=fq" >>/etc/sysctl.conf
-  echo "net.ipv4.tcp_congestion_control=bbrplus" >>/etc/sysctl.conf
-  rm -f kernel-${kernel_version}.rpm
-
-  read -r -p "BBRPlusPlus安装完成，现在重启 ? [Y/n] :" yn
-  [[ -z "${yn}" ]] && yn="y"
-  if [[ $yn == [Yy] ]]; then
-    echo_content green "重启中..."
-    reboot
-  fi
+# 安装网络加速
+install_linux_net_speed() {
+  bash <(curl -Lso- https://git.io/kernel.sh)
 }
 
 # 安装Docker
@@ -877,61 +832,57 @@ main() {
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel/install-script"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 卸载阿里云盾(仅支持阿里云服务器)"
-  echo_content yellow "2. 安装BBRPlus(仅支持CentOS系统)"
+  echo_content yellow "1. 安装网络加速"
   echo_content green "\n=============================================================="
-  echo_content yellow "3. 安装TrojanGFW+Caddy+Web+TLS+Websocket节点 单机版"
-  echo_content yellow "4. 卸载TrojanGFW 单机版"
+  echo_content yellow "2. 安装TrojanGFW+Caddy+Web+TLS+Websocket节点 单机版"
+  echo_content yellow "3. 卸载TrojanGFW 单机版"
   echo_content green "\n=============================================================="
-  echo_content yellow "5. 安装TrojanGO+Caddy+Web+TLS+Websocket节点 单机版"
-  echo_content yellow "6. 卸载TrojanGO 单机版"
+  echo_content yellow "4. 安装TrojanGO+Caddy+Web+TLS+Websocket节点 单机版"
+  echo_content yellow "5. 卸载TrojanGO 单机版"
   echo_content green "\n=============================================================="
-  echo_content yellow "7. 安装Hysteria节点 单机版"
-  echo_content yellow "8. 卸载Hysteria节点 单机版"
+  echo_content yellow "6. 安装Hysteria节点 单机版"
+  echo_content yellow "7. 卸载Hysteria节点 单机版"
   echo_content green "\n=============================================================="
-  echo_content yellow "9. 卸载Caddy TLS"
-  echo_content yellow "10. 卸载全部Trojan Panel相关的容器"
+  echo_content yellow "8. 卸载Caddy TLS"
+  echo_content yellow "9. 卸载全部Trojan Panel相关的容器"
   echo_content green "\n=============================================================="
-  echo_content yellow "11. 故障检测"
+  echo_content yellow "10. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
-    uninstall_aliyun
+    install_linux_net_speed
     ;;
   2)
-    install_bbr_plus
-    ;;
-  3)
     install_docker
     install_caddy_tls
     install_trojan_gfw_standalone
     ;;
-  4)
+  3)
     uninstall_trojan_gfw_standalone
     ;;
-  5)
+  4)
     install_docker
     install_caddy_tls
     install_trojanGO_standalone
     ;;
-  6)
+  5)
     uninstall_trojanGO_standalone
     ;;
-  7)
+  6)
     install_docker
     install_caddy_tls
     install_hysteria_standalone
     ;;
-  8)
+  7)
     uninstall_hysteria_standalone
     ;;
-  9)
+  8)
     uninstall_caddy_tls
     ;;
-  10)
+  9)
     uninstall_all
     ;;
-  11)
+  10)
     failure_testing
     ;;
   *)
