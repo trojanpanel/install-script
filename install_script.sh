@@ -910,40 +910,7 @@ uninstall_all() {
   echo_content skyBlue "---> 卸载全部Trojan Panel相关的容器完成"
 }
 
-# 故障检测
-failure_testing() {
-  echo_content green "---> 故障检测开始"
-  if [[ ! $(docker -v 2>/dev/null) ]]; then
-    echo_content red "---> Docker运行异常"
-  else
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-      if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy TLS运行异常"
-      fi
-      domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
-        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
-      fi
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
-      echo_content red "---> MariaDB运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
-      echo_content red "---> Redis运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel后端运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel前端运行异常"
-    fi
-    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel Core运行异常"
-    fi
-  fi
-  echo_content green "---> 故障检测结束"
-}
-
+# 刷新Redis缓存
 redis_flush_all() {
   # 判断Redis是否安装
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
@@ -979,6 +946,77 @@ redis_flush_all() {
   echo_content skyBlue "---> Redis缓存刷新完成"
 }
 
+# 故障检测
+failure_testing() {
+  echo_content green "---> 故障检测开始"
+  if [[ ! $(docker -v 2>/dev/null) ]]; then
+    echo_content red "---> Docker运行异常"
+  else
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+      if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
+        echo_content red "---> Caddy TLS运行异常"
+      fi
+      domain=$(cat "${DOMAIN_FILE}")
+      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
+        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
+      fi
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
+      echo_content red "---> MariaDB运行异常"
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
+      echo_content red "---> Redis运行异常"
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+      echo_content red "---> Trojan Panel后端运行异常"
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+      echo_content red "---> Trojan Panel前端运行异常"
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
+      echo_content red "---> Trojan Panel Core运行异常"
+    fi
+  fi
+  echo_content green "---> 故障检测结束"
+}
+
+log_query() {
+  while :; do
+    echo_content skyBlue "可以查询日志的应用如下:"
+    echo_content yellow "1. Trojan Panel"
+    echo_content yellow "2. Trojan Panel Core"
+    echo_content yellow "3. 退出"
+    read -r -p "请选择应用(默认:1): " select_log_query_type
+    [[ -z "${select_log_query_type}" ]] && select_log_query_type=1
+
+    case ${select_log_query_type} in
+    1)
+      log_file_path=${TROJAN_PANEL_LOGS}trojan-panel.log
+      ;;
+    2)
+      log_file_path=${TROJAN_PANEL_CORE_LOGS}trojan-panel-core.log
+      ;;
+    3)
+      break
+      ;;
+    *)
+      echo_content red "没有这个选项"
+      continue
+      ;;
+    esac
+
+    read -r -p "请输入查询的行数(默认:20): " select_log_query_line_type
+    [[ -z "${select_log_query_line_type}" ]] && select_log_query_line_type=20
+
+    if [[ -f ${log_file_path} ]]; then
+      echo_content skyBlue "日志文件如下:"
+      tail -n ${select_log_query_line_type} ${log_file_path}
+    else
+      echo_content red "不存在日志文件"
+    fi
+  done
+}
+
 main() {
   cd "$HOME" || exit 0
   init_var
@@ -1012,8 +1050,9 @@ main() {
   echo_content yellow "13. 卸载Redis"
   echo_content yellow "14. 卸载全部Trojan Panel相关的容器"
   echo_content green "\n=============================================================="
-  echo_content yellow "15. 故障检测"
-  echo_content yellow "16. 刷新Redis缓存"
+  echo_content yellow "15. 刷新Redis缓存"
+  echo_content yellow "16. 故障检测"
+  echo_content yellow "17. 日志查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1065,10 +1104,13 @@ main() {
     uninstall_all
     ;;
   15)
-    failure_testing
+    redis_flush_all
     ;;
   16)
-    redis_flush_all
+    failure_testing
+    ;;
+  17)
+    log_query
     ;;
   *)
     echo_content red "没有这个选项"
