@@ -40,14 +40,14 @@ init_var() {
   # MariaDB
   MARIA_DATA="/tpdata/mariadb/"
   mariadb_ip="127.0.0.1"
-  mariadb_port=3306
+  mariadb_port=9507
   mariadb_user="root"
   mariadb_pas=""
 
   #Redis
   REDIS_DATA="/tpdata/redis/"
   redis_host="127.0.0.1"
-  redis_port=6379
+  redis_port=6378
   redis_pass=""
 
   # Trojan Panel
@@ -364,6 +364,8 @@ install_mariadb() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> 安装MariaDB"
 
+    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
+    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -382,7 +384,8 @@ install_mariadb() {
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
           -e TZ=Asia/Shanghai \
-          mariadb:10.7.3
+          mariadb:10.7.3 \
+          --port ${mariadb_port}
     else
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
@@ -393,7 +396,8 @@ install_mariadb() {
           -e MYSQL_USER="${mariadb_user}" \
           -e MYSQL_PASSWORD="${mariadb_pas}" \
           -e TZ=Asia/Shanghai \
-          mariadb:10.7.3
+          mariadb:10.7.3 \
+          --port ${mariadb_port}
     fi
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
@@ -416,6 +420,8 @@ install_redis() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
     echo_content green "---> 安装Redis"
 
+    read -r -p "请输入Redis的端口(默认:6378): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
@@ -428,7 +434,7 @@ install_redis() {
       docker run -d --name trojan-panel-redis --restart always \
         --network=host \
         -v ${REDIS_DATA}:/data redis:6.2.7 \
-        redis-server --requirepass "${redis_pass}"
+        redis-server --requirepass "${redis_pass}" --port ${redis_port}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
       echo_content skyBlue "---> Redis安装完成"
@@ -450,7 +456,7 @@ install_trojan_panel() {
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -472,7 +478,7 @@ install_trojan_panel() {
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6379
+    [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
@@ -594,7 +600,7 @@ install_trojan_panel_core() {
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -612,7 +618,7 @@ install_trojan_panel_core() {
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6379
+    [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
         echo_content red "密码不能为空"
@@ -668,7 +674,7 @@ update_trojan_panel() {
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
   read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+  [[ -z "${mariadb_port}" ]] && mariadb_port=9507
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
   [[ -z "${mariadb_user}" ]] && mariadb_user="root"
   while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -690,7 +696,7 @@ update_trojan_panel() {
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6379
+  [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
       echo_content red "密码不能为空"
@@ -761,7 +767,7 @@ update_trojan_panel_core() {
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
   read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
-  [[ -z "${mariadb_port}" ]] && mariadb_port=3306
+  [[ -z "${mariadb_port}" ]] && mariadb_port=9507
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
   [[ -z "${mariadb_user}" ]] && mariadb_user="root"
   while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
@@ -779,7 +785,7 @@ update_trojan_panel_core() {
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6379
+  [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
       echo_content red "密码不能为空"
@@ -928,7 +934,7 @@ redis_flush_all() {
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
   read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6379
+  [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
       echo_content red "密码不能为空"
