@@ -380,7 +380,6 @@ install_mariadb() {
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
           --network=host \
-          -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
           -e TZ=Asia/Shanghai \
@@ -390,7 +389,6 @@ install_mariadb() {
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
           --network=host \
-          -v ${MARIA_DATA}:/var/lib/mysql \
           -e MYSQL_DATABASE="trojan_panel_db" \
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
           -e MYSQL_USER="${mariadb_user}" \
@@ -433,7 +431,7 @@ install_redis() {
     docker pull redis:6.2.7 &&
       docker run -d --name trojan-panel-redis --restart always \
         --network=host \
-        -v ${REDIS_DATA}:/data redis:6.2.7 \
+        redis:6.2.7 \
         redis-server --requirepass "${redis_pass}" --port ${redis_port}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
