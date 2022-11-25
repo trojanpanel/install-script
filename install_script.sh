@@ -628,8 +628,10 @@ install_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
         -v ${TROJAN_PANEL_CORE_DATA}bin/trojango/config:${TROJAN_PANEL_CORE_DATA}bin/trojango/config \
         -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${CADDY_ACME}:${CADDY_ACME} \
+        -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
