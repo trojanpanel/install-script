@@ -186,11 +186,6 @@ depend_install() {
     systemd
 }
 
-# 安装网络加速
-install_linux_net_speed() {
-  bash <(curl -Lso- https://git.io/kernel.sh)
-}
-
 # 安装Docker
 install_docker() {
   if [[ ! $(docker -v 2>/dev/null) ]]; then
@@ -1033,87 +1028,76 @@ main() {
   echo_content skyBlue "Version: v1.0.0"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
-  echo_content skyBlue "Github: https://github.com/trojanpanel/install-script"
+  echo_content skyBlue "Github: https://github.com/trojanpanel"
+  echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 安装网络加速"
+  echo_content yellow "1. 安装Trojan Panel"
+  echo_content yellow "2. 安装Trojan Panel Core"
+  echo_content yellow "3. 安装Caddy TLS"
+  echo_content yellow "4. 安装MariaDB"
+  echo_content yellow "5. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "2. 安装Trojan Panel"
-  echo_content yellow "3. 更新Trojan Panel(注意: 会清除数据)"
-  echo_content yellow "4. 卸载Trojan Panel"
-  echo_content green "\n=============================================================="
-  echo_content yellow "5. 安装Trojan Panel Core"
-  echo_content yellow "6. 更新Trojan Panel Core"
+  echo_content yellow "6. 卸载Trojan Panel"
   echo_content yellow "7. 卸载Trojan Panel Core"
+  echo_content yellow "8. 卸载Caddy TLS"
+  echo_content yellow "9. 卸载MariaDB"
+  echo_content yellow "10. 卸载Redis"
+  echo_content yellow "11. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "8. 安装Caddy TLS"
-  echo_content yellow "9. 安装MariaDB"
-  echo_content yellow "10. 安装Redis"
-  echo_content green "\n=============================================================="
-  echo_content yellow "11. 卸载Caddy TLS"
-  echo_content yellow "12. 卸载MariaDB"
-  echo_content yellow "13. 卸载Redis"
-  echo_content yellow "14. 卸载全部Trojan Panel相关的容器"
-  echo_content green "\n=============================================================="
-  echo_content yellow "15. 刷新Redis缓存"
-  echo_content yellow "16. 故障检测"
-  echo_content yellow "17. 日志查询"
+  echo_content yellow "12. 刷新Redis缓存"
+  echo_content yellow "13. 故障检测"
+  echo_content yellow "14. 日志查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
-    install_linux_net_speed
-    ;;
-  2)
     install_docker
     install_caddy_tls
     install_mariadb
     install_redis
     install_trojan_panel
     ;;
-  3)
-    update_trojan_panel
-    ;;
-  4)
-    uninstall_trojan_panel
-    ;;
-  5)
+  2)
     install_docker
     install_caddy_tls
     install_trojan_panel_core
     ;;
+  3)
+    install_docker
+    install_caddy_tls
+    ;;
+  4)
+    install_docker
+    install_mariadb
+    ;;
+  5)
+    install_docker
+    install_redis
+    ;;
   6)
-    update_trojan_panel_core
+    uninstall_trojan_panel
     ;;
   7)
     uninstall_trojan_panel_core
     ;;
   8)
-    install_caddy_tls
-    ;;
-  9)
-    install_mariadb
-    ;;
-  10)
-    install_redis
-    ;;
-  11)
     uninstall_caddy_tls
     ;;
-  12)
+  9)
     uninstall_mariadb
     ;;
-  13)
+  10)
     uninstall_redis
     ;;
-  14)
+  11)
     uninstall_all
     ;;
-  15)
+  12)
     redis_flush_all
     ;;
-  16)
+  13)
     failure_testing
     ;;
-  17)
+  14)
     log_query
     ;;
   *)

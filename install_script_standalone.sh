@@ -174,11 +174,6 @@ depend_install() {
     systemd
 }
 
-# 安装网络加速
-install_linux_net_speed() {
-  bash <(curl -Lso- https://git.io/kernel.sh)
-}
-
 # 安装Docker
 install_docker() {
   if [[ ! $(docker -v 2>/dev/null) ]]; then
@@ -347,10 +342,10 @@ EOF
   fi
 }
 
-# 安装TrojanGFW 单机版
+# TrojanGFW+Caddy+Web+TLS+Websocket
 install_trojan_gfw_standalone() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-    echo_content green "---> 安装TrojanGFW"
+    echo_content green "---> 安装TrojanGFW+Caddy+Web+TLS+Websocket"
 
     read -r -p "请输入TrojanGFW的端口(默认:443): " trojanGFW_port
     [[ -n ${trojanGFW_port} ]] && trojanGFW_port=443
@@ -423,26 +418,26 @@ EOF
         trojangfw/trojan
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$" -f "status=running") ]]; then
-      echo_content skyBlue "---> TrojanGFW 单机版 安装完成"
+      echo_content skyBlue "---> TrojanGFW+Caddy+Web+TLS 安装完成"
       echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGFW+Caddy+Web+TLS节点 单机版 安装成功"
+      echo_content skyBlue "TrojanGFW+Caddy+Web+TLS 安装成功"
       echo_content yellow "域名: ${domain}"
       echo_content yellow "TrojanGFW的端口: ${trojanGFW_port}"
       echo_content yellow "TrojanGFW的密码: ${trojan_pas}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> TrojanGFW 单机版 安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> TrojanGFW+Caddy+Web+TLS 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了TrojanGFW 单机版"
+    echo_content skyBlue "---> 你已经安装了TrojanGFW+Caddy+Web+TLS"
   fi
 }
 
-# 安装TrojanGO 单机版
+# TrojanGO+Caddy+Web+TLS+Websocket
 install_trojanGO_standalone() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
-    echo_content green "---> 安装TrojanGO 单机版"
+    echo_content green "---> 安装TrojanGO+Caddy+Web+TLS+Websocket"
 
     read -r -p "请输入TrojanGO的端口(默认:443): " trojanGO_port
     [[ -z "${trojanGO_port}" ]] && trojanGO_port=443
@@ -597,9 +592,9 @@ EOF
         p4gefau1t/trojan-go
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-trojanGO-standalone$" -f "status=running") ]]; then
-      echo_content skyBlue "---> TrojanGO 单机版 安装完成"
+      echo_content skyBlue "---> TrojanGO+Caddy+Web+TLS+Websocket 安装完成"
       echo_content red "\n=============================================================="
-      echo_content skyBlue "TrojanGO+Caddy+Web+TLS+Websocket节点 单机版 安装成功"
+      echo_content skyBlue "TrojanGO+Caddy+Web+TLS+Websocket 安装成功"
       echo_content yellow "域名: ${domain}"
       echo_content yellow "TrojanGO的端口: ${trojanGO_port}"
       echo_content yellow "TrojanGO的密码: ${trojan_pas}"
@@ -613,18 +608,18 @@ EOF
       fi
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> TrojanGO 单机版 安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> TrojanGO+Caddy+Web+TLS+Websocket 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经了安装了TrojanGO 单机版"
+    echo_content skyBlue "---> 你已经了安装了TrojanGO+Caddy+Web+TLS+Websocket"
   fi
 }
 
-# 安装Hysteria 单机版
+# 安装Hysteria
 install_hysteria_standalone() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
-    echo_content green "---> 安装Hysteria 单机版"
+    echo_content green "---> 安装Hysteria"
 
     echo_content skyBlue "Hysteria的模式如下:"
     echo_content yellow "1. udp(默认)"
@@ -676,20 +671,20 @@ EOF
         tobyxdd/hysteria -c /etc/hysteria.json server
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
-      echo_content skyBlue "---> Hysteria 单机版 安装完成"
+      echo_content skyBlue "---> Hysteria 安装完成"
       echo_content red "\n=============================================================="
-      echo_content skyBlue "Hysteria节点 单机版 安装成功"
+      echo_content skyBlue "Hysteria 安装成功"
       echo_content yellow "域名: ${domain}"
       echo_content yellow "Hysteria的端口: ${hysteria_port}"
       echo_content yellow "Hysteria的密码: ${hysteria_password}"
       echo_content yellow "Hysteria私钥和证书目录: ${CADDY_ACME}${domain}/"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Hysteria 单机版 安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Hysteria 安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Hysteria 单机版"
+    echo_content skyBlue "---> 你已经安装了Hysteria"
   fi
 }
 
@@ -708,48 +703,48 @@ uninstall_caddy_tls() {
   fi
 }
 
-# 卸载TrojanGFW 单机版
+# TrojanGFW+Caddy+Web+TLS
 uninstall_trojan_gfw_standalone() {
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGFW-standalone$") ]]; then
-    echo_content green "---> 卸载TrojanGFW 单机版"
+    echo_content green "---> 卸载TrojanGFW+Caddy+Web+TLS"
 
     docker rm -f trojan-panel-trojanGFW-standalone &&
       docker rmi -f trojangfw/trojan &&
       rm -f ${TROJANGFW_STANDALONE_CONFIG}
 
-    echo_content skyBlue "---> TrojanGFW 单机版卸载完成"
+    echo_content skyBlue "---> TrojanGFW+Caddy+Web+TLS 卸载完成"
   else
-    echo_content red "---> 请先安装TrojanGFW 单机版"
+    echo_content red "---> 请先安装TrojanGFW+Caddy+Web+TLS"
   fi
 }
 
 # 卸载TrojanGO 单机版
 uninstall_trojanGO_standalone() {
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGO-standalone$") ]]; then
-    echo_content green "---> 卸载TrojanGO 单机版"
+    echo_content green "---> 卸载TrojanGO+Caddy+Web+TLS+Websocket"
 
     docker rm -f trojan-panel-trojanGO-standalone &&
       docker rmi -f p4gefau1t/trojan-go &&
       rm -f ${TROJANGO_STANDALONE_CONFIG}
 
-    echo_content skyBlue "---> TrojanGO 单机版卸载完成"
+    echo_content skyBlue "---> TrojanGO+Caddy+Web+TLS+Websocket 卸载完成"
   else
-    echo_content red "---> 请先安装TrojanGO 单机版"
+    echo_content red "---> 请先安装TrojanGO+Caddy+Web+TLS+Websocket"
   fi
 }
 
-# 卸载Hysteria节点 单机版
+# 卸载Hysteria
 uninstall_hysteria_standalone() {
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") ]]; then
-    echo_content green "---> 卸载Hysteria节点 单机版"
+    echo_content green "---> 卸载Hysteria"
 
     docker rm -f trojan-panel-hysteria-standalone &&
       docker rmi -f tobyxdd/hysteria &&
       rm -f ${HYSTERIA_STANDALONE_CONFIG}
 
-    echo_content skyBlue "---> Hysteria节点 单机版卸载完成"
+    echo_content skyBlue "---> Hysteria 卸载完成"
   else
-    echo_content red "---> 请先安装Hysteria节点 单机版"
+    echo_content red "---> 请先安装Hysteria"
   fi
 }
 
@@ -773,11 +768,10 @@ failure_testing() {
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
         echo_content red "---> Caddy TLS运行异常"
-      else
-        domain=$(cat "${DOMAIN_FILE}")
-        if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
-          echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
-        fi
+      fi
+      domain=$(cat "${DOMAIN_FILE}")
+      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_ACME}${domain}" || ! -f "${CADDY_ACME}${domain}/${domain}.crt" ]]; then
+        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-trojanGFW-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-trojanGFW-standalone$" -f "status=running") ]]; then
@@ -830,59 +824,54 @@ main() {
   echo_content skyBlue "Version: v1.0.0"
   echo_content skyBlue "Description: One click Install Trojan Panel standalone server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
-  echo_content skyBlue "Github: https://github.com/trojanpanel/install-script"
+  echo_content skyBlue "Github: https://github.com/trojanpanel"
+  echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 安装网络加速"
+  echo_content yellow "1. 安装TrojanGFW+Caddy+Web+TLS"
+  echo_content yellow "3. 安装TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "5. 安装Hysteria"
+  echo_content yellow "3. 安装Caddy TLS"
   echo_content green "\n=============================================================="
-  echo_content yellow "2. 安装TrojanGFW+Caddy+Web+TLS+Websocket节点 单机版"
-  echo_content yellow "3. 卸载TrojanGFW 单机版"
+  echo_content yellow "2. 卸载TrojanGFW+Caddy+Web+TLS"
+  echo_content yellow "4. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "6. 卸载Hysteria"
+  echo_content yellow "7. 卸载Caddy TLS"
+  echo_content yellow "8. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "4. 安装TrojanGO+Caddy+Web+TLS+Websocket节点 单机版"
-  echo_content yellow "5. 卸载TrojanGO 单机版"
-  echo_content green "\n=============================================================="
-  echo_content yellow "6. 安装Hysteria节点 单机版"
-  echo_content yellow "7. 卸载Hysteria节点 单机版"
-  echo_content green "\n=============================================================="
-  echo_content yellow "8. 卸载Caddy TLS"
-  echo_content yellow "9. 卸载全部Trojan Panel相关的容器"
-  echo_content green "\n=============================================================="
-  echo_content yellow "10. 故障检测"
+  echo_content yellow "9. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
-    install_linux_net_speed
-    ;;
-  2)
     install_docker
     install_caddy_tls
     install_trojan_gfw_standalone
     ;;
-  3)
-    uninstall_trojan_gfw_standalone
-    ;;
-  4)
+  2)
     install_docker
     install_caddy_tls
     install_trojanGO_standalone
+    ;;
+  3)
+    install_docker
+    install_caddy_tls
+    install_hysteria_standalone
+    ;;
+  4)
+    uninstall_trojan_gfw_standalone
     ;;
   5)
     uninstall_trojanGO_standalone
     ;;
   6)
-    install_docker
-    install_caddy_tls
-    install_hysteria_standalone
-    ;;
-  7)
     uninstall_hysteria_standalone
     ;;
-  8)
+  7)
     uninstall_caddy_tls
     ;;
-  9)
+  8)
     uninstall_all
     ;;
-  10)
+  9)
     failure_testing
     ;;
   *)
