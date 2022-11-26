@@ -828,17 +828,17 @@ main() {
   echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
   echo_content yellow "1. 安装TrojanGFW+Caddy+Web+TLS"
-  echo_content yellow "3. 安装TrojanGO+Caddy+Web+TLS+Websocket"
-  echo_content yellow "5. 安装Hysteria"
-  echo_content yellow "3. 安装Caddy TLS"
+  echo_content yellow "2. 安装TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "3. 安装Hysteria"
+  echo_content yellow "4. 安装Caddy TLS"
   echo_content green "\n=============================================================="
-  echo_content yellow "2. 卸载TrojanGFW+Caddy+Web+TLS"
-  echo_content yellow "4. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
-  echo_content yellow "6. 卸载Hysteria"
-  echo_content yellow "7. 卸载Caddy TLS"
-  echo_content yellow "8. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "5. 卸载TrojanGFW+Caddy+Web+TLS"
+  echo_content yellow "6. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "7. 卸载Hysteria"
+  echo_content yellow "8. 卸载Caddy TLS"
+  echo_content yellow "9. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "9. 故障检测"
+  echo_content yellow "10. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -857,21 +857,25 @@ main() {
     install_hysteria_standalone
     ;;
   4)
-    uninstall_trojan_gfw_standalone
+    install_docker
+    install_caddy_tls
     ;;
   5)
-    uninstall_trojanGO_standalone
+    uninstall_trojan_gfw_standalone
     ;;
   6)
-    uninstall_hysteria_standalone
+    uninstall_trojanGO_standalone
     ;;
   7)
-    uninstall_caddy_tls
+    uninstall_hysteria_standalone
     ;;
   8)
-    uninstall_all
+    uninstall_caddy_tls
     ;;
   9)
+    uninstall_all
+    ;;
+  10)
     failure_testing
     ;;
   *)
