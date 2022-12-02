@@ -448,7 +448,7 @@ install_trojan_panel() {
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
@@ -470,7 +470,7 @@ install_trojan_panel() {
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-    read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+    read -r -p "请输入Redis的端口(默认:6378): " redis_port
     [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
@@ -592,7 +592,7 @@ install_trojan_panel_core() {
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=9507
     read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
@@ -610,7 +610,7 @@ install_trojan_panel_core() {
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-    read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+    read -r -p "请输入Redis的端口(默认:6378): " redis_port
     [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "请输入Redis的密码(必填): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
@@ -666,7 +666,7 @@ update_trojan_panel() {
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+  read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
   [[ -z "${mariadb_port}" ]] && mariadb_port=9507
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
   [[ -z "${mariadb_user}" ]] && mariadb_user="root"
@@ -688,7 +688,7 @@ update_trojan_panel() {
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  read -r -p "请输入Redis的端口(默认:6378): " redis_port
   [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
@@ -759,7 +759,7 @@ update_trojan_panel_core() {
 
   read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
   [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-  read -r -p "请输入数据库的端口(默认:本机数据库端口): " mariadb_port
+  read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
   [[ -z "${mariadb_port}" ]] && mariadb_port=9507
   read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
   [[ -z "${mariadb_user}" ]] && mariadb_user="root"
@@ -777,7 +777,7 @@ update_trojan_panel_core() {
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  read -r -p "请输入Redis的端口(默认:6378): " redis_port
   [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
@@ -926,7 +926,7 @@ redis_flush_all() {
 
   read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
   [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-  read -r -p "请输入Redis的端口(默认:本机Redis端口): " redis_port
+  read -r -p "请输入Redis的端口(默认:6378): " redis_port
   [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "请输入Redis的密码(必填): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
