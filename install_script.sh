@@ -61,6 +61,7 @@ init_var() {
   NGINX_DATA="/tpdata/nginx/"
   NGINX_CONFIG="/tpdata/nginx/default.conf"
   trojan_panel_ui_port=8888
+  https_enable=1
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
@@ -515,8 +516,10 @@ install_trojan_panel() {
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
 
-    # 配置Nginx
-    cat >${NGINX_CONFIG} <<-EOF
+    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " https_enable; do
+      if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
+        # 配置Nginx
+        cat >${NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  ${domain};
@@ -557,6 +560,35 @@ server {
     }
 }
 EOF
+      else
+        if [[ ${https_enable} != 0 ]]; then
+          echo_content red "不可以输入除0和1之外的其他字符"
+        else
+          cat >${NGINX_CONFIG} <<-EOF
+server {
+    listen       ${trojan_panel_ui_port};
+    server_name  localhost;
+
+    location / {
+        root   ${TROJAN_PANEL_UI_DATA};
+        index  index.html index.htm;
+    }
+
+    location /api {
+        proxy_pass http://127.0.0.1:8081;
+    }
+
+    error_page  497              http://\$host:${trojan_panel_ui_port}\$uri?\$args;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+        fi
+      fi
+    done
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
