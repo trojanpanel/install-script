@@ -609,7 +609,7 @@ EOF
     echo_content skyBlue "---> 你已经安装了Trojan Panel前端"
   fi
 
-  https_flag=$([[ "${https_enable}" == "1" ]] && echo "https" || echo "http")
+  https_flag=$([[ -z ${https_enable} || ${https_enable} == 1 ]] && echo "https" || echo "http")
 
   echo_content red "\n=============================================================="
   echo_content skyBlue "Trojan Panel 安装成功"
