@@ -609,11 +609,13 @@ EOF
     echo_content skyBlue "---> 你已经安装了Trojan Panel前端"
   fi
 
+  https_flag=$([[ "${https_enable}" == "1" ]] && echo "https" || echo "http")
+
   echo_content red "\n=============================================================="
   echo_content skyBlue "Trojan Panel 安装成功"
   echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
   echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
-  echo_content yellow "管理面板地址: https://${domain}:${trojan_panel_ui_port}"
+  echo_content yellow "管理面板地址: ${https_flag}://${domain}:${trojan_panel_ui_port}"
   echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
   echo_content yellow "Trojan Panel私钥和证书目录: ${CADDY_ACME}${domain}/"
   echo_content red "\n=============================================================="
