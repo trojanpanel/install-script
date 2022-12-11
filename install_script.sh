@@ -560,6 +560,7 @@ server {
     }
 }
 EOF
+        break
       else
         if [[ ${https_enable} != 0 ]]; then
           echo_content red "不可以输入除0和1之外的其他字符"
@@ -586,6 +587,7 @@ server {
     }
 }
 EOF
+          break
         fi
       fi
     done
