@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v1.0.0
+# Version: v1.3.1
 # Description: One click Install Trojan Panel standalone server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -63,6 +63,13 @@ init_var() {
   hysteria_protocol="udp"
   hysteria_up_mbps=100
   hysteria_down_mbps=100
+
+  # naiveproxy
+  NAIVEPROXY_DATA="/tpdata/naiveproxy/"
+  NAIVEPROXY_STANDALONE_CONFIG="/tpdata/naiveproxy/standalone_config.json"
+  naiveproxy_port=443
+  naiveproxy_username=""
+  naiveproxy_pass=""
 }
 
 echo_content() {
@@ -112,6 +119,10 @@ mkdir_tools() {
   # hysteria
   mkdir -p ${HYSTERIA_DATA}
   touch ${HYSTERIA_STANDALONE_CONFIG}
+
+  # naiveproxy
+  mkdir -p ${NAIVEPROXY_DATA}
+  touch ${NAIVEPROXY_STANDALONE_CONFIG}
 }
 
 can_connect() {
@@ -688,6 +699,151 @@ EOF
   fi
 }
 
+# 安装NaiveProxy(Caddy+ForwardProxy)
+install_navieproxy_standalone() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-navieproxy-standalone$") ]]; then
+    echo_content green "---> 安装NaiveProxy(Caddy+ForwardProxy)"
+
+    read -r -p "请输入NaiveProxy的端口(默认:443): " naiveproxy_port
+    [[ -z "${naiveproxy_port}" ]] && naiveproxy_port=443
+    while read -r -p "请输入NaiveProxy的用户名(必填): " naiveproxy_username; do
+      if [[ -z "${naiveproxy_username}" ]]; then
+        echo_content red "用户名不能为空"
+      else
+        break
+      fi
+    done
+    while read -r -p "请输入NaiveProxy的密码(必填): " naiveproxy_pass; do
+      if [[ -z "${naiveproxy_pass}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
+    domain=$(cat "${DOMAIN_FILE}")
+    cat >${NAIVEPROXY_STANDALONE_CONFIG} <<EOF
+{
+    "admin": {
+        "disabled": true
+    },
+    "logging": {
+        "sink": {
+            "writer": {
+                "output": "discard"
+            }
+        },
+        "logs": {
+            "default": {
+                "writer": {
+                    "output": "discard"
+                }
+            }
+        }
+    },
+    "apps": {
+        "http": {
+            "servers": {
+                "srv0": {
+                    "listen": [
+                        ":${naiveproxy_port}"
+                    ],
+                    "routes": [
+                        {
+                            "handle": [
+                                {
+                                    "handler": "subroute",
+                                    "routes": [
+                                        {
+                                            "handle": [
+                                                {
+                                                    "auth_pass_deprecated": "${naiveproxy_pass}",
+                                                    "auth_user_deprecated": "${naiveproxy_username}",
+                                                    "handler": "forward_proxy",
+                                                    "hide_ip": true,
+                                                    "hide_via": true,
+                                                    "probe_resistance": {}
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "match": [
+                                                {
+                                                    "host": [
+                                                        "${domain}"
+                                                    ]
+                                                }
+                                            ],
+                                            "handle": [
+                                                {
+                                                    "handler": "file_server",
+                                                    "root": "/caddy-forwardproxy/dist/",
+                                                    "index_names": [
+                                                        "index.html",
+                                                        "index.htm"
+                                                    ]
+                                                }
+                                            ],
+                                            "terminal": true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "tls_connection_policies": [
+                        {
+                            "match": {
+                                "sni": [
+                                    "${domain}"
+                                ]
+                            }
+                        }
+                    ],
+                    "automatic_https": {
+                        "disable": true
+                    }
+                }
+            }
+        },
+        "tls": {
+            "certificates": {
+                "load_files": [
+                    {
+                        "certificate": "${crt_path}",
+                        "key": "${key_path}"
+                    }
+                ]
+            }
+        }
+    }
+}
+EOF
+    docker pull jonssonyan/caddy-forwardproxy &&
+      docker run -d --name trojan-panel-navieproxy-standalone --restart=always \
+        --network=host \
+        -v ${NAIVEPROXY_STANDALONE_CONFIG}:"/caddy-forwardproxy/config/config.json" \
+        -v ${CADDY_ACME}:${CADDY_ACME} \
+        jonssonyan/caddy-forwardproxy
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-navieproxy-standalone$" -f "status=running") ]]; then
+      echo_content skyBlue "---> NaiveProxy(Caddy+ForwardProxy) 安装完成"
+      echo_content red "\n=============================================================="
+      echo_content skyBlue "NaiveProxy(Caddy+ForwardProxy) 安装成功"
+      echo_content yellow "域名: ${domain}"
+      echo_content yellow "NaiveProxy的端口: ${naiveproxy_port}"
+      echo_content yellow "NaiveProxy的用户名: ${naiveproxy_username}"
+      echo_content yellow "NaiveProxy的密码: ${naiveproxy_pass}"
+      echo_content yellow "NaiveProxy私钥和证书目录: ${CADDY_ACME}${domain}/"
+      echo_content red "\n=============================================================="
+    else
+      echo_content red "---> NaiveProxy(Caddy+ForwardProxy) 安装失败或运行异常,请尝试修复或卸载重装"
+      exit 0
+    fi
+  else
+    echo_content skyBlue "---> 你已经了安装了NaiveProxy(Caddy+ForwardProxy)"
+  fi
+}
+
 # 卸载Caddy TLS
 uninstall_caddy_tls() {
   # 判断Caddy TLS是否安装
@@ -748,6 +904,21 @@ uninstall_hysteria_standalone() {
   fi
 }
 
+# 卸载NaiveProxy(Caddy+ForwardProxy)
+uninstall_navieproxy_standalone() {
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-navieproxy-standalone$") ]]; then
+    echo_content green "---> 卸载NaiveProxy(Caddy+ForwardProxy)"
+
+    docker rm -f trojan-panel-navieproxy-standalone &&
+      docker rmi -f jonssonyan/caddy-forwardproxy &&
+      rm -f ${NAIVEPROXY_DATA}
+
+    echo_content skyBlue "---> NaiveProxy(Caddy+ForwardProxy) 卸载完成"
+  else
+    echo_content red "---> 请先安装NaiveProxy(Caddy+ForwardProxy)"
+  fi
+}
+
 # 卸载全部Trojan Panel相关的容器
 uninstall_all() {
   echo_content green "---> 卸载全部Trojan Panel相关的容器"
@@ -781,6 +952,9 @@ failure_testing() {
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-hysteria-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-hysteria-standalone$" -f "status=running") ]]; then
       echo_content red "---> Hysteria运行异常"
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-navieproxy-standalone$") && -z $(docker ps -q -f "name=^trojan-panel-navieproxy-standalone$" -f "status=running") ]]; then
+      echo_content red "---> NaiveProxy(Caddy+ForwardProxy)运行异常"
     fi
   fi
   echo_content green "---> 故障检测结束"
@@ -820,7 +994,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v1.0.0"
+  echo_content skyBlue "Version: v1.3.1"
   echo_content skyBlue "Description: One click Install Trojan Panel standalone server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
@@ -829,15 +1003,17 @@ main() {
   echo_content yellow "1. 安装TrojanGFW+Caddy+Web+TLS"
   echo_content yellow "2. 安装TrojanGO+Caddy+Web+TLS+Websocket"
   echo_content yellow "3. 安装Hysteria"
-  echo_content yellow "4. 安装Caddy TLS"
+  echo_content yellow "4. 安装NaiveProxy(Caddy+ForwardProxy)"
+  echo_content yellow "5. 安装Caddy TLS"
   echo_content green "\n=============================================================="
-  echo_content yellow "5. 卸载TrojanGFW+Caddy+Web+TLS"
-  echo_content yellow "6. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
-  echo_content yellow "7. 卸载Hysteria"
-  echo_content yellow "8. 卸载Caddy TLS"
-  echo_content yellow "9. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "6. 卸载TrojanGFW+Caddy+Web+TLS"
+  echo_content yellow "7. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "8. 卸载Hysteria"
+  echo_content yellow "9. 卸载NaiveProxy(Caddy+ForwardProxy)"
+  echo_content yellow "10. 卸载Caddy TLS"
+  echo_content yellow "11. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "10. 故障检测"
+  echo_content yellow "12. 故障检测"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -858,23 +1034,31 @@ main() {
   4)
     install_docker
     install_caddy_tls
+    install_navieproxy_standalone
     ;;
   5)
-    uninstall_trojan_gfw_standalone
+    install_docker
+    install_caddy_tls
     ;;
   6)
-    uninstall_trojanGO_standalone
+    uninstall_trojan_gfw_standalone
     ;;
   7)
-    uninstall_hysteria_standalone
+    uninstall_trojanGO_standalone
     ;;
   8)
-    uninstall_caddy_tls
+    uninstall_hysteria_standalone
     ;;
   9)
-    uninstall_all
+    uninstall_navieproxy_standalone
     ;;
   10)
+    uninstall_caddy_tls
+    ;;
+  11)
+    uninstall_all
+    ;;
+  12)
     failure_testing
     ;;
   *)
