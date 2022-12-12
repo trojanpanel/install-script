@@ -809,8 +809,8 @@ install_navieproxy_standalone() {
             "certificates": {
                 "load_files": [
                     {
-                        "certificate": "${crt_path}",
-                        "key": "${key_path}"
+                        "certificate": "${CADDY_ACME}${domain}/${domain}.crt",
+                        "key": "${CADDY_ACME}${domain}/${domain}.crt"
                     }
                 ]
             }
