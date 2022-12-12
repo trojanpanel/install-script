@@ -911,7 +911,7 @@ uninstall_navieproxy_standalone() {
 
     docker rm -f trojan-panel-navieproxy-standalone &&
       docker rmi -f jonssonyan/caddy-forwardproxy &&
-      rm -f ${NAIVEPROXY_DATA}
+      rm -f ${NAIVEPROXY_STANDALONE_CONFIG}
 
     echo_content skyBlue "---> NaiveProxy(Caddy+ForwardProxy) 卸载完成"
   else
