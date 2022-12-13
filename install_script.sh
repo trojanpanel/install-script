@@ -947,6 +947,24 @@ uninstall_all() {
   echo_content skyBlue "---> 卸载全部Trojan Panel相关的容器完成"
 }
 
+# 修改Trojan Panel前端端口
+update_trojan_panel_ui_port() {
+  if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
+    [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
+    sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${NGINX_CONFIG} &&
+      sed -i "s/https:\/\/\$host:.*\$uri?\$args/https:\/\/\$host:${trojan_panel_ui_port}\$uri?\$args/g" ${NGINX_CONFIG} &&
+      docker restart trojan-panel-ui
+    if [[ "$?" == "0" ]]; then
+      echo_content skyBlue "---> Trojan Panel前端端口修改成功"
+    else
+      echo_content red "---> Trojan Panel前端端口修改失败"
+    fi
+  else
+    echo_content red "---> Trojan Panel前端未安装或运行异常,请修复或卸载重装后重试"
+  fi
+}
+
 # 刷新Redis缓存
 redis_flush_all() {
   # 判断Redis是否安装
@@ -1082,9 +1100,11 @@ main() {
   echo_content yellow "10. 卸载Redis"
   echo_content yellow "11. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "12. 刷新Redis缓存"
-  echo_content yellow "13. 故障检测"
-  echo_content yellow "14. 日志查询"
+  echo_content yellow "12. 修改Trojan Panel前端端口"
+  echo_content yellow "13. 刷新Redis缓存"
+  echo_content green "\n=============================================================="
+  echo_content yellow "14. 故障检测"
+  echo_content yellow "15. 日志查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1130,12 +1150,15 @@ main() {
     uninstall_all
     ;;
   12)
-    redis_flush_all
+    update_trojan_panel_ui_port
     ;;
   13)
-    failure_testing
+    redis_flush_all
     ;;
   14)
+    failure_testing
+    ;;
+  15)
     log_query
     ;;
   *)
