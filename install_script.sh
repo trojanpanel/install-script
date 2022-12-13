@@ -950,13 +950,19 @@ uninstall_all() {
 # 修改Trojan Panel前端端口
 update_trojan_panel_ui_port() {
   if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
+    echo_content green "---> 修改Trojan Panel前端端口"
+
+    trojan_panel_ui_port=$(grep 'listen.*ssl' default.conf | awk '{print $2}')
+    echo_content yellow "提示：Trojan Panel前端当前端口为 ${trojan_panel_ui_port}"
+
+    read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
     sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${NGINX_CONFIG} &&
       sed -i "s/https:\/\/\$host:.*\$uri?\$args/https:\/\/\$host:${trojan_panel_ui_port}\$uri?\$args/g" ${NGINX_CONFIG} &&
       docker restart trojan-panel-ui
+
     if [[ "$?" == "0" ]]; then
-      echo_content skyBlue "---> Trojan Panel前端端口修改成功"
+      echo_content skyBlue "---> Trojan Panel前端端口修改完成"
     else
       echo_content red "---> Trojan Panel前端端口修改失败"
     fi
