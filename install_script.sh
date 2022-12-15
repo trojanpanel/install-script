@@ -952,7 +952,7 @@ update_trojan_panel_ui_port() {
   if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
     echo_content green "---> 修改Trojan Panel前端端口"
 
-    trojan_panel_ui_port=$(grep 'listen.*ssl' default.conf | awk '{print $2}')
+    trojan_panel_ui_port=$(grep 'listen.*ssl' ${NGINX_CONFIG} | awk '{print $2}')
     echo_content yellow "提示：Trojan Panel前端当前端口为 ${trojan_panel_ui_port}"
 
     read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
