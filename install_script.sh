@@ -703,7 +703,7 @@ install_trojan_panel_core() {
 update__trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
 
-  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
+ if [[ "${trojan_panel_current_version}" == "1.3.0" ]]; then
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "${tp_sql_130_131}" &>/dev/null &&
       trojan_panel_current_version="1.3.1"
   fi
