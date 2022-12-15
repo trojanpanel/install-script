@@ -1155,18 +1155,21 @@ main() {
   echo_content yellow "4. 安装MariaDB"
   echo_content yellow "5. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "6. 卸载Trojan Panel"
-  echo_content yellow "7. 卸载Trojan Panel Core"
-  echo_content yellow "8. 卸载Caddy TLS"
-  echo_content yellow "9. 卸载MariaDB"
-  echo_content yellow "10. 卸载Redis"
-  echo_content yellow "11. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "6. 更新Trojan Panel"
+  echo_content yellow "7. 安装Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "12. 修改Trojan Panel前端端口"
-  echo_content yellow "13. 刷新Redis缓存"
+  echo_content yellow "8. 卸载Trojan Panel"
+  echo_content yellow "9. 卸载Trojan Panel Core"
+  echo_content yellow "10. 卸载Caddy TLS"
+  echo_content yellow "11. 卸载MariaDB"
+  echo_content yellow "12. 卸载Redis"
+  echo_content yellow "13. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "14. 故障检测"
-  echo_content yellow "15. 日志查询"
+  echo_content yellow "14. 修改Trojan Panel前端端口"
+  echo_content yellow "15. 刷新Redis缓存"
+  echo_content green "\n=============================================================="
+  echo_content yellow "16. 故障检测"
+  echo_content yellow "17. 日志查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1194,33 +1197,39 @@ main() {
     install_redis
     ;;
   6)
-    uninstall_trojan_panel
+    update_trojan_panel
     ;;
   7)
-    uninstall_trojan_panel_core
+    update_trojan_panel_core
     ;;
   8)
-    uninstall_caddy_tls
+    uninstall_trojan_panel
     ;;
   9)
-    uninstall_mariadb
+    uninstall_trojan_panel_core
     ;;
   10)
-    uninstall_redis
+    uninstall_caddy_tls
     ;;
   11)
-    uninstall_all
+    uninstall_mariadb
     ;;
   12)
-    update_trojan_panel_ui_port
+    uninstall_redis
     ;;
   13)
-    redis_flush_all
+    uninstall_all
     ;;
   14)
-    failure_testing
+    update_trojan_panel_ui_port
     ;;
   15)
+    redis_flush_all
+    ;;
+  16)
+    failure_testing
+    ;;
+  17)
     log_query
     ;;
   *)
