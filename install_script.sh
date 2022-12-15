@@ -449,25 +449,6 @@ install_redis() {
   fi
 }
 
-# 更新Trojan Panel数据结构
-update__trojan_panel_database() {
-  echo_content skyBlue "---> 更新Trojan Panel数据结构"
-
-  if [[ "${trojan_panel_current_version}" == "1.3.0" ]]; then
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "${tp_sql_130_131}" &&
-      trojan_panel_current_version="1.3.1"
-  fi
-
-  echo_content skyBlue "---> Trojan Panel数据结构更新完成"
-}
-
-# 更新Trojan Panel Core数据结构
-update__trojan_panel_core_database() {
-  echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
-
-  echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
-}
-
 # 安装TrojanPanel
 install_trojan_panel() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
@@ -718,6 +699,25 @@ install_trojan_panel_core() {
   fi
 }
 
+# 更新Trojan Panel数据结构
+update__trojan_panel_database() {
+  echo_content skyBlue "---> 更新Trojan Panel数据结构"
+
+  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "${tp_sql_130_131}" &>/dev/null &&
+      trojan_panel_current_version="1.3.1"
+  fi
+
+  echo_content skyBlue "---> Trojan Panel数据结构更新完成"
+}
+
+# 更新Trojan Panel Core数据结构
+update__trojan_panel_core_database() {
+  echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
+
+  echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
+}
+
 # 更新Trojan Panel
 update_trojan_panel() {
   # 判断Trojan Panel是否安装
@@ -750,14 +750,6 @@ update_trojan_panel() {
     done
 
     update__trojan_panel_database
-
-    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
-      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
-    else
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
-    fi
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
