@@ -68,6 +68,13 @@ init_var() {
   TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
   database="trojan_panel_db"
   account_table="account"
+
+  # Update
+  trojan_panel_current_version=""
+  trojan_panel_latest_version="2.0.0"
+  trojan_panel_core_current_version=""
+  trojan_panel_core_latest_version="2.0.0"
+  tp_sql_130_131="alter table trojan_panel_db.node_hysteria modify up_mbps int(10) default 100 not null comment '单客户端最大上传速度 单位:Mbps';alter table trojan_panel_db.node_hysteria modify down_mbps int(10) default 100 not null comment '单客户端最大下载速度 单位:Mbps';"
 }
 
 echo_content() {
@@ -442,6 +449,25 @@ install_redis() {
   fi
 }
 
+# 更新Trojan Panel数据结构
+update__trojan_panel_database() {
+  echo_content skyBlue "---> 更新Trojan Panel数据结构"
+
+  if [[ "${trojan_panel_current_version}" == "1.3.0" ]]; then
+    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "${tp_sql_130_131}" &&
+      trojan_panel_current_version="1.3.1"
+  fi
+
+  echo_content skyBlue "---> Trojan Panel数据结构更新完成"
+}
+
+# 更新Trojan Panel Core数据结构
+update__trojan_panel_core_database() {
+  echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
+
+  echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
+}
+
 # 安装TrojanPanel
 install_trojan_panel() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
@@ -700,88 +726,100 @@ update_trojan_panel() {
     exit 0
   fi
 
-  echo_content green "---> 更新Trojan Panel"
+  trojan_panel_current_version=$(docker exec trojan-panel ./trojan-panel -version)
+  if [[ -z "${trojan_panel_current_version}" || ! "${trojan_panel_current_version}" =~ ^v.* ]]; then
+    echo_content red "---> 当前版本不支持自动化更新"
+    exit 0
+  fi
 
-  read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-  [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-  read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-  [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-  read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-  [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-  while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-    if [[ -z "${mariadb_pas}" ]]; then
-      echo_content red "密码不能为空"
+  if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
+    echo_content green "---> 更新Trojan Panel"
+
+    read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
+    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
+    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
+    read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
+    [[ -z "${mariadb_user}" ]] && mariadb_user="root"
+    while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
+      if [[ -z "${mariadb_pas}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
+
+    update__trojan_panel_database
+
+    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
+      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
+      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
     else
-      break
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
     fi
-  done
 
-  if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;"
-    docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
-  else
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
-  fi
+    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+    read -r -p "请输入Redis的端口(默认:6378): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6378
+    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+      if [[ -z "${redis_pass}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
 
-  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-  read -r -p "请输入Redis的端口(默认:6378): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6378
-  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
-    if [[ -z "${redis_pass}" ]]; then
-      echo_content red "密码不能为空"
+    if [[ "${redis_host}" == "127.0.0.1" ]]; then
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
-      break
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
     fi
-  done
 
-  if [[ "${redis_host}" == "127.0.0.1" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
+    docker rm -f trojan-panel &&
+      docker rmi -f jonssonyan/trojan-panel &&
+      rm -rf ${TROJAN_PANEL_DATA}
+
+    docker pull jonssonyan/trojan-panel &&
+      docker run -d --name trojan-panel --restart always \
+        --network=host \
+        -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
+        -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+        -v /etc/localtime:/etc/localtime \
+        -e "mariadb_ip=${mariadb_ip}" \
+        -e "mariadb_port=${mariadb_port}" \
+        -e "mariadb_user=${mariadb_user}" \
+        -e "mariadb_pas=${mariadb_pas}" \
+        -e "redis_host=${redis_host}" \
+        -e "redis_port=${redis_port}" \
+        -e "redis_pass=${redis_pass}" \
+        jonssonyan/trojan-panel
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Trojan Panel后端更新完成"
+    else
+      echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
+    fi
+
+    docker rm -f trojan-panel-ui &&
+      docker rmi -f jonssonyan/trojan-panel-ui &&
+      rm -rf ${TROJAN_PANEL_UI_DATA}
+
+    docker pull jonssonyan/trojan-panel-ui &&
+      docker run -d --name trojan-panel-ui --restart always \
+        --network=host \
+        -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+        -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
+        jonssonyan/trojan-panel-ui
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Trojan Panel前端更新完成"
+    else
+      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+    fi
   else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-  fi
-
-  docker rm -f trojan-panel &&
-    docker rmi -f jonssonyan/trojan-panel &&
-    rm -rf ${TROJAN_PANEL_DATA}
-
-  docker rm -f trojan-panel-ui &&
-    docker rmi -f jonssonyan/trojan-panel-ui &&
-    rm -rf ${TROJAN_PANEL_UI_DATA}
-
-  docker pull jonssonyan/trojan-panel &&
-    docker run -d --name trojan-panel --restart always \
-      --network=host \
-      -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
-      -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
-      -v /etc/localtime:/etc/localtime \
-      -e "mariadb_ip=${mariadb_ip}" \
-      -e "mariadb_port=${mariadb_port}" \
-      -e "mariadb_user=${mariadb_user}" \
-      -e "mariadb_pas=${mariadb_pas}" \
-      -e "redis_host=${redis_host}" \
-      -e "redis_port=${redis_port}" \
-      -e "redis_pass=${redis_pass}" \
-      jonssonyan/trojan-panel
-
-  if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-    echo_content skyBlue "---> Trojan Panel后端更新完成"
-  else
-    echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
-  fi
-
-  docker pull jonssonyan/trojan-panel-ui &&
-    docker run -d --name trojan-panel-ui --restart always \
-      --network=host \
-      -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
-      -v ${CADDY_ACME}"${domain}":${CADDY_ACME}"${domain}" \
-      jonssonyan/trojan-panel-ui
-
-  if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-    echo_content skyBlue "---> Trojan Panel前端更新完成"
-  else
-    echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+    echo_content skyBlue "---> 你安装的Trojan Panel已经是最新版"
   fi
 }
 
@@ -793,64 +831,82 @@ update_trojan_panel_core() {
     exit 0
   fi
 
-  echo_content green "---> 更新Trojan Panel Core"
+  trojan_panel_core_current_version=$(docker exec trojan-panel-core ./trojan-panel-core -version)
+  if [[ -z "${trojan_panel_core_current_version}" || ! "${trojan_panel_core_current_version}" =~ ^v.* ]]; then
+    echo_content red "---> 当前版本不支持自动化更新"
+    exit 0
+  fi
 
-  read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-  [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-  read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-  [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-  read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-  [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-  while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-    if [[ -z "${mariadb_pas}" ]]; then
-      echo_content red "密码不能为空"
+  if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
+    echo_content green "---> 更新Trojan Panel Core"
+
+    read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
+    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
+    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
+    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
+    read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
+    [[ -z "${mariadb_user}" ]] && mariadb_user="root"
+    while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
+      if [[ -z "${mariadb_pas}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
+    read -r -p "请输入数据库名称(默认:trojan_panel_db): " database
+    [[ -z "${database}" ]] && database="trojan_panel_db"
+    read -r -p "请输入数据库的用户表名称(默认:account): " account_table
+    [[ -z "${account_table}" ]] && account_table="account"
+
+    update__trojan_panel_core_database
+
+    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
+    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
+    read -r -p "请输入Redis的端口(默认:6378): " redis_port
+    [[ -z "${redis_port}" ]] && redis_port=6378
+    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
+      if [[ -z "${redis_pass}" ]]; then
+        echo_content red "密码不能为空"
+      else
+        break
+      fi
+    done
+
+    if [[ "${redis_host}" == "127.0.0.1" ]]; then
+      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
     else
-      break
+      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
     fi
-  done
-  read -r -p "请输入数据库名称(默认:trojan_panel_db): " database
-  [[ -z "${database}" ]] && database="trojan_panel_db"
-  read -r -p "请输入数据库的用户表名称(默认:account): " account_table
-  [[ -z "${account_table}" ]] && account_table="account"
 
-  read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-  [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-  read -r -p "请输入Redis的端口(默认:6378): " redis_port
-  [[ -z "${redis_port}" ]] && redis_port=6378
-  while read -r -p "请输入Redis的密码(必填): " redis_pass; do
-    if [[ -z "${redis_pass}" ]]; then
-      echo_content red "密码不能为空"
+    docker rm -f trojan-panel-core &&
+      docker rmi -f jonssonyan/trojan-panel-core &&
+      rm -rf ${TROJAN_PANEL_CORE_DATA}
+
+    docker pull jonssonyan/trojan-panel-core &&
+      docker run -d --name trojan-panel-core --restart always \
+        --network=host \
+        -v ${TROJAN_PANEL_CORE_DATA}bin:${TROJAN_PANEL_CORE_DATA}bin \
+        -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
+        -v ${CADDY_ACME}:${CADDY_ACME} \
+        -v /etc/localtime:/etc/localtime \
+        -e "mariadb_ip=${mariadb_ip}" \
+        -e "mariadb_port=${mariadb_port}" \
+        -e "mariadb_user=${mariadb_user}" \
+        -e "mariadb_pas=${mariadb_pas}" \
+        -e "database=${database}" \
+        -e "account-table=${account_table}" \
+        -e "redis_host=${redis_host}" \
+        -e "redis_port=${redis_port}" \
+        -e "redis_pass=${redis_pass}" \
+        jonssonyan/trojan-panel-core
+
+    if [[ "$?" == "0" ]]; then
+      echo_content skyBlue "---> Trojan Panel Core更新完成"
     else
-      break
+      echo_content red "---> Trojan Panel Core更新失败"
     fi
-  done
-
-  docker rm -f trojan-panel-core &&
-    docker rmi -f jonssonyan/trojan-panel-core &&
-    rm -rf ${TROJAN_PANEL_CORE_DATA}
-
-  docker pull jonssonyan/trojan-panel-core &&
-    docker run -d --name trojan-panel-core --restart always \
-      --network=host \
-      -v ${TROJAN_PANEL_CORE_DATA}bin:${TROJAN_PANEL_CORE_DATA}bin \
-      -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
-      -v ${CADDY_ACME}:${CADDY_ACME} \
-      -v /etc/localtime:/etc/localtime \
-      -e "mariadb_ip=${mariadb_ip}" \
-      -e "mariadb_port=${mariadb_port}" \
-      -e "mariadb_user=${mariadb_user}" \
-      -e "mariadb_pas=${mariadb_pas}" \
-      -e "database=${database}" \
-      -e "account-table=${account_table}" \
-      -e "redis_host=${redis_host}" \
-      -e "redis_port=${redis_port}" \
-      -e "redis_pass=${redis_pass}" \
-      jonssonyan/trojan-panel-core
-
-  if [[ "$?" == "0" ]]; then
-    echo_content skyBlue "---> Trojan Panel Core更新完成"
   else
-    echo_content red "---> Trojan Panel Core更新失败"
+    echo_content skyBlue "---> 你安装的Trojan Panel Core已经是最新版"
   fi
 }
 
