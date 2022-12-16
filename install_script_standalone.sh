@@ -30,8 +30,7 @@ init_var() {
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
-  CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
-  CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+  CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
   caddy_remote_port=8863
   your_email=""
@@ -40,8 +39,6 @@ init_var() {
   ssl_module="acme"
   crt_path=""
   key_path=""
-  caddy_crt_path="/tpdata/caddy/cert/server.crt"
-  caddy_key_path="/tpdata/caddy/cert/server.key"
 
   # trojanGFW
   TROJANGFW_DATA="/tpdata/trojanGFW/"
@@ -266,13 +263,11 @@ install_caddy_tls() {
         while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
           if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
             ssl_module="acme"
-            CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
-            CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
             break
           elif [[ ${ssl_module_type} == 2 ]]; then
             ssl_module="zerossl"
-            CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
-            CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
+            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
             break
           else
             echo_content red "不可以输入除1和2之外的其他字符"
@@ -287,7 +282,7 @@ install_caddy_tls() {
             if [[ ! -f "${crt_path}" ]]; then
               echo_content red "证书的.crt文件路径不存在"
             else
-              cp "${crt_path}" "${caddy_crt_path}"
+              cp "${crt_path}" "${CADDY_CERT}${domain}.crt"
               break
             fi
           fi
@@ -300,7 +295,7 @@ install_caddy_tls() {
             if [[ ! -f "${key_path}" ]]; then
               echo_content red "证书的.key文件路径不存在"
             else
-              cp "${key_path}" "${caddy_key_path}"
+              cp "${key_path}" "${CADDY_CERT}${domain}.key"
               break
             fi
           fi
@@ -421,8 +416,8 @@ install_caddy_tls() {
                 ],
                 "load_files": [
                     {
-                        "certificate": "${CADDY_CRT_DIR}${domain}/${domain}.crt",
-                        "key": "${CADDY_KEY_DIR}${domain}/${domain}.key"
+                        "certificate": "${CADDY_CERT_DIR}${domain}/${domain}.crt",
+                        "key": "${CADDY_CERT_DIR}${domain}/${domain}.key"
                     }
                 ]
             },
@@ -451,8 +446,7 @@ EOF
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
         -v "${CADDY_Config}":"${CADDY_Config}" \
-        -v ${caddy_crt_path}:"${CADDY_CRT_DIR}${domain}/${domain}.crt" \
-        -v ${caddy_key_path}:"${CADDY_KEY_DIR}${domain}/${domain}.key" \
+        -v ${CADDY_CERT}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
@@ -498,8 +492,8 @@ install_trojan_gfw_standalone() {
     ],
     "log_level": 1,
     "ssl": {
-        "cert": "${caddy_crt_path}",
-        "key": "${caddy_key_path}",
+        "cert": "${CADDY_CERT}${domain}.crt",
+        "key": "${CADDY_CERT}${domain}.key",
         "key_password": "",
         "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
         "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
@@ -664,8 +658,8 @@ install_trojanGO_standalone() {
   "ssl": {
     "verify": true,
     "verify_hostname": true,
-    "cert": "${caddy_crt_path}",
-    "key": "${caddy_key_path}",
+    "cert": "${CADDY_CERT}${domain}.crt",
+    "key": "${CADDY_CERT}${domain}.key",
     "key_password": "",
     "cipher": "",
     "curves": "",
@@ -784,8 +778,8 @@ install_hysteria_standalone() {
 {
   "listen": ":${hysteria_port}",
   "protocol": "${hysteria_protocol}",
-  "cert": "${caddy_crt_path}",
-  "key": "${caddy_key_path}",
+  "cert": "${CADDY_CERT}${domain}.crt",
+  "key": "${CADDY_CERT}${domain}.key",
   "up_mbps": ${hysteria_up_mbps},
   "down_mbps": ${hysteria_down_mbps},
   "auth_str": "${hysteria_password}"
@@ -927,8 +921,8 @@ install_navieproxy_standalone() {
             "certificates": {
                 "load_files": [
                     {
-                        "certificate": "${caddy_crt_path}",
-                        "key": "${caddy_key_path}"
+                        "certificate": "${CADDY_CERT}${domain}.crt",
+                        "key": "${CADDY_CERT}${domain}.crt"
                     }
                 ]
             }
@@ -1058,7 +1052,7 @@ failure_testing() {
         echo_content red "---> Caddy TLS运行异常"
       fi
       domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${caddy_crt_path}" ]]; then
+      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
         echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
       fi
     fi

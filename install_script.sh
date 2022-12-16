@@ -30,8 +30,7 @@ init_var() {
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
-  CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
-  CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+  CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
   caddy_remote_port=8863
   your_email=""
@@ -273,13 +272,11 @@ install_caddy_tls() {
         while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
           if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
             ssl_module="acme"
-            CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
-            CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
             break
           elif [[ ${ssl_module_type} == 2 ]]; then
             ssl_module="zerossl"
-            CADDY_CRT_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
-            CADDY_KEY_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
+            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
             break
           else
             echo_content red "不可以输入除1和2之外的其他字符"
@@ -428,8 +425,8 @@ install_caddy_tls() {
                 ],
                 "load_files": [
                     {
-                        "certificate": "${CADDY_CRT_DIR}${domain}/${domain}.crt",
-                        "key": "${CADDY_KEY_DIR}${domain}/${domain}.key"
+                        "certificate": "${CADDY_CERT_DIR}${domain}/${domain}.crt",
+                        "key": "${CADDY_CERT_DIR}${domain}/${domain}.key"
                     }
                 ]
             },
@@ -458,7 +455,7 @@ EOF
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
         -v "${CADDY_Config}":"${CADDY_Config}" \
-        -v "${CADDY_CERT}":${CADDY_CRT_DIR}${domain} \
+        -v ${CADDY_CERT}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
