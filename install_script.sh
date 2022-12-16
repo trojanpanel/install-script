@@ -1012,10 +1012,10 @@ update_trojan_panel_core() {
         -e "key_path=${caddy_key_path}" \
         jonssonyan/trojan-panel-core
 
-    if [[ "$?" == "0" ]]; then
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core更新完成"
     else
-      echo_content red "---> Trojan Panel Core更新失败"
+      echo_content red "---> Trojan Panel Core更新失败或运行异常,请尝试修复或卸载重装"
     fi
   else
     echo_content skyBlue "---> 你安装的Trojan Panel Core已经是最新版"
