@@ -788,7 +788,7 @@ install_hysteria_standalone() {
   "key": "${caddy_key_path}",
   "up_mbps": ${hysteria_up_mbps},
   "down_mbps": ${hysteria_down_mbps},
-  "obfs": "${hysteria_password}"
+  "auth_str": "${hysteria_password}"
 }
 EOF
 
