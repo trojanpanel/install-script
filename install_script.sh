@@ -586,13 +586,8 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${mariadb_ip}" == "127.0.0.1" ]]; then
-      docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &&
-        docker exec trojan-panel-mariadb mysql -p"${mariadb_pas}" -e "create database trojan_panel_db;"
-    else
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null &&
-        docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
-    fi
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "drop database trojan_panel_db;" &>/dev/null &&
+      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "create database trojan_panel_db;" &>/dev/null
 
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
@@ -606,11 +601,7 @@ install_trojan_panel() {
       fi
     done
 
-    if [[ "${redis_host}" == "127.0.0.1" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-    else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-    fi
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
@@ -881,11 +872,7 @@ update_trojan_panel() {
       fi
     done
 
-    if [[ "${redis_host}" == "127.0.0.1" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-    else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-    fi
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
       docker rmi -f jonssonyan/trojan-panel &&
@@ -982,11 +969,7 @@ update_trojan_panel_core() {
       fi
     done
 
-    if [[ "${redis_host}" == "127.0.0.1" ]]; then
-      docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-    else
-      docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-    fi
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel-core &&
       docker rmi -f jonssonyan/trojan-panel-core &&
@@ -1166,11 +1149,7 @@ redis_flush_all() {
     fi
   done
 
-  if [[ "${redis_host}" == "127.0.0.1" ]]; then
-    docker exec trojan-panel-redis redis-cli -a "${redis_pass}" -e "flushall" &>/dev/null
-  else
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
-  fi
+  docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
   echo_content skyBlue "---> Redis缓存刷新完成"
 }
