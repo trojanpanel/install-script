@@ -1176,13 +1176,13 @@ failure_testing() {
       echo_content red "---> Redis运行异常"
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel后端运行异常"
+      echo_content red "---> Trojan Panel后端运行异常 请查询相关日志"
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content red "---> Trojan Panel前端运行异常"
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel Core运行异常"
+      echo_content red "---> Trojan Panel Core运行异常 请查询相关日志"
     fi
   fi
   echo_content green "---> 故障检测结束"
