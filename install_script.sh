@@ -460,8 +460,8 @@ EOF
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
         -v "${CADDY_Config}":"${CADDY_Config}" \
-        -v ${caddy_crt_path}:"${CADDY_CRT_DIR}${domain}/${domain}.crt" \
-        -v ${caddy_key_path}:"${CADDY_KEY_DIR}${domain}/${domain}.key" \
+        -v "${caddy_crt_path}":"${CADDY_CRT_DIR}${domain}/${domain}.crt" \
+        -v "${caddy_key_path}":"${CADDY_KEY_DIR}${domain}/${domain}.key" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
@@ -711,7 +711,7 @@ EOF
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
-        -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+        -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CADDY_CERT}:${CADDY_CERT} \
         jonssonyan/trojan-panel-ui
 
@@ -906,7 +906,7 @@ update_trojan_panel() {
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
-        -v ${NGINX_CONFIG}:/etc/nginx/conf.d/default.conf \
+        -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CADDY_CERT}:${CADDY_CERT} \
         jonssonyan/trojan-panel-ui
 
@@ -1162,7 +1162,8 @@ failure_testing() {
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy TLS运行异常"
+        echo_content red "---> Caddy TLS运行异常 错误日志如下："
+        docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
       if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${caddy_crt_path}" ]]; then
@@ -1170,19 +1171,24 @@ failure_testing() {
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
-      echo_content red "---> MariaDB运行异常"
+      echo_content red "---> MariaDB运行异常 错误日志如下："
+      docker logs trojan-panel-mariadb
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
-      echo_content red "---> Redis运行异常"
+      echo_content red "---> Redis运行异常 错误日志如下："
+      docker logs trojan-panel-redis
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel后端运行异常 请查询相关日志"
+      echo_content red "---> Trojan Panel后端运行异常 错误日志如下："
+      tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel前端运行异常"
+      echo_content red "---> Trojan Panel前端运行异常 错误日志如下："
+      docker logs trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel Core运行异常 请查询相关日志"
+      echo_content red "---> Trojan Panel Core运行异常 错误日志如下："
+      tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log
     fi
   fi
   echo_content green "---> 故障检测结束"
