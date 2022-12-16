@@ -40,8 +40,6 @@ init_var() {
   ssl_module="acme"
   crt_path=""
   key_path=""
-  caddy_crt_path="/tpdata/caddy/cert/server.crt"
-  caddy_key_path="/tpdata/caddy/cert/server.key"
 
   # MariaDB
   MARIA_DATA="/tpdata/mariadb/"
@@ -296,7 +294,7 @@ install_caddy_tls() {
             if [[ ! -f "${crt_path}" ]]; then
               echo_content red "证书的.crt文件路径不存在"
             else
-              cp "${crt_path}" "${caddy_crt_path}"
+              cp "${crt_path}" "${CADDY_CERT}${domain}.crt"
               break
             fi
           fi
@@ -309,7 +307,7 @@ install_caddy_tls() {
             if [[ ! -f "${key_path}" ]]; then
               echo_content red "证书的.key文件路径不存在"
             else
-              cp "${key_path}" "${caddy_key_path}"
+              cp "${key_path}" "${CADDY_CERT}${domain}.crt"
               break
             fi
           fi
@@ -460,8 +458,7 @@ EOF
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
         -v "${CADDY_Config}":"${CADDY_Config}" \
-        -v "${caddy_crt_path}":"${CADDY_CRT_DIR}${domain}/${domain}.crt" \
-        -v "${caddy_key_path}":"${CADDY_KEY_DIR}${domain}/${domain}.key" \
+        -v "${CADDY_CERT}":${CADDY_CRT_DIR}${domain} \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
@@ -642,8 +639,8 @@ server {
 
     #强制ssl
     ssl on;
-    ssl_certificate      ${caddy_crt_path};
-    ssl_certificate_key  ${caddy_key_path};
+    ssl_certificate      ${CADDY_CERT}${domain}.crt;
+    ssl_certificate_key  ${CADDY_CERT}${domain}.key;
     #缓存有效期
     ssl_session_timeout  5m;
     #安全链接可选的加密协议
@@ -794,8 +791,8 @@ install_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${caddy_crt_path}" \
-        -e "key_path=${caddy_key_path}" \
+        -e "crt_path=${CADDY_CERT}${domain}.crt" \
+        -e "key_path=${CADDY_CERT}${domain}.key" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
@@ -991,8 +988,8 @@ update_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${caddy_crt_path}" \
-        -e "key_path=${caddy_key_path}" \
+        -e "crt_path=${CADDY_CERT}${domain}.crt" \
+        -e "key_path=${CADDY_CERT}${domain}.key" \
         jonssonyan/trojan-panel-core
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
@@ -1166,7 +1163,7 @@ failure_testing() {
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${caddy_crt_path}" ]]; then
+      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
         echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
       fi
     fi
