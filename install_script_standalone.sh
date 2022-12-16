@@ -498,7 +498,7 @@ install_trojan_gfw_standalone() {
     ],
     "log_level": 1,
     "ssl": {
-        "cert": "${caddy_key_path}",
+        "cert": "${caddy_crt_path}",
         "key": "${caddy_key_path}",
         "key_password": "",
         "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
@@ -664,8 +664,8 @@ install_trojanGO_standalone() {
   "ssl": {
     "verify": true,
     "verify_hostname": true,
-    "cert": "${caddy_key_path}",
-    "key": "${caddy_crt_path}",
+    "cert": "${caddy_crt_path}",
+    "key": "${caddy_key_path}",
     "key_password": "",
     "cipher": "",
     "curves": "",
