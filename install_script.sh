@@ -430,8 +430,8 @@ install_caddy_tls() {
                 ],
                 "load_files": [
                     {
-                        "certificate": "${CADDY_CERT}${domain}/${domain}.crt",
-                        "key": "${CADDY_CERT}${domain}/${domain}.key"
+                        "certificate": "${CADDY_CRT_DIR}${domain}/${domain}.crt",
+                        "key": "${CADDY_KEY_DIR}${domain}/${domain}.key"
                     }
                 ]
             },
