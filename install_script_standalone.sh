@@ -273,6 +273,132 @@ install_caddy_tls() {
             echo_content red "不可以输入除1和2之外的其他字符"
           fi
         done
+
+        cat >${CADDY_Config} <<EOF
+{
+    "admin":{
+        "disabled":true
+    },
+    "logging":{
+        "sink":{
+            "writer":{
+                "output":"discard"
+            }
+        },
+        "logs":{
+            "default":{
+                "writer":{
+                    "output":"discard"
+                }
+            }
+        }
+    },
+    "storage":{
+        "module":"file_system",
+        "root":"${CADDY_CERT}"
+    },
+    "apps":{
+        "http":{
+            "servers":{
+                "srv0":{
+                    "listen":[
+                        ":80"
+                    ],
+                    "routes":[
+                        {
+                            "match":[
+                                {
+                                    "host":[
+                                        "${domain}"
+                                    ]
+                                }
+                            ],
+                            "handle":[
+                                {
+                                    "handler":"static_response",
+                                    "headers":{
+                                        "Location":[
+                                            "https://{http.request.host}:${caddy_remote_port}{http.request.uri}"
+                                        ]
+                                    },
+                                    "status_code":301
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "srv1":{
+                    "listen":[
+                        ":${caddy_remote_port}"
+                    ],
+                    "routes":[
+                        {
+                            "handle":[
+                                {
+                                    "handler":"subroute",
+                                    "routes":[
+                                        {
+                                            "match":[
+                                                {
+                                                    "host":[
+                                                        "${domain}"
+                                                    ]
+                                                }
+                                            ],
+                                            "handle":[
+                                                {
+                                                    "handler":"file_server",
+                                                    "root":"${CADDY_SRV}",
+                                                    "index_names":[
+                                                        "index.html",
+                                                        "index.htm"
+                                                    ]
+                                                }
+                                            ],
+                                            "terminal":true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "tls_connection_policies":[
+                        {
+                            "match":{
+                                "sni":[
+                                    "${domain}"
+                                ]
+                            }
+                        }
+                    ],
+                    "automatic_https":{
+                        "disable":true
+                    }
+                }
+            }
+        },
+        "tls":{
+            "certificates":{
+                "automate":[
+                    "${domain}"
+                ]
+            },
+            "automation":{
+                "policies":[
+                    {
+                        "issuers":[
+                            {
+                                "module":"${ssl_module}",
+                                "email":"${your_email}"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
+EOF
         break
       elif [[ ${ssl_option} == 2 ]]; then
         while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
@@ -300,134 +426,129 @@ install_caddy_tls() {
             fi
           fi
         done
-        break
-      else
-        echo_content red "不可以输入除1和2之外的其他字符"
-      fi
-    done
 
-    cat >${CADDY_Config} <<EOF
+        cat >${CADDY_Config} <<EOF
 {
-    "admin": {
-        "disabled": true
+    "admin":{
+        "disabled":true
     },
-    "logging": {
-        "sink": {
-            "writer": {
-                "output": "discard"
+    "logging":{
+        "sink":{
+            "writer":{
+                "output":"discard"
             }
         },
-        "logs": {
-            "default": {
-                "writer": {
-                    "output": "discard"
+        "logs":{
+            "default":{
+                "writer":{
+                    "output":"discard"
                 }
             }
         }
     },
-    "storage": {
-        "module": "file_system",
-        "root": "${CADDY_CERT}"
+    "storage":{
+        "module":"file_system",
+        "root":"${CADDY_CERT}"
     },
-    "apps": {
-        "http": {
-            "servers": {
-                "srv0": {
-                    "listen": [
+    "apps":{
+        "http":{
+            "servers":{
+                "srv0":{
+                    "listen":[
                         ":80"
                     ],
-                    "routes": [
+                    "routes":[
                         {
-                            "match": [
+                            "match":[
                                 {
-                                    "host": [
+                                    "host":[
                                         "${domain}"
                                     ]
                                 }
                             ],
-                            "handle": [
+                            "handle":[
                                 {
-                                    "handler": "static_response",
-                                    "headers": {
-                                        "Location": [
+                                    "handler":"static_response",
+                                    "headers":{
+                                        "Location":[
                                             "https://{http.request.host}:${caddy_remote_port}{http.request.uri}"
                                         ]
                                     },
-                                    "status_code": 301
+                                    "status_code":301
                                 }
                             ]
                         }
                     ]
                 },
-                "srv1": {
-                    "listen": [
+                "srv1":{
+                    "listen":[
                         ":${caddy_remote_port}"
                     ],
-                    "routes": [
+                    "routes":[
                         {
-                            "handle": [
+                            "handle":[
                                 {
-                                    "handler": "subroute",
-                                    "routes": [
+                                    "handler":"subroute",
+                                    "routes":[
                                         {
-                                            "match": [
+                                            "match":[
                                                 {
-                                                    "host": [
+                                                    "host":[
                                                         "${domain}"
                                                     ]
                                                 }
                                             ],
-                                            "handle": [
+                                            "handle":[
                                                 {
-                                                    "handler": "file_server",
-                                                    "root": "${CADDY_SRV}",
-                                                    "index_names": [
+                                                    "handler":"file_server",
+                                                    "root":"${CADDY_SRV}",
+                                                    "index_names":[
                                                         "index.html",
                                                         "index.htm"
                                                     ]
                                                 }
                                             ],
-                                            "terminal": true
+                                            "terminal":true
                                         }
                                     ]
                                 }
                             ]
                         }
                     ],
-                    "tls_connection_policies": [
+                    "tls_connection_policies":[
                         {
-                            "match": {
-                                "sni": [
+                            "match":{
+                                "sni":[
                                     "${domain}"
                                 ]
                             }
                         }
                     ],
-                    "automatic_https": {
-                        "disable": true
+                    "automatic_https":{
+                        "disable":true
                     }
                 }
             }
         },
-        "tls": {
-            "certificates": {
-                "automate": [
+        "tls":{
+            "certificates":{
+                "automate":[
                     "${domain}"
                 ],
-                "load_files": [
+                "load_files":[
                     {
-                        "certificate": "${CADDY_CERT_DIR}${domain}/${domain}.crt",
-                        "key": "${CADDY_CERT_DIR}${domain}/${domain}.key"
+                        "certificate":"${CADDY_CERT_DIR}${domain}/${domain}.crt",
+                        "key":"${CADDY_CERT_DIR}${domain}/${domain}.key"
                     }
                 ]
             },
-            "automation": {
-                "policies": [
+            "automation":{
+                "policies":[
                     {
-                        "issuers": [
+                        "issuers":[
                             {
-                                "module": "${ssl_module}",
-                                "email": "${your_email}"
+                                "module":"${ssl_module}",
+                                "email":"${your_email}"
                             }
                         ]
                     }
@@ -437,6 +558,11 @@ install_caddy_tls() {
     }
 }
 EOF
+        break
+      else
+        echo_content red "不可以输入除1和2之外的其他字符"
+      fi
+    done
 
     if [[ -n $(lsof -i:80,443 -t) ]]; then
       kill -9 "$(lsof -i:80,443 -t)"
