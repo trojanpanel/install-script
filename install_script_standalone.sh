@@ -29,6 +29,7 @@ init_var() {
   CADDY_Config="/tpdata/caddy/config.json"
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
+  CADDY_LOG="/tpdata/caddy/log/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
@@ -110,6 +111,7 @@ mkdir_tools() {
   touch ${CADDY_Config}
   mkdir -p ${CADDY_SRV}
   mkdir -p ${CADDY_CERT}
+  mkdir -p ${CADDY_LOG}
 
   # trojanGFW
   mkdir -p ${TROJANGFW_DATA}
@@ -280,16 +282,13 @@ install_caddy_tls() {
         "disabled":true
     },
     "logging":{
-        "sink":{
-            "writer":{
-                "output":"discard"
-            }
-        },
         "logs":{
             "default":{
                 "writer":{
-                    "output":"discard"
-                }
+                    "output":"file",
+                    "filename":"/tpdata/caddy/log/error.log"
+                },
+                "level":"ERROR"
             }
         }
     },
@@ -433,16 +432,13 @@ EOF
         "disabled":true
     },
     "logging":{
-        "sink":{
-            "writer":{
-                "output":"discard"
-            }
-        },
         "logs":{
             "default":{
                 "writer":{
-                    "output":"discard"
-                }
+                    "output":"file",
+                    "filename":"/tpdata/caddy/log/error.log"
+                },
+                "level":"ERROR"
             }
         }
     },
@@ -574,6 +570,7 @@ EOF
         -v "${CADDY_Config}":"${CADDY_Config}" \
         -v ${CADDY_CERT}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
+        -v ${CADDY_LOG}:${CADDY_LOG} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then

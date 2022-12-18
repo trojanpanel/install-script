@@ -29,6 +29,7 @@ init_var() {
   CADDY_Config="/tpdata/caddy/config.json"
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
+  CADDY_LOG="/tpdata/caddy/log/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
@@ -115,6 +116,7 @@ mkdir_tools() {
   touch ${CADDY_Config}
   mkdir -p ${CADDY_SRV}
   mkdir -p ${CADDY_CERT}
+  mkdir -p ${CADDY_LOG}
 
   # MariaDB
   mkdir -p ${MARIA_DATA}
@@ -289,16 +291,13 @@ install_caddy_tls() {
         "disabled":true
     },
     "logging":{
-        "sink":{
-            "writer":{
-                "output":"discard"
-            }
-        },
         "logs":{
             "default":{
                 "writer":{
-                    "output":"discard"
-                }
+                    "output":"file",
+                    "filename":"/tpdata/caddy/log/error.log"
+                },
+                "level":"ERROR"
             }
         }
     },
@@ -442,16 +441,13 @@ EOF
         "disabled":true
     },
     "logging":{
-        "sink":{
-            "writer":{
-                "output":"discard"
-            }
-        },
         "logs":{
             "default":{
                 "writer":{
-                    "output":"discard"
-                }
+                    "output":"file",
+                    "filename":"/tpdata/caddy/log/error.log"
+                },
+                "level":"ERROR"
             }
         }
     },
@@ -583,6 +579,7 @@ EOF
         -v "${CADDY_Config}":"${CADDY_Config}" \
         -v ${CADDY_CERT}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${CADDY_SRV}:${CADDY_SRV} \
+        -v ${CADDY_LOG}:${CADDY_LOG} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
@@ -1286,7 +1283,8 @@ failure_testing() {
       fi
       domain=$(cat "${DOMAIN_FILE}")
       if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
-        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项"
+        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项 错误日志如下："
+        tail -n 20 ${CADDY_LOG}error.log
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
