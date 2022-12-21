@@ -29,7 +29,7 @@ init_var() {
   CADDY_Config="/tpdata/caddy/config.json"
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
-  CADDY_LOG="/tpdata/caddy/log/"
+  CADDY_LOG="/tpdata/caddy/logs/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
@@ -295,7 +295,7 @@ install_caddy_tls() {
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/log/error.log"
+                    "filename":"/tpdata/caddy/logs/error.log"
                 },
                 "level":"ERROR"
             }
@@ -445,7 +445,7 @@ EOF
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/log/error.log"
+                    "filename":"/tpdata/caddy/logs/error.log"
                 },
                 "level":"ERROR"
             }
@@ -1283,29 +1283,41 @@ failure_testing() {
       fi
       domain=$(cat "${DOMAIN_FILE}")
       if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
-        echo_content red "---> 证书申请异常，请尝试重启服务器将重新申请证书或者重新搭建选择自定义证书选项 错误日志如下："
-        tail -n 20 ${CADDY_LOG}error.log
+        echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项 日志如下："
+        if [[ -f ${CADDY_LOG}error.log ]]; then
+          tail -n 20 ${CADDY_LOG}error.log
+        else
+          docker logs trojan-panel-caddy
+        fi
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
-      echo_content red "---> MariaDB运行异常 错误日志如下："
+      echo_content red "---> MariaDB运行异常 日志如下："
       docker logs trojan-panel-mariadb
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
-      echo_content red "---> Redis运行异常 错误日志如下："
+      echo_content red "---> Redis运行异常 日志如下："
       docker logs trojan-panel-redis
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel后端运行异常 错误日志如下："
-      tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log
+      echo_content red "---> Trojan Panel后端运行异常 日志如下："
+      if [[ -f ${TROJAN_PANEL_LOGS}trojan-panel.log ]]; then
+        tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log
+      else
+        docker logs trojan-panel
+      fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel前端运行异常 错误日志如下："
+      echo_content red "---> Trojan Panel前端运行异常 日志如下："
       docker logs trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel Core运行异常 错误日志如下："
-      tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log
+      echo_content red "---> Trojan Panel Core运行异常 日志如下："
+      if [[ -f ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log ]]; then
+        tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log
+      else
+        docker logs trojan-panel-core
+      fi
     fi
   fi
   echo_content green "---> 故障检测结束"
@@ -1340,7 +1352,7 @@ log_query() {
     [[ -z "${select_log_query_line_type}" ]] && select_log_query_line_type=20
 
     if [[ -f ${log_file_path} ]]; then
-      echo_content skyBlue "日志文件如下:"
+      echo_content skyBlue "日志如下:"
       tail -n ${select_log_query_line_type} ${log_file_path}
     else
       echo_content red "不存在日志文件"
