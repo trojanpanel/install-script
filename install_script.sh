@@ -1376,7 +1376,7 @@ main() {
   echo_content yellow "5. 安装Redis"
   echo_content green "\n=============================================================="
   echo_content yellow "6. 更新Trojan Panel"
-  echo_content yellow "7. 安装Trojan Panel Core"
+  echo_content yellow "7. 更新Trojan Panel Core"
   echo_content green "\n=============================================================="
   echo_content yellow "8. 卸载Trojan Panel"
   echo_content yellow "9. 卸载Trojan Panel Core"
