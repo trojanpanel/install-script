@@ -77,8 +77,7 @@ init_var() {
   trojan_panel_current_version=""
   trojan_panel_latest_version="1.3.1"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="1.3.1"
-  tp_sql_131_132="alter table trojan_panel_db.node_hysteria modify up_mbps int(10) default 100 not null comment '单客户端最大上传速度 单位:Mbps';alter table trojan_panel_db.node_hysteria modify down_mbps int(10) default 100 not null comment '单客户端最大下载速度 单位:Mbps';"
+  trojan_panel_core_latest_version="1.3.2"
 }
 
 echo_content() {
@@ -927,11 +926,6 @@ install_trojan_panel_core() {
 # 更新Trojan Panel数据结构
 update__trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
-
-  if [[ "${trojan_panel_current_version}" == "1.3.1" ]]; then
-    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "${tp_sql_131_132}" &>/dev/null &&
-      trojan_panel_current_version="1.3.2"
-  fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
