@@ -951,6 +951,8 @@ update_trojan_panel() {
     exit 0
   fi
 
+  echo_content yellow "提示：Trojan Panel后端(trojan-panel)当前版本为 ${trojan_panel_current_version} 最新版本为 ${trojan_panel_latest_version}"
+
   if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel"
 
@@ -1043,6 +1045,8 @@ update_trojan_panel_core() {
     echo_content red "---> 当前版本不支持自动化更新"
     exit 0
   fi
+
+  echo_content yellow "提示：Trojan Panel内核(trojan-panel-core)当前版本为 ${trojan_panel_core_current_version} 最新版本为 ${trojan_panel_core_latest_version}"
 
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel Core"
@@ -1214,7 +1218,7 @@ update_trojan_panel_ui_port() {
     echo_content green "---> 修改Trojan Panel前端端口"
 
     trojan_panel_ui_port=$(grep 'listen.*ssl' ${NGINX_CONFIG} | awk '{print $2}')
-    echo_content yellow "提示：Trojan Panel前端当前端口为 ${trojan_panel_ui_port}"
+    echo_content yellow "提示：Trojan Panel前端(trojan-panel-ui)当前端口为 ${trojan_panel_ui_port}"
 
     read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
