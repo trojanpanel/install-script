@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v1.3.4
+# Version: v2.0.0
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -75,9 +75,12 @@ init_var() {
 
   # Update
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v1.3.1"
+  trojan_panel_latest_version="v2.0.0"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v1.3.2"
+  trojan_panel_core_latest_version="v2.0.0"
+
+  # SQL
+  sql_131_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";"
 }
 
 echo_content() {
@@ -927,6 +930,11 @@ install_trojan_panel_core() {
 update__trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
 
+  if [[ "${trojan_panel_current_version}" == "1.3.1" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_131_200}" &>/dev/null &&
+      trojan_panel_current_version="2.0.0"
+  fi
+
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
 
@@ -1367,7 +1375,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v1.3.4"
+  echo_content skyBlue "Version: v2.0.0"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
