@@ -995,8 +995,7 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel &&
-      rm -rf ${TROJAN_PANEL_DATA}
+      docker rmi -f jonssonyan/trojan-panel
 
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
@@ -1094,8 +1093,7 @@ update_trojan_panel_core() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel-core &&
-      docker rmi -f jonssonyan/trojan-panel-core &&
-      rm -rf ${TROJAN_PANEL_CORE_DATA}
+      docker rmi -f jonssonyan/trojan-panel-core
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
