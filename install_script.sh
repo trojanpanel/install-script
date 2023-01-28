@@ -1095,6 +1095,8 @@ update_trojan_panel_core() {
     docker rm -f trojan-panel-core &&
       docker rmi -f jonssonyan/trojan-panel-core
 
+    domain=$(cat "${DOMAIN_FILE}")
+
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
