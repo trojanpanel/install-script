@@ -978,8 +978,6 @@ update_trojan_panel() {
       fi
     done
 
-    update__trojan_panel_database
-
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:6378): " redis_port
@@ -991,6 +989,8 @@ update_trojan_panel() {
         break
       fi
     done
+
+    update__trojan_panel_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
@@ -1076,8 +1076,6 @@ update_trojan_panel_core() {
     read -r -p "请输入数据库的用户表名称(默认:account): " account_table
     [[ -z "${account_table}" ]] && account_table="account"
 
-    update__trojan_panel_core_database
-
     read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
     [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
     read -r -p "请输入Redis的端口(默认:6378): " redis_port
@@ -1089,6 +1087,8 @@ update_trojan_panel_core() {
         break
       fi
     done
+
+    update__trojan_panel_core_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
