@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.0.1
+# Version: v2.0.2
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -1370,6 +1370,17 @@ log_query() {
   done
 }
 
+version_query() {
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
+    trojan_panel_current_version=$(docker exec trojan-panel ./trojan-panel -version)
+    echo_content yellow "Trojan Panel后端(trojan-panel)当前版本为 ${trojan_panel_current_version} 最新版本为 ${trojan_panel_latest_version}"
+  fi
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
+    trojan_panel_core_current_version=$(docker exec trojan-panel-core ./trojan-panel-core -version)
+    echo_content yellow "Trojan Panel内核(trojan-panel-core)当前版本为 ${trojan_panel_core_current_version} 最新版本为 ${trojan_panel_core_latest_version}"
+  fi
+}
+
 main() {
   cd "$HOME" || exit 0
   init_var
@@ -1379,7 +1390,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.0.1"
+  echo_content skyBlue "Version: v2.0.2"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
@@ -1406,6 +1417,7 @@ main() {
   echo_content green "\n=============================================================="
   echo_content yellow "16. 故障检测"
   echo_content yellow "17. 日志查询"
+  echo_content yellow "18. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1467,6 +1479,9 @@ main() {
     ;;
   17)
     log_query
+    ;;
+  18)
+    version_query
     ;;
   *)
     echo_content red "没有这个选项"
