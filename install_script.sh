@@ -75,7 +75,7 @@ init_var() {
 
   # Update
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.0.1"
+  trojan_panel_latest_version="v2.0.2"
   trojan_panel_core_current_version=""
   trojan_panel_core_latest_version="v2.0.1"
 
