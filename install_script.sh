@@ -83,6 +83,7 @@ init_var() {
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
+  sql_203="alter table node add node_server_grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after node_server_ip;alter table node_server add grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after name;"
 }
 
 echo_content() {
@@ -942,6 +943,11 @@ update__trojan_panel_database() {
   if [[ "${trojan_panel_current_version}" == "v1.3.1" ]]; then
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_200}" &>/dev/null &&
       trojan_panel_current_version="v2.0.0"
+  fi
+  version_200_203=("v2.0.0" "v2.0.1" "v2.0.2")
+  if [[ "${version_200_203[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_203}" &>/dev/null &&
+      trojan_panel_current_version="v2.0.3"
   fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
