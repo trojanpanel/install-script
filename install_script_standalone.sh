@@ -29,10 +29,11 @@ init_var() {
   CADDY_Config="/tpdata/caddy/config.json"
   CADDY_SRV="/tpdata/caddy/srv/"
   CADDY_CERT="/tpdata/caddy/cert/"
-  CADDY_LOG="/tpdata/caddy/log/"
+  CADDY_LOG="/tpdata/caddy/logs/"
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
+  caddy_port=80
   caddy_remote_port=8863
   your_email=""
   ssl_option=1
@@ -288,7 +289,7 @@ install_caddy_tls() {
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/logs/error.log"
+                    "filename":"${CADDY_LOG}error.log"
                 },
                 "level":"ERROR"
             }
@@ -439,7 +440,7 @@ EOF
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/logs/error.log"
+                    "filename":"${CADDY_LOG}error.log"
                 },
                 "level":"ERROR"
             }

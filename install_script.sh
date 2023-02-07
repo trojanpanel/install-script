@@ -301,7 +301,7 @@ install_caddy_tls() {
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/logs/error.log"
+                    "filename":"${CADDY_LOG}error.log"
                 },
                 "level":"ERROR"
             }
@@ -452,7 +452,7 @@ EOF
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/logs/error.log"
+                    "filename":"${CADDY_LOG}error.log"
                 },
                 "level":"ERROR"
             }
