@@ -33,6 +33,7 @@ init_var() {
   DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
+  caddy_port=80
   caddy_remote_port=8863
   your_email=""
   ssl_option=1
@@ -257,6 +258,8 @@ install_caddy_tls() {
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
       tar -zxvf ${CADDY_DATA}html.tar.gz -C ${CADDY_SRV}
 
+    read -r -p "请输入Caddy的端口(默认:80): " caddy_port
+    [[ -z "${caddy_port}" ]] && caddy_port=80
     read -r -p "请输入Caddy的转发端口(默认:8863): " caddy_remote_port
     [[ -z "${caddy_remote_port}" ]] && caddy_remote_port=8863
 
@@ -309,10 +312,11 @@ install_caddy_tls() {
     },
     "apps":{
         "http":{
+            "http_port": ${caddy_port},
             "servers":{
                 "srv0":{
                     "listen":[
-                        ":80"
+                        ":${caddy_port}"
                     ],
                     "routes":[
                         {
@@ -459,10 +463,11 @@ EOF
     },
     "apps":{
         "http":{
+            "http_port": ${caddy_port},
             "servers":{
                 "srv0":{
                     "listen":[
-                        ":80"
+                        ":${caddy_port}"
                     ],
                     "routes":[
                         {
@@ -571,8 +576,8 @@ EOF
       fi
     done
 
-    if [[ -n $(lsof -i:80,443 -t) ]]; then
-      kill -9 "$(lsof -i:80,443 -t)"
+    if [[ -n $(lsof -i:${caddy_port},443 -t) ]]; then
+      kill -9 "$(lsof -i:${caddy_port},443 -t)"
     fi
 
     docker pull caddy:2.6.2 &&
