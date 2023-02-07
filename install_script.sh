@@ -73,6 +73,7 @@ init_var() {
   TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
   database="trojan_panel_db"
   account_table="account"
+  grpc_port=8100
 
   # Update
   trojan_panel_current_version=""
@@ -894,6 +895,8 @@ install_trojan_panel_core() {
         break
       fi
     done
+    read -r -p "请输入API的端口(默认:8100): " grpc_port
+    [[ -z "${grpc_port}" ]] && grpc_port=8100
 
     domain=$(cat "${DOMAIN_FILE}")
 
@@ -919,6 +922,7 @@ install_trojan_panel_core() {
         -e "redis_pass=${redis_pass}" \
         -e "crt_path=${CADDY_CERT}${domain}.crt" \
         -e "key_path=${CADDY_CERT}${domain}.key" \
+        -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
@@ -1092,6 +1096,8 @@ update_trojan_panel_core() {
         break
       fi
     done
+    read -r -p "请输入API的端口(默认:8100): " grpc_port
+    [[ -z "${grpc_port}" ]] && grpc_port=8100
 
     update__trojan_panel_core_database
 
@@ -1124,6 +1130,7 @@ update_trojan_panel_core() {
         -e "redis_pass=${redis_pass}" \
         -e "crt_path=${CADDY_CERT}${domain}.crt" \
         -e "key_path=${CADDY_CERT}${domain}.key" \
+        -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
