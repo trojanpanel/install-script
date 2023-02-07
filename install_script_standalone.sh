@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.0.2
+# Version: v2.0.3
 # Description: One click Install Trojan Panel standalone server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -246,6 +246,8 @@ install_caddy_tls() {
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
       tar -zxvf ${CADDY_DATA}html.tar.gz -C ${CADDY_SRV}
 
+    read -r -p "请输入Caddy的端口(默认:80): " caddy_port
+    [[ -z "${caddy_port}" ]] && caddy_port=80
     read -r -p "请输入Caddy的转发端口(默认:8863): " caddy_remote_port
     [[ -z "${caddy_remote_port}" ]] && caddy_remote_port=8863
 
@@ -286,7 +288,7 @@ install_caddy_tls() {
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/log/error.log"
+                    "filename":"/tpdata/caddy/logs/error.log"
                 },
                 "level":"ERROR"
             }
@@ -298,10 +300,11 @@ install_caddy_tls() {
     },
     "apps":{
         "http":{
+            "http_port": ${caddy_port},
             "servers":{
                 "srv0":{
                     "listen":[
-                        ":80"
+                        ":${caddy_port}"
                     ],
                     "routes":[
                         {
@@ -436,7 +439,7 @@ EOF
             "default":{
                 "writer":{
                     "output":"file",
-                    "filename":"/tpdata/caddy/log/error.log"
+                    "filename":"/tpdata/caddy/logs/error.log"
                 },
                 "level":"ERROR"
             }
@@ -448,10 +451,11 @@ EOF
     },
     "apps":{
         "http":{
+            "http_port": ${caddy_port},
             "servers":{
                 "srv0":{
                     "listen":[
-                        ":80"
+                        ":${caddy_port}"
                     ],
                     "routes":[
                         {
@@ -560,8 +564,8 @@ EOF
       fi
     done
 
-    if [[ -n $(lsof -i:80,443 -t) ]]; then
-      kill -9 "$(lsof -i:80,443 -t)"
+    if [[ -n $(lsof -i:${caddy_port},443 -t) ]]; then
+      kill -9 "$(lsof -i:${caddy_port},443 -t)"
     fi
 
     docker pull caddy:2.6.2 &&
@@ -1210,7 +1214,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.0.2"
+  echo_content skyBlue "Version: v2.0.3"
   echo_content skyBlue "Description: One click Install Trojan Panel standalone server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
