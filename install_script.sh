@@ -83,7 +83,7 @@ init_var() {
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
-  sql_203="alter table node add node_server_grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after node_server_ip;alter table node_server add grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after name;"
+  sql_203="alter table node add node_server_grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after node_server_ip;alter table node_server add grpc_port int(10) unsigned default 8100 not null comment 'gRPC端口' after name;alter table node_xray add xray_flow varchar(32) default '' not null comment 'Xray流控' after protocol;alter table node_xray add xray_ss_method varchar(32) default '' not null comment 'Xray Shadowsocks加密方式' after xray_flow;"
 }
 
 echo_content() {
