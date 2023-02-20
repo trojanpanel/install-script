@@ -71,6 +71,7 @@ init_var() {
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
   TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
+  TROJAN_PANEL_CORE_SQLITE="/tpdata/trojan-panel-core/config/sqlite/"
   database="trojan_panel_db"
   account_table="account"
   grpc_port=8100
@@ -142,6 +143,7 @@ mkdir_tools() {
   # Trojan Panel Core
   mkdir -p ${TROJAN_PANEL_CORE_DATA}
   mkdir -p ${TROJAN_PANEL_CORE_LOGS}
+  mkdir -p ${TROJAN_PANEL_CORE_SQLITE}
 }
 
 can_connect() {
@@ -909,6 +911,7 @@ install_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config \
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
+        -v ${TROJAN_PANEL_CORE_SQLITE}:${TROJAN_PANEL_CORE_SQLITE} \
         -v ${CADDY_CERT}:${CADDY_CERT} \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         -v /etc/localtime:/etc/localtime \
@@ -1121,7 +1124,7 @@ update_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/trojango/config:${TROJAN_PANEL_CORE_DATA}bin/trojango/config \
         -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config \
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
-        -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
+        -v ${TROJAN_PANEL_CORE_SQLITE}:${TROJAN_PANEL_CORE_SQLITE} \
         -v ${CADDY_CERT}:${CADDY_CERT} \
         -v ${CADDY_SRV}:${CADDY_SRV} \
         -v /etc/localtime:/etc/localtime \
