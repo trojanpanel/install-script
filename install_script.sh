@@ -78,9 +78,9 @@ init_var() {
 
   # Update
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.0.2"
+  trojan_panel_latest_version="v2.0.3"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v2.0.1"
+  trojan_panel_core_latest_version="v2.0.2"
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
