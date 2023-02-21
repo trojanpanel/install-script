@@ -24,6 +24,8 @@ source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_
 source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
 ```
 
+3. [安装旧版](./archive)
+
 # Enjoy!
 
 ![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
