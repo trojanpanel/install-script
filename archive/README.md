@@ -3,6 +3,7 @@
 | Install Script                       | Trojan Panel UI | Trojan Panel | Trojan Panel Core | Xray   | Trojan Go | Hysteria | Caddy（NaiveProxy） |
 |--------------------------------------|-----------------|--------------|-------------------|--------|-----------|----------|-------------------|
 | [v2.0.2](./install_script_v2.0.2.sh) | v2.0.1          | v2.0.2       | v2.0.1            | v1.7.2 | v0.10.6   | v1.3.2   | v2.6.2            |
+| [v2.0.3](./install_script_v2.0.3.sh) | v2.0.2          | v2.0.3       | v2.0.2            | v1.7.2 | v0.10.6   | v1.3.2   | v2.6.2            |
 
 # 安装旧版
 
