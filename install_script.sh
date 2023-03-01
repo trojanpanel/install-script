@@ -233,7 +233,8 @@ install_docker() {
   "log-opts":{
       "max-size":"50m",
       "max-file":"3"
-  }
+  },
+  "ipv6": true
 }
 EOF
     else
