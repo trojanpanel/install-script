@@ -1,0 +1,58 @@
+version: "2"
+services:
+  trojan-panel-caddy:
+    image: caddy:2.6.2
+    container_name: trojan-panel-caddy
+    restart: always
+    network_mode: host
+    volumes:
+      - "/tpdata/caddy/config.json": "/tpdata/caddy/config.json"
+      - "/tpdata/caddy/cert/": "/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/${domain}/"
+      - "/tpdata/caddy/srv/": "/tpdata/caddy/srv/"
+      - "/tpdata/caddy/logs/": "/tpdata/caddy/logs/"
+    command: [ "caddy", "run", "--config" ,"${CADDY_Config}" ]
+  trojan-panel-mariadb:
+    image: mariadb:10.7.3
+    container_name: trojan-panel-mariadb
+    restart: always
+    network_mode: host
+    environment:
+      - MYSQL_DATABASE="trojan_panel_db"
+      - MYSQL_ROOT_PASSWORD="${mariadb_pas}"
+      - MYSQL_USER="${mariadb_user}"
+      - MYSQL_PASSWORD="${mariadb_pas}"
+      - TZ=Asia/Shanghai
+  trojan-panel-redis:
+    image: redis:6.2.7
+    container_name: trojan-panel-redis
+    restart: always
+    network_mode: host
+    command: [ "redis-server", "--requirepass", "${redis_pass}" ,"--port", "${redis_port}]" ]
+  trojan-panel-ui:
+    image: jonssonyan/trojan-panel-ui
+    container_name: trojan-panel-ui
+    restart: always
+    network_mode: host
+
+  trojan-panel:
+    image: jonssonyan/trojan-panel
+    container_name: trojan-panel
+    restart: always
+    network_mode: host
+    volumes:
+      - "/tpdata/caddy/srv/": "/tpdata/tro|jan-panel/webfile/"
+      - "/tpdata/trojan-panel/logs/": "/tpdata/trojan-panel/logs/"
+      - "/etc/localtime": "/etc/localtime"
+    environment:
+      - mariadb_ip=${mariadb_ip}"
+      - "mariadb_port=${mariadb_port}"
+      - "mariadb_user=${mariadb_user}"
+      - "mariadb_pas=${mariadb_pas}"
+      - "redis_host=${redis_host}"
+      - "redis_port=${redis_port}"
+      - "redis_pass=${redis_pass}"
+  trojan-panel-core:
+    image: jonssonyan/trojan-panel-core
+    container_name: trojan-panel-core
+    restart: always
+    network_mode: host
