@@ -192,6 +192,9 @@ check_sys() {
     echo_content red "仅支持amd64/arm64/arm/s390x处理器架构"
     exit 0
   fi
+
+  can_connect www.google.com
+  [[ "$?" == "0" ]] && can_google=1
 }
 
 depend_install() {
@@ -219,9 +222,6 @@ install_docker() {
     # 时区
     timedatectl set-timezone Asia/Shanghai
 
-    can_connect www.google.com
-    [[ "$?" == "0" ]] && can_google=1
-
     if [[ ${can_google} == 0 ]]; then
       sh <(curl -sL https://get.docker.com) --mirror Aliyun
       # 设置Docker国内源
@@ -239,6 +239,17 @@ install_docker() {
 EOF
     else
       sh <(curl -sL https://get.docker.com)
+      mkdir -p /etc/docker &&
+        cat >/etc/docker/daemon.json <<EOF
+{
+  "log-driver":"json-file",
+  "log-opts":{
+      "max-size":"50m",
+      "max-file":"3"
+  },
+  "ipv6": true
+}
+EOF
     fi
 
     systemctl enable docker &&
