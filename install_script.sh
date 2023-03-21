@@ -1329,7 +1329,7 @@ failure_testing() {
       if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
         echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项 日志如下："
         if [[ -f ${CADDY_LOG}error.log ]]; then
-          tail -n 20 ${CADDY_LOG}error.log
+          tail -n 20 ${CADDY_LOG}error.log | grep error
         else
           docker logs trojan-panel-caddy
         fi
@@ -1346,7 +1346,7 @@ failure_testing() {
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content red "---> Trojan Panel后端运行异常 日志如下："
       if [[ -f ${TROJAN_PANEL_LOGS}trojan-panel.log ]]; then
-        tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log
+        tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log | grep error
       else
         docker logs trojan-panel
       fi
@@ -1358,7 +1358,7 @@ failure_testing() {
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content red "---> Trojan Panel Core运行异常 日志如下："
       if [[ -f ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log ]]; then
-        tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log
+        tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log | grep error
       else
         docker logs trojan-panel-core
       fi
