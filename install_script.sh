@@ -645,7 +645,9 @@ install_mariadb() {
           -e MYSQL_ROOT_PASSWORD="${mariadb_pas}" \
           -e TZ=Asia/Shanghai \
           mariadb:10.7.3 \
-          --port ${mariadb_port}
+          --port ${mariadb_port} \
+          --character-set-server=utf8mb4 \
+          --collation-server=utf8mb4_unicode_ci
     else
       docker pull mariadb:10.7.3 &&
         docker run -d --name trojan-panel-mariadb --restart always \
@@ -656,7 +658,9 @@ install_mariadb() {
           -e MYSQL_PASSWORD="${mariadb_pas}" \
           -e TZ=Asia/Shanghai \
           mariadb:10.7.3 \
-          --port ${mariadb_port}
+          --port ${mariadb_port} \
+          --character-set-server=utf8mb4 \
+          --collation-server=utf8mb4_unicode_ci
     fi
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
