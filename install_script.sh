@@ -24,13 +24,17 @@ init_var() {
 
   STATIC_HTML="https://github.com/trojanpanel/install-script/releases/download/v1.0.0/html.tar.gz"
 
+  # web
+  WEB_PATH="/tpdata/web/"
+
+  # cert
+  CERT_PATH="/tpdata/cert/"
+  DOMAIN_FILE="/tpdata/cert/domain.lock"
+
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
   CADDY_Config="/tpdata/caddy/config.json"
-  CADDY_SRV="/tpdata/caddy/srv/"
-  CADDY_CERT="/tpdata/caddy/cert/"
   CADDY_LOG="/tpdata/caddy/logs/"
-  DOMAIN_FILE="/tpdata/caddy/domain.lock"
   CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
   caddy_port=80
@@ -118,11 +122,16 @@ mkdir_tools() {
   # 项目目录
   mkdir -p ${TP_DATA}
 
+  # web
+  mkdir -p ${WEB_PATH}
+
+  # cert
+  mkdir -p ${CERT_PATH}
+  touch ${DOMAIN_FILE}
+
   # Caddy
   mkdir -p ${CADDY_DATA}
   touch ${CADDY_Config}
-  mkdir -p ${CADDY_SRV}
-  mkdir -p ${CADDY_CERT}
   mkdir -p ${CADDY_LOG}
 
   # MariaDB
@@ -271,7 +280,7 @@ install_caddy_tls() {
     echo_content green "---> 安装Caddy TLS"
 
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
-      tar -zxvf ${CADDY_DATA}html.tar.gz -C ${CADDY_SRV}
+      tar -zxvf ${CADDY_DATA}html.tar.gz -C ${WEB_PATH}
 
     read -r -p "请输入Caddy的端口(默认:80): " caddy_port
     [[ -z "${caddy_port}" ]] && caddy_port=80
@@ -323,7 +332,7 @@ install_caddy_tls() {
     },
     "storage":{
         "module":"file_system",
-        "root":"${CADDY_CERT}"
+        "root":"${CERT_PATH}"
     },
     "apps":{
         "http":{
@@ -377,7 +386,7 @@ install_caddy_tls() {
                                             "handle":[
                                                 {
                                                     "handler":"file_server",
-                                                    "root":"${CADDY_SRV}",
+                                                    "root":"${WEB_PATH}",
                                                     "index_names":[
                                                         "index.html",
                                                         "index.htm"
@@ -437,7 +446,7 @@ EOF
             if [[ ! -f "${crt_path}" ]]; then
               echo_content red "证书的.crt文件路径不存在"
             else
-              cp "${crt_path}" "${CADDY_CERT}${domain}.crt"
+              cp "${crt_path}" "${CERT_PATH}${domain}.crt"
               break
             fi
           fi
@@ -450,7 +459,7 @@ EOF
             if [[ ! -f "${key_path}" ]]; then
               echo_content red "证书的.key文件路径不存在"
             else
-              cp "${key_path}" "${CADDY_CERT}${domain}.key"
+              cp "${key_path}" "${CERT_PATH}${domain}.key"
               break
             fi
           fi
@@ -474,7 +483,7 @@ EOF
     },
     "storage":{
         "module":"file_system",
-        "root":"${CADDY_CERT}"
+        "root":"${CERT_PATH}"
     },
     "apps":{
         "http":{
@@ -528,7 +537,7 @@ EOF
                                             "handle":[
                                                 {
                                                     "handler":"file_server",
-                                                    "root":"${CADDY_SRV}",
+                                                    "root":"${WEB_PATH}",
                                                     "index_names":[
                                                         "index.html",
                                                         "index.htm"
@@ -599,8 +608,8 @@ EOF
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
         -v "${CADDY_Config}":"${CADDY_Config}" \
-        -v ${CADDY_CERT}:"${CADDY_CERT_DIR}${domain}/" \
-        -v ${CADDY_SRV}:${CADDY_SRV} \
+        -v ${CERT_PATH}:"${CADDY_CERT_DIR}${domain}/" \
+        -v ${WEB_PATH}:${WEB_PATH} \
         -v ${CADDY_LOG}:${CADDY_LOG} \
         caddy:2.6.2 caddy run --config ${CADDY_Config}
 
@@ -614,9 +623,67 @@ EOF
       exit 0
     fi
   else
-    domain=$(cat "${DOMAIN_FILE}")
     echo_content skyBlue "---> 你已经安装了Caddy"
   fi
+}
+
+# 安装反向代理
+install_reverse_proxy() {
+  echo_content green "---> 安装反向代理"
+
+  while :; do
+    echo_content skyBlue "可以安装的反向代理应用如下:"
+    echo_content yellow "1. Caddy 2"
+    echo_content yellow "2. 不安装"
+    read -r -p "请选择(默认:1): " whether_install_caddy_tls
+    [[ -z "${whether_install_caddy_tls}" ]] && whether_install_caddy_tls=1
+
+    case ${whether_install_caddy_tls} in
+    1)
+      install_caddy_tls
+      break
+      ;;
+    2)
+      while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
+        if [[ -z "${crt_path}" ]]; then
+          echo_content red "路径不能为空"
+        else
+          if [[ ! -f "${crt_path}" ]]; then
+            echo_content red "证书的.crt文件路径不存在"
+          else
+            cp "${crt_path}" "${CERT_PATH}custom_cert.crt"
+            break
+          fi
+        fi
+      done
+
+      while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
+        if [[ -z "${key_path}" ]]; then
+          echo_content red "路径不能为空"
+        else
+          if [[ ! -f "${key_path}" ]]; then
+            echo_content red "证书的.key文件路径不存在"
+          else
+            cp "${key_path}" "${CERT_PATH}custom_cert.key"
+            break
+          fi
+        fi
+      done
+      cat >${DOMAIN_FILE} <<EOF
+custom_cert
+EOF
+      break
+      ;;
+    *)
+      echo_content red "没有这个选项"
+      continue
+      ;;
+    esac
+  done
+
+  domain=$(cat "${DOMAIN_FILE}")
+
+  echo_content skyBlue "---> 安装反向代理安装完成"
 }
 
 # 安装MariaDB
@@ -748,7 +815,7 @@ install_trojan_panel() {
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
-        -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
+        -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
@@ -776,6 +843,7 @@ install_trojan_panel() {
 
     while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " https_enable; do
       if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
+        domain=$(cat "${DOMAIN_FILE}")
         # 配置Nginx
         cat >${NGINX_CONFIG} <<-EOF
 server {
@@ -784,8 +852,8 @@ server {
 
     #强制ssl
     ssl on;
-    ssl_certificate      ${CADDY_CERT}${domain}.crt;
-    ssl_certificate_key  ${CADDY_CERT}${domain}.key;
+    ssl_certificate      ${CERT_PATH}${domain}.crt;
+    ssl_certificate_key  ${CERT_PATH}${domain}.key;
     #缓存有效期
     ssl_session_timeout  5m;
     #安全链接可选的加密协议
@@ -854,7 +922,7 @@ EOF
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
-        -v ${CADDY_CERT}:${CADDY_CERT} \
+        -v ${CERT_PATH}:${CERT_PATH} \
         jonssonyan/trojan-panel-ui
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
@@ -875,7 +943,7 @@ EOF
   echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
   echo_content yellow "管理面板地址: ${https_flag}://${domain}:${trojan_panel_ui_port}"
   echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
-  echo_content yellow "Trojan Panel私钥和证书目录: ${CADDY_CERT}"
+  echo_content yellow "Trojan Panel私钥和证书目录: ${CERT_PATH}"
   echo_content red "\n=============================================================="
 }
 
@@ -927,8 +995,8 @@ install_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${TROJAN_PANEL_CORE_SQLITE}:${TROJAN_PANEL_CORE_SQLITE} \
-        -v ${CADDY_CERT}:${CADDY_CERT} \
-        -v ${CADDY_SRV}:${CADDY_SRV} \
+        -v ${CERT_PATH}:${CERT_PATH} \
+        -v ${WEB_PATH}:${WEB_PATH} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
@@ -939,8 +1007,8 @@ install_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${CADDY_CERT}${domain}.crt" \
-        -e "key_path=${CADDY_CERT}${domain}.key" \
+        -e "crt_path=${CERT_PATH}${domain}.crt" \
+        -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
@@ -1038,7 +1106,7 @@ update_trojan_panel() {
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
-        -v ${CADDY_SRV}:${TROJAN_PANEL_WEBFILE} \
+        -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
@@ -1064,7 +1132,7 @@ update_trojan_panel() {
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
-        -v ${CADDY_CERT}:${CADDY_CERT} \
+        -v ${CERT_PATH}:${CERT_PATH} \
         jonssonyan/trojan-panel-ui
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
@@ -1146,8 +1214,8 @@ update_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${TROJAN_PANEL_CORE_SQLITE}:${TROJAN_PANEL_CORE_SQLITE} \
-        -v ${CADDY_CERT}:${CADDY_CERT} \
-        -v ${CADDY_SRV}:${CADDY_SRV} \
+        -v ${CERT_PATH}:${CERT_PATH} \
+        -v ${WEB_PATH}:${WEB_PATH} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
@@ -1158,8 +1226,8 @@ update_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${CADDY_CERT}${domain}.crt" \
-        -e "key_path=${CADDY_CERT}${domain}.key" \
+        -e "crt_path=${CERT_PATH}${domain}.crt" \
+        -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
 
@@ -1334,7 +1402,7 @@ failure_testing() {
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
+      if [[ -z ${domain} || ! -d "${CERT_PATH}" || ! -f "${CERT_PATH}${domain}.crt" ]]; then
         echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项 日志如下："
         if [[ -f ${CADDY_LOG}error.log ]]; then
           tail -n 20 ${CADDY_LOG}error.log | grep error
@@ -1464,14 +1532,14 @@ main() {
   case ${selectInstall_type} in
   1)
     install_docker
-    install_caddy_tls
+    install_reverse_proxy
     install_mariadb
     install_redis
     install_trojan_panel
     ;;
   2)
     install_docker
-    install_caddy_tls
+    install_reverse_proxy
     install_trojan_panel_core
     ;;
   3)
