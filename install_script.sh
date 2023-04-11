@@ -629,61 +629,61 @@ EOF
 
 # 安装反向代理
 install_reverse_proxy() {
-  echo_content green "---> 安装反向代理"
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+    echo_content green "---> 安装反向代理"
 
-  while :; do
-    echo_content skyBlue "可以安装的反向代理应用如下:"
-    echo_content yellow "1. Caddy 2"
-    echo_content yellow "2. 不安装"
-    read -r -p "请选择(默认:1): " whether_install_caddy_tls
-    [[ -z "${whether_install_caddy_tls}" ]] && whether_install_caddy_tls=1
+    while :; do
+      echo_content skyBlue "可以安装的反向代理应用如下:"
+      echo_content yellow "1. Caddy 2"
+      echo_content yellow "2. 不安装"
+      read -r -p "请选择(默认:1): " whether_install_caddy_tls
+      [[ -z "${whether_install_caddy_tls}" ]] && whether_install_caddy_tls=1
 
-    case ${whether_install_caddy_tls} in
-    1)
-      install_caddy_tls
-      break
-      ;;
-    2)
-      while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
-        if [[ -z "${crt_path}" ]]; then
-          echo_content red "路径不能为空"
-        else
-          if [[ ! -f "${crt_path}" ]]; then
-            echo_content red "证书的.crt文件路径不存在"
+      case ${whether_install_caddy_tls} in
+      1)
+        install_caddy_tls
+        break
+        ;;
+      2)
+        while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
+          if [[ -z "${crt_path}" ]]; then
+            echo_content red "路径不能为空"
           else
-            cp "${crt_path}" "${CERT_PATH}custom_cert.crt"
-            break
+            if [[ ! -f "${crt_path}" ]]; then
+              echo_content red "证书的.crt文件路径不存在"
+            else
+              cp "${crt_path}" "${CERT_PATH}custom_cert.crt"
+              break
+            fi
           fi
-        fi
-      done
+        done
 
-      while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
-        if [[ -z "${key_path}" ]]; then
-          echo_content red "路径不能为空"
-        else
-          if [[ ! -f "${key_path}" ]]; then
-            echo_content red "证书的.key文件路径不存在"
+        while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
+          if [[ -z "${key_path}" ]]; then
+            echo_content red "路径不能为空"
           else
-            cp "${key_path}" "${CERT_PATH}custom_cert.key"
-            break
+            if [[ ! -f "${key_path}" ]]; then
+              echo_content red "证书的.key文件路径不存在"
+            else
+              cp "${key_path}" "${CERT_PATH}custom_cert.key"
+              break
+            fi
           fi
-        fi
-      done
-      cat >${DOMAIN_FILE} <<EOF
+        done
+        cat >${DOMAIN_FILE} <<EOF
 custom_cert
 EOF
-      break
-      ;;
-    *)
-      echo_content red "没有这个选项"
-      continue
-      ;;
-    esac
-  done
-
+        break
+        ;;
+      *)
+        echo_content red "没有这个选项"
+        continue
+        ;;
+      esac
+    done
+    echo_content skyBlue "---> 安装反向代理安装完成"
+  fi
   domain=$(cat "${DOMAIN_FILE}")
-
-  echo_content skyBlue "---> 安装反向代理安装完成"
 }
 
 # 安装MariaDB
