@@ -82,9 +82,9 @@ init_var() {
 
   # Update
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.0.5"
+  trojan_panel_latest_version="v2.1.0"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v2.0.4"
+  trojan_panel_core_latest_version="v2.1.0"
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
@@ -1040,6 +1040,14 @@ update__trojan_panel_database() {
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_205}" &>/dev/null &&
       trojan_panel_current_version="v2.0.5"
   fi
+  version_205_210=("v2.0.5")
+  if [[ "${version_205_210[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    cp -r /tpdata/caddy/srv/* ${WEB_PATH}
+    cp -r /tpdata/caddy/cert/* ${CERT_PATH}
+    cp /tpdata/caddy/domain.lock ${DOMAIN_FILE}
+    sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${NGINX_CONFIG}
+    trojan_panel_current_version="v2.1.0"
+  fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
@@ -1047,6 +1055,14 @@ update__trojan_panel_database() {
 # 更新Trojan Panel Core数据结构
 update__trojan_panel_core_database() {
   echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
+
+  version_204_210=("v2.0.4")
+  if [[ "${version_204_210[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
+    cp -r /tpdata/caddy/srv/* ${WEB_PATH}
+    cp -r /tpdata/caddy/cert/* ${CERT_PATH}
+    cp /tpdata/caddy/domain.lock ${DOMAIN_FILE}
+    trojan_panel_core_current_version="v2.1.0"
+  fi
 
   echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
 }
