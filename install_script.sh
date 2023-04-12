@@ -30,6 +30,7 @@ init_var() {
   # cert
   CERT_PATH="/tpdata/cert/"
   DOMAIN_FILE="/tpdata/cert/domain.lock"
+  with_cert=1
 
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
@@ -627,19 +628,51 @@ EOF
   fi
 }
 
-# 安装反向代理
+# 设置伪装Web
 install_reverse_proxy() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 安装反向代理"
+    echo_content green "---> 设置伪装Web"
 
     while :; do
-      echo_content skyBlue "可以安装的反向代理应用如下:"
-      echo_content yellow "1. Caddy 2"
-      echo_content yellow "2. 不安装"
-      read -r -p "请选择(默认:1): " whether_install_caddy_tls
-      [[ -z "${whether_install_caddy_tls}" ]] && whether_install_caddy_tls=1
+      echo_content yellow "1. 安装Caddy 2"
+      echo_content yellow "2. 不设置"
+      read -r -p "请选择(默认:1): " whether_install_reverse_proxy
+      [[ -z "${whether_install_reverse_proxy}" ]] && whether_install_reverse_proxy=1
 
-      case ${whether_install_caddy_tls} in
+      case ${whether_install_reverse_proxy} in
+      1)
+        install_caddy_tls
+        break
+        ;;
+      2)
+        break
+        ;;
+      *)
+        echo_content red "没有这个选项"
+        continue
+        ;;
+      esac
+    done
+
+    echo_content skyBlue "---> 设置伪装Web完成"
+  fi
+}
+
+# 设置证书
+install_cert() {
+  domain=$(cat "${DOMAIN_FILE}")
+  if [[ -z "${domain}" ]]; then
+    echo_content green "---> 设置证书"
+
+    while :; do
+      echo_content red "注意: 不设置证书会导致部分协议无法使用"
+      echo_content yellow "1. 安装Caddy 2（自动申请/续签证书）"
+      echo_content yellow "2. 手动设置证书路径"
+      echo_content yellow "3. 不设置"
+      read -r -p "请选择(默认:1): " whether_install_cert
+      [[ -z "${whether_install_cert}" ]] && whether_install_cert=1
+
+      case ${whether_install_cert} in
       1)
         install_caddy_tls
         break
@@ -657,7 +690,6 @@ install_reverse_proxy() {
             fi
           fi
         done
-
         while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
           if [[ -z "${key_path}" ]]; then
             echo_content red "路径不能为空"
@@ -675,15 +707,19 @@ custom_cert
 EOF
         break
         ;;
+      3)
+        with_cert=0
+        break
+        ;;
       *)
         echo_content red "没有这个选项"
         continue
         ;;
       esac
     done
-    echo_content skyBlue "---> 安装反向代理安装完成"
+
+    echo_content green "---> 设置证书完成"
   fi
-  domain=$(cat "${DOMAIN_FILE}")
 }
 
 # 安装MariaDB
@@ -841,11 +877,12 @@ install_trojan_panel() {
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
 
-    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " https_enable; do
-      if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
-        domain=$(cat "${DOMAIN_FILE}")
-        # 配置Nginx
-        cat >${NGINX_CONFIG} <<-EOF
+    if [[ -z ${with_cert} || ${with_cert} == 1 ]]; then
+      while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " https_enable; do
+        if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
+          domain=$(cat "${DOMAIN_FILE}")
+          # 配置Nginx
+          cat >${NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  ${domain};
@@ -886,12 +923,12 @@ server {
     }
 }
 EOF
-        break
-      else
-        if [[ ${https_enable} != 0 ]]; then
-          echo_content red "不可以输入除0和1之外的其他字符"
+          break
         else
-          cat >${NGINX_CONFIG} <<-EOF
+          if [[ ${https_enable} != 0 ]]; then
+            echo_content red "不可以输入除0和1之外的其他字符"
+          else
+            cat >${NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -913,10 +950,35 @@ server {
     }
 }
 EOF
-          break
+            break
+          fi
         fi
-      fi
-    done
+      done
+    else
+      https_enable=0
+      cat >${NGINX_CONFIG} <<-EOF
+server {
+    listen       ${trojan_panel_ui_port};
+    server_name  localhost;
+
+    location / {
+        root   ${TROJAN_PANEL_UI_DATA};
+        index  index.html index.htm;
+    }
+
+    location /api {
+        proxy_pass http://127.0.0.1:8081;
+    }
+
+    error_page  497              http://\$host:${trojan_panel_ui_port}\$uri?\$args;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+    fi
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
@@ -985,6 +1047,12 @@ install_trojan_panel_core() {
     [[ -z "${grpc_port}" ]] && grpc_port=8100
 
     domain=$(cat "${DOMAIN_FILE}")
+    crtPath=""
+    keyPath=""
+    if [[ -n "${domian}" ]]; then
+      crtPath=${CERT_PATH}${domain}.crt
+      keyPath=${CERT_PATH}${domain}.key
+    fi
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
@@ -1007,8 +1075,8 @@ install_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${CERT_PATH}${domain}.crt" \
-        -e "key_path=${CERT_PATH}${domain}.key" \
+        -e "crt_path=${crtPath}" \
+        -e "key_path=${keyPath}" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
@@ -1220,6 +1288,12 @@ update_trojan_panel_core() {
       docker rmi -f jonssonyan/trojan-panel-core
 
     domain=$(cat "${DOMAIN_FILE}")
+    crtPath=""
+    keyPath=""
+    if [[ -n "${domian}" ]]; then
+      crtPath="${CERT_PATH}${domain}.crt"
+      keyPath="${CERT_PATH}${domain}.key"
+    fi
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
@@ -1242,8 +1316,8 @@ update_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${CERT_PATH}${domain}.crt" \
-        -e "key_path=${CERT_PATH}${domain}.key" \
+        -e "crt_path=${crtPath}" \
+        -e "key_path=${keyPath}" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
 
@@ -1549,6 +1623,7 @@ main() {
   1)
     install_docker
     install_reverse_proxy
+    install_cert
     install_mariadb
     install_redis
     install_trojan_panel
@@ -1556,6 +1631,7 @@ main() {
   2)
     install_docker
     install_reverse_proxy
+    install_cert
     install_trojan_panel_core
     ;;
   3)
