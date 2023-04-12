@@ -29,14 +29,14 @@ init_var() {
 
   # cert
   CERT_PATH="/tpdata/cert/"
-  DOMAIN_FILE="/tpdata/cert/domain.lock"
+  DOMAIN_FILE="/tpdata/domain.lock"
   with_cert=1
 
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
   CADDY_Config="/tpdata/caddy/config.json"
   CADDY_LOG="/tpdata/caddy/logs/"
-  CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+  CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
   caddy_port=80
   caddy_remote_port=8863
@@ -304,11 +304,11 @@ install_caddy_tls() {
         while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
           if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
             ssl_module="acme"
-            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme-v02.api.letsencrypt.org-directory/"
+            CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
             break
           elif [[ ${ssl_module_type} == 2 ]]; then
             ssl_module="zerossl"
-            CADDY_CERT_DIR="/tpdata/caddy/cert/certificates/acme.zerossl.com-v2-dv90/"
+            CADDY_CERT_DIR="${CERT_PATH}certificates/acme.zerossl.com-v2-dv90/"
             break
           else
             echo_content red "不可以输入除1和2之外的其他字符"
