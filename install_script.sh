@@ -998,7 +998,7 @@ EOF
   fi
 
   https_flag=$([[ -z ${https_enable} || ${https_enable} == 1 ]] && echo "https" || echo "http")
-  domain_or_ip=$([[ -z ${domain} || "${domian}" == "custom_cert" ]] && echo "ip" || echo "${domain}")
+  domain_or_ip=$([[ -z ${domain} || "${domain}" == "custom_cert" ]] && echo "ip" || echo "${domain}")
 
   echo_content red "\n=============================================================="
   echo_content skyBlue "Trojan Panel 安装成功"
@@ -1050,7 +1050,7 @@ install_trojan_panel_core() {
     domain=$(cat "${DOMAIN_FILE}")
     crtPath=""
     keyPath=""
-    if [[ -n "${domian}" ]]; then
+    if [[ -n "${domain}" ]]; then
       crtPath=${CERT_PATH}${domain}.crt
       keyPath=${CERT_PATH}${domain}.key
     fi
@@ -1291,7 +1291,7 @@ update_trojan_panel_core() {
     domain=$(cat "${DOMAIN_FILE}")
     crtPath=""
     keyPath=""
-    if [[ -n "${domian}" ]]; then
+    if [[ -n "${domain}" ]]; then
       crtPath="${CERT_PATH}${domain}.crt"
       keyPath="${CERT_PATH}${domain}.key"
     fi
