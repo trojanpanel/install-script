@@ -734,7 +734,7 @@ install_reverse_proxy() {
     echo_content green "---> 设置伪装Web"
 
     while :; do
-      echo_content yellow "1. 安装Caddy 2"
+      echo_content yellow "1. 安装Caddy 2（推荐）"
       echo_content yellow "2. 安装Nginx"
       echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_reverse_proxy
