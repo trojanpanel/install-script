@@ -1125,12 +1125,6 @@ install_trojan_panel_core() {
     [[ -z "${grpc_port}" ]] && grpc_port=8100
 
     domain=$(cat "${DOMAIN_FILE}")
-    crtPath=""
-    keyPath=""
-    if [[ -n "${domain}" ]]; then
-      crtPath=${CERT_PATH}${domain}.crt
-      keyPath=${CERT_PATH}${domain}.key
-    fi
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
@@ -1153,8 +1147,8 @@ install_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${crtPath}" \
-        -e "key_path=${keyPath}" \
+        -e "crt_path=${CERT_PATH}${domain}.crt" \
+        -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
@@ -1366,12 +1360,6 @@ update_trojan_panel_core() {
       docker rmi -f jonssonyan/trojan-panel-core
 
     domain=$(cat "${DOMAIN_FILE}")
-    crtPath=""
-    keyPath=""
-    if [[ -n "${domain}" ]]; then
-      crtPath="${CERT_PATH}${domain}.crt"
-      keyPath="${CERT_PATH}${domain}.key"
-    fi
 
     docker pull jonssonyan/trojan-panel-core &&
       docker run -d --name trojan-panel-core --restart always \
@@ -1394,8 +1382,8 @@ update_trojan_panel_core() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        -e "crt_path=${crtPath}" \
-        -e "key_path=${keyPath}" \
+        -e "crt_path=${CERT_PATH}${domain}.crt" \
+        -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         jonssonyan/trojan-panel-core
 
