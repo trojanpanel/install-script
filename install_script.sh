@@ -654,7 +654,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:${nginx_port}\$uri?\$args;
+    error_page  497              https://\$host:${nginx_port}\$request_uri;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -679,7 +679,7 @@ server {
         index  index.html index.htm;
     }
 
-    error_page  497              http://\$host:${nginx_port}\$uri?\$args;
+    error_page  497              http://\$host:${nginx_port}\$request_uri;
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
@@ -998,7 +998,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:${trojan_panel_ui_port}\$uri?\$args;
+    error_page  497              https://\$host:${trojan_panel_ui_port}\$request_uri;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -1027,7 +1027,7 @@ server {
         proxy_pass http://127.0.0.1:8081;
     }
 
-    error_page  497              http://\$host:${trojan_panel_ui_port}\$uri?\$args;
+    error_page  497              http://\$host:${trojan_panel_ui_port}\$request_uri;
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
@@ -1510,7 +1510,7 @@ update_trojan_panel_ui_port() {
     read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
     sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${UI_NGINX_CONFIG} &&
-      sed -i "s/https:\/\/\$host:.*\$uri?\$args/https:\/\/\$host:${trojan_panel_ui_port}\$uri?\$args/g" ${UI_NGINX_CONFIG} &&
+      sed -i "s/https:\/\/\$host:.*\$request_uri/https:\/\/\$host:${trojan_panel_ui_port}\$request_uri/g" ${UI_NGINX_CONFIG} &&
       docker restart trojan-panel-ui
 
     if [[ "$?" == "0" ]]; then
