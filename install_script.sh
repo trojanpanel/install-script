@@ -62,21 +62,21 @@ init_var() {
 
   # Trojan Panel
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
-  TROJAN_PANEL_WEBFILE="/tpdata/trojan-panel/webfile/"
-  TROJAN_PANEL_LOGS="/tpdata/trojan-panel/logs/"
+  TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
+  TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
   # Nginx
-  NGINX_DATA="/tpdata/nginx/"
-  NGINX_CONFIG="/tpdata/nginx/default.conf"
+  NGINX_DATA="${TROJAN_PANEL_UI_DATA}nginx/"
+  NGINX_CONFIG="${NGINX_DATA}default.conf"
   trojan_panel_ui_port=8888
   https_enable=1
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
-  TROJAN_PANEL_CORE_LOGS="/tpdata/trojan-panel-core/logs/"
-  TROJAN_PANEL_CORE_SQLITE="/tpdata/trojan-panel-core/config/sqlite/"
+  TROJAN_PANEL_CORE_LOGS="${TROJAN_PANEL_CORE_DATA}logs/"
+  TROJAN_PANEL_CORE_SQLITE="${TROJAN_PANEL_CORE_DATA}config/sqlite/"
   database="trojan_panel_db"
   account_table="account"
   grpc_port=8100
@@ -1108,6 +1108,7 @@ update__trojan_panel_database() {
     cp -r /tpdata/caddy/srv/* ${WEB_PATH}
     cp -r /tpdata/caddy/cert/* ${CERT_PATH}
     cp /tpdata/caddy/domain.lock ${DOMAIN_FILE}
+    cp /tpdata/nginx/default.conf ${NGINX_CONFIG}
     sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${NGINX_CONFIG}
     trojan_panel_current_version="v2.1.0"
   fi
@@ -1204,8 +1205,7 @@ update_trojan_panel() {
     fi
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui &&
-      rm -rf ${TROJAN_PANEL_UI_DATA}
+      docker rmi -f jonssonyan/trojan-panel-ui
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
@@ -1383,8 +1383,7 @@ uninstall_trojan_panel() {
 
     docker rm -f trojan-panel-ui &&
       docker rmi -f jonssonyan/trojan-panel-ui &&
-      rm -rf ${TROJAN_PANEL_UI_DATA} &&
-      rm -rf ${NGINX_DATA}
+      rm -rf ${TROJAN_PANEL_UI_DATA}
 
     echo_content skyBlue "---> Trojan Panel卸载完成"
   else
