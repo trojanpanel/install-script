@@ -50,6 +50,7 @@ init_var() {
   NGINX_DATA="/tpdata/nginx/"
   NGINX_CONFIG="${NGINX_DATA}default.conf"
   nginx_port=80
+  nginx_remote_port=8863
   nginx_https=1
 
   # MariaDB
@@ -622,6 +623,8 @@ install_nginx() {
 
     read -r -p "请输入Nginx的端口(默认:80): " nginx_port
     [[ -z "${nginx_port}" ]] && nginx_port=80
+    read -r -p "请输入Nginx的转发端口(默认:8863): " nginx_remote_port
+    [[ -z "${nginx_remote_port}" ]] && nginx_remote_port=8863
 
     while read -r -p "请选择Nginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
       if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
@@ -629,7 +632,21 @@ install_nginx() {
         domain=$(cat "${DOMAIN_FILE}")
         cat >${NGINX_CONFIG} <<-EOF
 server {
-    listen       ${nginx_port} ssl;
+    listen ${nginx_port};
+    server_name localhost;
+
+    location / {
+        proxy_pass http://127.0.0.1:${nginx_remote_port};
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+
+    error_page  497              http://127.0.0.1:${nginx_remote_port};
+}
+
+server {
+    listen       ${nginx_remote_port} ssl;
     server_name  localhost;
 
     #强制ssl
@@ -654,7 +671,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:${nginx_port}\$request_uri;
+    error_page  497              https://\$host:${nginx_remote_port}\$request_uri;
 
     # redirect server error pages to the static page /50x.html
     #
