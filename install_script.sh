@@ -668,7 +668,6 @@ install_cert() {
       echo_content red "注意: 不设置证书会导致部分协议无法使用"
       echo_content yellow "1. 安装Caddy 2（自动申请/续签证书）"
       echo_content yellow "2. 手动设置证书路径"
-      echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_cert
       [[ -z "${whether_install_cert}" ]] && whether_install_cert=1
 
@@ -705,10 +704,6 @@ install_cert() {
         cat >${DOMAIN_FILE} <<EOF
 custom_cert
 EOF
-        break
-        ;;
-      3)
-        with_cert=0
         break
         ;;
       *)
