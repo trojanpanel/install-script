@@ -1691,26 +1691,27 @@ main() {
   echo_content yellow "1. 安装Trojan Panel"
   echo_content yellow "2. 安装Trojan Panel Core"
   echo_content yellow "3. 安装Caddy TLS"
-  echo_content yellow "4. 安装MariaDB"
-  echo_content yellow "5. 安装Redis"
+  echo_content yellow "4. 安装Nginx"
+  echo_content yellow "5. 安装MariaDB"
+  echo_content yellow "6. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "6. 更新Trojan Panel"
-  echo_content yellow "7. 更新Trojan Panel Core"
+  echo_content yellow "7. 更新Trojan Panel"
+  echo_content yellow "8. 更新Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "8. 卸载Trojan Panel"
-  echo_content yellow "9. 卸载Trojan Panel Core"
-  echo_content yellow "10. 卸载Caddy TLS"
-  echo_content yellow "11. 卸载Nginx"
-  echo_content yellow "12. 卸载MariaDB"
-  echo_content yellow "13. 卸载Redis"
-  echo_content yellow "14. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "9. 卸载Trojan Panel"
+  echo_content yellow "10. 卸载Trojan Panel Core"
+  echo_content yellow "11. 卸载Caddy TLS"
+  echo_content yellow "12. 卸载Nginx"
+  echo_content yellow "13. 卸载MariaDB"
+  echo_content yellow "14. 卸载Redis"
+  echo_content yellow "15. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "15. 修改Trojan Panel前端端口"
-  echo_content yellow "16. 刷新Redis缓存"
+  echo_content yellow "16. 修改Trojan Panel前端端口"
+  echo_content yellow "17. 刷新Redis缓存"
   echo_content green "\n=============================================================="
-  echo_content yellow "17. 故障检测"
-  echo_content yellow "18. 日志查询"
-  echo_content yellow "19. 版本查询"
+  echo_content yellow "18. 故障检测"
+  echo_content yellow "19. 日志查询"
+  echo_content yellow "20. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1733,52 +1734,56 @@ main() {
     ;;
   4)
     install_docker
-    install_mariadb
+    install_nginx
     ;;
   5)
     install_docker
-    install_redis
+    install_mariadb
     ;;
   6)
-    update_trojan_panel
+    install_docker
+    install_redis
     ;;
   7)
-    update_trojan_panel_core
+    update_trojan_panel
     ;;
   8)
-    uninstall_trojan_panel
+    update_trojan_panel_core
     ;;
   9)
-    uninstall_trojan_panel_core
+    uninstall_trojan_panel
     ;;
   10)
-    uninstall_caddy_tls
+    uninstall_trojan_panel_core
     ;;
   11)
-    uninstall_nginx
+    uninstall_caddy_tls
     ;;
   12)
-    uninstall_mariadb
+    uninstall_nginx
     ;;
   13)
-    uninstall_redis
+    uninstall_mariadb
     ;;
   14)
-    uninstall_all
+    uninstall_redis
     ;;
   15)
-    update_trojan_panel_ui_port
+    uninstall_all
     ;;
   16)
-    redis_flush_all
+    update_trojan_panel_ui_port
     ;;
   17)
-    failure_testing
+    redis_flush_all
     ;;
   18)
-    log_query
+    failure_testing
     ;;
   19)
+    log_query
+    ;;
+  20)
     version_query
     ;;
   *)
