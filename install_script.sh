@@ -30,22 +30,27 @@ init_var() {
   # cert
   CERT_PATH="/tpdata/cert/"
   DOMAIN_FILE="/tpdata/domain.lock"
-  with_cert=1
+  domain=""
+  crt_path=""
+  key_path=""
 
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
-  CADDY_CONFIG="/tpdata/caddy/config.json"
-  CADDY_LOG="/tpdata/caddy/logs/"
+  CADDY_CONFIG="${CADDY_DATA}config.json"
+  CADDY_LOG="${CADDY_DATA}logs/"
   CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
-  domain=""
   caddy_port=80
   caddy_remote_port=8863
   your_email=""
   ssl_option=1
   ssl_module_type=1
   ssl_module="acme"
-  crt_path=""
-  key_path=""
+
+  # Nginx
+  NGINX_DATA="/tpdata/nginx/"
+  NGINX_CONFIG="${NGINX_DATA}default.conf"
+  nginx_port=80
+  nginx_https=1
 
   # MariaDB
   MARIA_DATA="/tpdata/mariadb/"
@@ -71,7 +76,7 @@ init_var() {
   UI_NGINX_DATA="${TROJAN_PANEL_UI_DATA}nginx/"
   UI_NGINX_CONFIG="${UI_NGINX_DATA}default.conf"
   trojan_panel_ui_port=8888
-  https_enable=1
+  ui_https=1
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
@@ -134,6 +139,10 @@ mkdir_tools() {
   mkdir -p ${CADDY_DATA}
   touch ${CADDY_CONFIG}
   mkdir -p ${CADDY_LOG}
+
+  # Nginx
+  mkdir -p ${NGINX_DATA}
+  touch ${NGINX_CONFIG}
 
   # MariaDB
   mkdir -p ${MARIA_DATA}
@@ -280,8 +289,8 @@ install_caddy_tls() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     echo_content green "---> 安装Caddy TLS"
 
-    wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
-      tar -zxvf ${CADDY_DATA}html.tar.gz -C ${WEB_PATH}
+    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
+      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
 
     read -r -p "请输入Caddy的端口(默认:80): " caddy_port
     [[ -z "${caddy_port}" ]] && caddy_port=80
@@ -440,32 +449,7 @@ install_caddy_tls() {
 EOF
         break
       elif [[ ${ssl_option} == 2 ]]; then
-        while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
-          if [[ -z "${crt_path}" ]]; then
-            echo_content red "路径不能为空"
-          else
-            if [[ ! -f "${crt_path}" ]]; then
-              echo_content red "证书的.crt文件路径不存在"
-            else
-              cp "${crt_path}" "${CERT_PATH}${domain}.crt"
-              break
-            fi
-          fi
-        done
-
-        while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
-          if [[ -z "${key_path}" ]]; then
-            echo_content red "路径不能为空"
-          else
-            if [[ ! -f "${key_path}" ]]; then
-              echo_content red "证书的.key文件路径不存在"
-            else
-              cp "${key_path}" "${CERT_PATH}${domain}.key"
-              break
-            fi
-          fi
-        done
-
+        install_custom_cert "${domain}"
         cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
@@ -628,14 +612,114 @@ EOF
   fi
 }
 
+# 安装Nginx
+install_nginx() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-nginx$") ]]; then
+    echo_content green "---> 安装Nginx"
+
+    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
+      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
+
+    read -r -p "请输入Nginx的端口(默认:80): " nginx_port
+    [[ -z "${nginx_port}" ]] && nginx_port=80
+
+    while read -r -p "请选择Nginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
+      if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
+        install_custom_cert "custom_cert"
+        domain=$(cat "${DOMAIN_FILE}")
+        cat >${NGINX_CONFIG} <<-EOF
+server {
+    listen       ${nginx_port} ssl;
+    server_name  localhost;
+
+    #强制ssl
+    ssl on;
+    ssl_certificate      ${CERT_PATH}${domain}.crt;
+    ssl_certificate_key  ${CERT_PATH}${domain}.key;
+    #缓存有效期
+    ssl_session_timeout  5m;
+    #安全链接可选的加密协议
+    ssl_protocols  TLSv1.3;
+    #加密算法
+    ssl_ciphers  ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    #使用服务器端的首选算法
+    ssl_prefer_server_ciphers  on;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   ${WEB_PATH};
+        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+    #497 http->https
+    error_page  497              https://\$host:${nginx_port}\$uri?\$args;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+        break
+      else
+        if [[ ${nginx_https} != 0 ]]; then
+          echo_content red "不可以输入除0和1之外的其他字符"
+        else
+          cat >${NGINX_CONFIG} <<-EOF
+server {
+    listen       ${nginx_port};
+    server_name  localhost;
+
+    location / {
+        root   ${WEB_PATH};
+        index  index.html index.htm;
+    }
+
+    error_page  497              http://\$host:${nginx_port}\$uri?\$args;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+          break
+        fi
+      fi
+    done
+
+    docker pull nginx:1.20-alpine &&
+      docker run -d --name trojan-panel-nginx --restart always \
+        --network=host \
+        -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
+        -v ${CERT_PATH}:${CERT_PATH} \
+        -v ${WEB_PATH}:${WEB_PATH} \
+        nginx:1.20-alpine
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-nginx$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Nginx安装完成"
+    else
+      echo_content red "---> Nginx安装失败或运行异常,请尝试修复或卸载重装"
+      exit 0
+    fi
+  else
+    echo_content skyBlue "---> 你已经安装了Nginx"
+  fi
+}
+
 # 设置伪装Web
 install_reverse_proxy() {
-  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$|^trojan-panel-nginx$") ]]; then
     echo_content green "---> 设置伪装Web"
 
     while :; do
       echo_content yellow "1. 安装Caddy 2"
-      echo_content yellow "2. 不设置"
+      echo_content yellow "2. 安装Nginx"
+      echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_reverse_proxy
       [[ -z "${whether_install_reverse_proxy}" ]] && whether_install_reverse_proxy=1
 
@@ -645,6 +729,10 @@ install_reverse_proxy() {
         break
         ;;
       2)
+        install_nginx
+        break
+        ;;
+      3)
         break
         ;;
       *)
@@ -654,8 +742,38 @@ install_reverse_proxy() {
       esac
     done
 
-    echo_content skyBlue "---> 设置伪装Web完成"
+    echo_content skyBlue "---> 伪装Web设置完成"
   fi
+}
+
+install_custom_cert() {
+  while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
+    if [[ -z "${crt_path}" ]]; then
+      echo_content red "路径不能为空"
+    else
+      if [[ ! -f "${crt_path}" ]]; then
+        echo_content red "证书的.crt文件路径不存在"
+      else
+        cp "${crt_path}" "${CERT_PATH}$1.crt"
+        break
+      fi
+    fi
+  done
+  while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
+    if [[ -z "${key_path}" ]]; then
+      echo_content red "路径不能为空"
+    else
+      if [[ ! -f "${key_path}" ]]; then
+        echo_content red "证书的.key文件路径不存在"
+      else
+        cp "${key_path}" "${CERT_PATH}$1.key"
+        break
+      fi
+    fi
+  done
+  cat >${DOMAIN_FILE} <<EOF
+$1
+EOF
 }
 
 # 设置证书
@@ -676,33 +794,7 @@ install_cert() {
         break
         ;;
       2)
-        while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
-          if [[ -z "${crt_path}" ]]; then
-            echo_content red "路径不能为空"
-          else
-            if [[ ! -f "${crt_path}" ]]; then
-              echo_content red "证书的.crt文件路径不存在"
-            else
-              cp "${crt_path}" "${CERT_PATH}custom_cert.crt"
-              break
-            fi
-          fi
-        done
-        while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
-          if [[ -z "${key_path}" ]]; then
-            echo_content red "路径不能为空"
-          else
-            if [[ ! -f "${key_path}" ]]; then
-              echo_content red "证书的.key文件路径不存在"
-            else
-              cp "${key_path}" "${CERT_PATH}custom_cert.key"
-              break
-            fi
-          fi
-        done
-        cat >${DOMAIN_FILE} <<EOF
-custom_cert
-EOF
+        install_custom_cert "custom_cert"
         break
         ;;
       *)
@@ -712,7 +804,7 @@ EOF
       esac
     done
 
-    echo_content green "---> 设置证书完成"
+    echo_content green "---> 证书设置完成"
   fi
 }
 
@@ -871,15 +963,14 @@ install_trojan_panel() {
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
 
-    if [[ -z ${with_cert} || ${with_cert} == 1 ]]; then
-      while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " https_enable; do
-        if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
-          domain=$(cat "${DOMAIN_FILE}")
-          # 配置Nginx
-          cat >${UI_NGINX_CONFIG} <<-EOF
+    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
+      if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
+        domain=$(cat "${DOMAIN_FILE}")
+        # 配置Nginx
+        cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
-    server_name  ${domain};
+    server_name  localhost;
 
     #强制ssl
     ssl on;
@@ -917,12 +1008,12 @@ server {
     }
 }
 EOF
-          break
+        break
+      else
+        if [[ ${ui_https} != 0 ]]; then
+          echo_content red "不可以输入除0和1之外的其他字符"
         else
-          if [[ ${https_enable} != 0 ]]; then
-            echo_content red "不可以输入除0和1之外的其他字符"
-          else
-            cat >${UI_NGINX_CONFIG} <<-EOF
+          cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -944,35 +1035,10 @@ server {
     }
 }
 EOF
-            break
-          fi
+          break
         fi
-      done
-    else
-      https_enable=0
-      cat >${UI_NGINX_CONFIG} <<-EOF
-server {
-    listen       ${trojan_panel_ui_port};
-    server_name  localhost;
-
-    location / {
-        root   ${TROJAN_PANEL_UI_DATA};
-        index  index.html index.htm;
-    }
-
-    location /api {
-        proxy_pass http://127.0.0.1:8081;
-    }
-
-    error_page  497              http://\$host:${trojan_panel_ui_port}\$uri?\$args;
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-EOF
-    fi
+      fi
+    done
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
@@ -991,7 +1057,7 @@ EOF
     echo_content skyBlue "---> 你已经安装了Trojan Panel前端"
   fi
 
-  https_flag=$([[ -z ${https_enable} || ${https_enable} == 1 ]] && echo "https" || echo "http")
+  https_flag=$([[ -z ${ui_https} || ${ui_https} == 1 ]] && echo "https" || echo "http")
   domain_or_ip=$([[ -z ${domain} || "${domain}" == "custom_cert" ]] && echo "ip" || echo "${domain}")
 
   echo_content red "\n=============================================================="
@@ -1341,6 +1407,21 @@ uninstall_caddy_tls() {
   fi
 }
 
+# 卸载Nginx
+uninstall_nginx() {
+  # 判断Caddy TLS是否安装
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-nginx") ]]; then
+    echo_content green "---> 卸载Nginx"
+
+    docker rm -f trojan-panel-nginx &&
+      rm -rf ${NGINX_DATA}
+
+    echo_content skyBlue "---> Nginx卸载完成"
+  else
+    echo_content red "---> 请先安装Nginx"
+  fi
+}
+
 # 卸载MariaDB
 uninstall_mariadb() {
   # 判断MariaDB是否安装
@@ -1602,16 +1683,17 @@ main() {
   echo_content yellow "8. 卸载Trojan Panel"
   echo_content yellow "9. 卸载Trojan Panel Core"
   echo_content yellow "10. 卸载Caddy TLS"
-  echo_content yellow "11. 卸载MariaDB"
-  echo_content yellow "12. 卸载Redis"
-  echo_content yellow "13. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "11. 卸载Nginx"
+  echo_content yellow "12. 卸载MariaDB"
+  echo_content yellow "13. 卸载Redis"
+  echo_content yellow "14. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "14. 修改Trojan Panel前端端口"
-  echo_content yellow "15. 刷新Redis缓存"
+  echo_content yellow "15. 修改Trojan Panel前端端口"
+  echo_content yellow "16. 刷新Redis缓存"
   echo_content green "\n=============================================================="
-  echo_content yellow "16. 故障检测"
-  echo_content yellow "17. 日志查询"
-  echo_content yellow "18. 版本查询"
+  echo_content yellow "17. 故障检测"
+  echo_content yellow "18. 日志查询"
+  echo_content yellow "19. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1656,27 +1738,30 @@ main() {
     uninstall_caddy_tls
     ;;
   11)
-    uninstall_mariadb
+    uninstall_nginx
     ;;
   12)
-    uninstall_redis
+    uninstall_mariadb
     ;;
   13)
-    uninstall_all
+    uninstall_redis
     ;;
   14)
-    update_trojan_panel_ui_port
+    uninstall_all
     ;;
   15)
-    redis_flush_all
+    update_trojan_panel_ui_port
     ;;
   16)
-    failure_testing
+    redis_flush_all
     ;;
   17)
-    log_query
+    failure_testing
     ;;
   18)
+    log_query
+    ;;
+  19)
     version_query
     ;;
   *)
