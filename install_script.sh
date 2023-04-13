@@ -34,7 +34,7 @@ init_var() {
 
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
-  CADDY_Config="/tpdata/caddy/config.json"
+  CADDY_CONFIG="/tpdata/caddy/config.json"
   CADDY_LOG="/tpdata/caddy/logs/"
   CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
   domain=""
@@ -68,8 +68,8 @@ init_var() {
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
   # Nginx
-  NGINX_DATA="${TROJAN_PANEL_UI_DATA}nginx/"
-  NGINX_CONFIG="${NGINX_DATA}default.conf"
+  UI_NGINX_DATA="${TROJAN_PANEL_UI_DATA}nginx/"
+  UI_NGINX_CONFIG="${UI_NGINX_DATA}default.conf"
   trojan_panel_ui_port=8888
   https_enable=1
 
@@ -132,7 +132,7 @@ mkdir_tools() {
 
   # Caddy
   mkdir -p ${CADDY_DATA}
-  touch ${CADDY_Config}
+  touch ${CADDY_CONFIG}
   mkdir -p ${CADDY_LOG}
 
   # MariaDB
@@ -148,8 +148,8 @@ mkdir_tools() {
   # Trojan Panel UI
   mkdir -p ${TROJAN_PANEL_UI_DATA}
   # # Nginx
-  mkdir -p ${NGINX_DATA}
-  touch ${NGINX_CONFIG}
+  mkdir -p ${UI_NGINX_DATA}
+  touch ${UI_NGINX_CONFIG}
 
   # Trojan Panel Core
   mkdir -p ${TROJAN_PANEL_CORE_DATA}
@@ -315,7 +315,7 @@ install_caddy_tls() {
           fi
         done
 
-        cat >${CADDY_Config} <<EOF
+        cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
         "disabled":true
@@ -466,7 +466,7 @@ EOF
           fi
         done
 
-        cat >${CADDY_Config} <<EOF
+        cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
         "disabled":true
@@ -608,11 +608,11 @@ EOF
     docker pull caddy:2.6.2 &&
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
-        -v "${CADDY_Config}":"${CADDY_Config}" \
+        -v "${CADDY_CONFIG}":"${CADDY_CONFIG}" \
         -v ${CERT_PATH}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${WEB_PATH}:${WEB_PATH} \
         -v ${CADDY_LOG}:${CADDY_LOG} \
-        caddy:2.6.2 caddy run --config ${CADDY_Config}
+        caddy:2.6.2 caddy run --config ${CADDY_CONFIG}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
       cat >${DOMAIN_FILE} <<EOF
@@ -876,7 +876,7 @@ install_trojan_panel() {
         if [[ -z ${https_enable} || ${https_enable} == 1 ]]; then
           domain=$(cat "${DOMAIN_FILE}")
           # 配置Nginx
-          cat >${NGINX_CONFIG} <<-EOF
+          cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  ${domain};
@@ -922,7 +922,7 @@ EOF
           if [[ ${https_enable} != 0 ]]; then
             echo_content red "不可以输入除0和1之外的其他字符"
           else
-            cat >${NGINX_CONFIG} <<-EOF
+            cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -950,7 +950,7 @@ EOF
       done
     else
       https_enable=0
-      cat >${NGINX_CONFIG} <<-EOF
+      cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -977,7 +977,7 @@ EOF
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
-        -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
+        -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
         jonssonyan/trojan-panel-ui
 
@@ -1108,8 +1108,8 @@ update__trojan_panel_database() {
     cp -r /tpdata/caddy/srv/* ${WEB_PATH}
     cp -r /tpdata/caddy/cert/* ${CERT_PATH}
     cp /tpdata/caddy/domain.lock ${DOMAIN_FILE}
-    cp /tpdata/nginx/default.conf ${NGINX_CONFIG}
-    sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${NGINX_CONFIG}
+    cp /tpdata/nginx/default.conf ${UI_NGINX_CONFIG}
+    sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${UI_NGINX_CONFIG}
     trojan_panel_current_version="v2.1.0"
   fi
 
@@ -1210,7 +1210,7 @@ update_trojan_panel() {
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
-        -v "${NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
+        -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
         jonssonyan/trojan-panel-ui
 
@@ -1423,13 +1423,13 @@ update_trojan_panel_ui_port() {
   if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
     echo_content green "---> 修改Trojan Panel前端端口"
 
-    trojan_panel_ui_port=$(grep 'listen.*ssl' ${NGINX_CONFIG} | awk '{print $2}')
+    trojan_panel_ui_port=$(grep 'listen.*ssl' ${UI_NGINX_CONFIG} | awk '{print $2}')
     echo_content yellow "提示：Trojan Panel前端(trojan-panel-ui)当前端口为 ${trojan_panel_ui_port}"
 
     read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
-    sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${NGINX_CONFIG} &&
-      sed -i "s/https:\/\/\$host:.*\$uri?\$args/https:\/\/\$host:${trojan_panel_ui_port}\$uri?\$args/g" ${NGINX_CONFIG} &&
+    sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${UI_NGINX_CONFIG} &&
+      sed -i "s/https:\/\/\$host:.*\$uri?\$args/https:\/\/\$host:${trojan_panel_ui_port}\$uri?\$args/g" ${UI_NGINX_CONFIG} &&
       docker restart trojan-panel-ui
 
     if [[ "$?" == "0" ]]; then
