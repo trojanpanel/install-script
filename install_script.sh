@@ -635,14 +635,7 @@ server {
     listen ${nginx_port};
     server_name localhost;
 
-    location / {
-        proxy_pass http://127.0.0.1:${nginx_remote_port};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-
-    error_page  497              http://127.0.0.1:${nginx_remote_port};
+    return 301 http://\$host:${nginx_remote_port}\$request_uri;
 }
 
 server {
@@ -671,7 +664,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:${nginx_remote_port}\$request_uri;
+    error_page  497               https://\$host:${nginx_remote_port}\$request_uri;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -696,7 +689,7 @@ server {
         index  index.html index.htm;
     }
 
-    error_page  497              http://\$host:${nginx_port}\$request_uri;
+    error_page  497               http://\$host:${nginx_port}\$request_uri;
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
@@ -1015,7 +1008,7 @@ server {
 
     #error_page  404              /404.html;
     #497 http->https
-    error_page  497              https://\$host:${trojan_panel_ui_port}\$request_uri;
+    error_page  497               https://\$host:${trojan_panel_ui_port}\$request_uri;
 
     # redirect server error pages to the static page /50x.html
     #
@@ -1044,7 +1037,7 @@ server {
         proxy_pass http://127.0.0.1:8081;
     }
 
-    error_page  497              http://\$host:${trojan_panel_ui_port}\$request_uri;
+    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
