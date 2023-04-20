@@ -15,4 +15,4 @@ source <(curl -L https://github.com/trojanpanel/install-script/raw/main/archive/
 
 参数解释：
 
-- old_version：版本号
+- `${old_version}`：版本号
