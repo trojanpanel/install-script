@@ -594,9 +594,10 @@ EOF
     docker pull caddy:2.6.2 &&
       docker run -d --name trojan-panel-caddy --restart always \
         --network=host \
-        -v "${CADDY_DATA}":"${CADDY_DATA}" \
+        -v "${CADDY_CONFIG}":"${CADDY_CONFIG}" \
         -v ${CERT_PATH}:"${CADDY_CERT_DIR}${domain}/" \
         -v ${WEB_PATH}:${WEB_PATH} \
+        -v ${CADDY_LOG}:${CADDY_LOG} \
         caddy:2.6.2 caddy run --config ${CADDY_CONFIG}
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
