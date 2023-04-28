@@ -1181,7 +1181,9 @@ update__trojan_panel_database() {
       cp /tpdata/caddy/domain.lock ${DOMAIN_FILE} &&
       cp /tpdata/nginx/default.conf ${UI_NGINX_CONFIG} &&
       sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${UI_NGINX_CONFIG} &&
-      docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_210}" &>/dev/null &&
+      uninstall_caddy_tls
+    install_reverse_proxy
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_210}" &>/dev/null &&
       trojan_panel_current_version="v2.1.0"
   fi
 
