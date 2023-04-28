@@ -5,7 +5,8 @@
 | [v2.0.2](./install_script_v2.0.2.sh) | v2.0.1          | v2.0.2       | v2.0.1            | not support | v1.7.2 | v0.10.6   | v1.3.2   | v2.6.2            |
 | [v2.0.3](./install_script_v2.0.3.sh) | v2.0.2          | v2.0.3       | v2.0.2            | not support | v1.7.2 | v0.10.6   | v1.3.2   | v2.6.2            |
 | [v2.0.4](./install_script_v2.0.4.sh) | v2.0.3          | v2.0.4       | v2.0.3            | not support | v1.7.5 | v0.10.6   | v1.3.3   | v2.6.4            |
-| [v2.0.5](./install_script_v2.0.4.sh) | v2.0.4          | v2.0.5       | v2.0.4            | v0.0.1      | v1.7.5 | v0.10.6   | v1.3.3   | v2.6.4            |
+| [v2.0.5](./install_script_v2.0.4.sh) | v2.0.4          | v2.0.5       | v2.0.4            | not support | v1.7.5 | v0.10.6   | v1.3.3   | v2.6.4            |
+| [v2.1.0](./install_script_v2.1.0.sh) | v2.1.0          | v2.1.0       | v2.1.0            | v0.0.1      | v1.8.0 | v0.10.6   | v1.3.4   | v2.6.4            |
 
 # 安装旧版
 
