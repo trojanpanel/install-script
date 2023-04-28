@@ -1176,7 +1176,8 @@ update__trojan_panel_database() {
   fi
   version_205_210=("v2.0.5")
   if [[ "${version_205_210[*]}" =~ "${trojan_panel_current_version}" ]]; then
-    if [[ -d "${TP_DATA}" && ! -f "${DOMAIN_FILE}" ]]; then
+    domain=$(cat "${DOMAIN_FILE}")
+    if [[ -z "${domain}" ]]; then
       uninstall_caddy_tls
       install_reverse_proxy
     fi
@@ -1193,9 +1194,11 @@ update__trojan_panel_core_database() {
 
   version_204_210=("v2.0.4")
   if [[ "${version_204_210[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
-    cp -r /tpdata/caddy/srv/* ${WEB_PATH}
-    cp -r /tpdata/caddy/cert/* ${CERT_PATH}
-    cp /tpdata/caddy/domain.lock ${DOMAIN_FILE}
+    domain=$(cat "${DOMAIN_FILE}")
+    if [[ -z "${domain}" ]]; then
+      uninstall_caddy_tls
+      install_reverse_proxy
+    fi
     trojan_panel_core_current_version="v2.1.0"
   fi
 
