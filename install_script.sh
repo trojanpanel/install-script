@@ -1178,7 +1178,10 @@ update__trojan_panel_database() {
   if [[ "${version_205_210[*]}" =~ "${trojan_panel_current_version}" ]]; then
     domain=$(cat "${DOMAIN_FILE}")
     if [[ -z "${domain}" ]]; then
-      uninstall_caddy_tls
+      docker rm -f trojan-panel-caddy
+      rm -rf /tpdata/caddy/srv/
+      rm -rf /tpdata/caddy/cert/
+      rm -f /tpdata/caddy/domain.lock
       install_reverse_proxy
     fi
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_210}" &>/dev/null &&
@@ -1196,7 +1199,10 @@ update__trojan_panel_core_database() {
   if [[ "${version_204_210[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
     domain=$(cat "${DOMAIN_FILE}")
     if [[ -z "${domain}" ]]; then
-      uninstall_caddy_tls
+      docker rm -f trojan-panel-caddy
+      rm -rf /tpdata/caddy/srv/
+      rm -rf /tpdata/caddy/cert/
+      rm -f /tpdata/caddy/domain.lock
       install_reverse_proxy
     fi
     trojan_panel_core_current_version="v2.1.0"
