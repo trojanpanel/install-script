@@ -70,6 +70,8 @@ init_var() {
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
   TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
   TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
+  TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}export/"
+  TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}template/"
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
@@ -950,6 +952,8 @@ install_trojan_panel() {
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+        -v ${TROJAN_PANEL_EXPORT}:${TROJAN_PANEL_EXPORT} \
+        -v ${TROJAN_PANEL_TEMPLATE}:${TROJAN_PANEL_TEMPLATE} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
@@ -1272,6 +1276,8 @@ update_trojan_panel() {
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
+        -v ${TROJAN_PANEL_EXPORT}:${TROJAN_PANEL_EXPORT} \
+        -v ${TROJAN_PANEL_TEMPLATE}:${TROJAN_PANEL_TEMPLATE} \
         -v /etc/localtime:/etc/localtime \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
