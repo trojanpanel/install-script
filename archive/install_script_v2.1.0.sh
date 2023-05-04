@@ -955,6 +955,7 @@ install_trojan_panel() {
         -v ${TROJAN_PANEL_EXPORT}:${TROJAN_PANEL_EXPORT} \
         -v ${TROJAN_PANEL_TEMPLATE}:${TROJAN_PANEL_TEMPLATE} \
         -v /etc/localtime:/etc/localtime \
+        -e GIN_MODE=release \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
         -e "mariadb_user=${mariadb_user}" \
@@ -1136,6 +1137,7 @@ install_trojan_panel_core() {
         -v ${CERT_PATH}:${CERT_PATH} \
         -v ${WEB_PATH}:${WEB_PATH} \
         -v /etc/localtime:/etc/localtime \
+        -e GIN_MODE=release \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
         -e "mariadb_user=${mariadb_user}" \
@@ -1279,6 +1281,7 @@ update_trojan_panel() {
         -v ${TROJAN_PANEL_EXPORT}:${TROJAN_PANEL_EXPORT} \
         -v ${TROJAN_PANEL_TEMPLATE}:${TROJAN_PANEL_TEMPLATE} \
         -v /etc/localtime:/etc/localtime \
+        -e GIN_MODE=release \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
         -e "mariadb_user=${mariadb_user}" \
@@ -1386,6 +1389,7 @@ update_trojan_panel_core() {
         -v ${CERT_PATH}:${CERT_PATH} \
         -v ${WEB_PATH}:${WEB_PATH} \
         -v /etc/localtime:/etc/localtime \
+        -e GIN_MODE=release \
         -e "mariadb_ip=${mariadb_ip}" \
         -e "mariadb_port=${mariadb_port}" \
         -e "mariadb_user=${mariadb_user}" \
