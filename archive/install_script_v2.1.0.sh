@@ -70,8 +70,8 @@ init_var() {
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
   TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
   TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
-  TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}export/"
-  TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}template/"
+  TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
+  TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
 
   # Trojan Panel UI
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
