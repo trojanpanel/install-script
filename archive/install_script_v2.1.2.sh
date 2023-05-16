@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.1.1
+# Version: v2.1.2
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -91,7 +91,7 @@ init_var() {
 
   # Update
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.1.1"
+  trojan_panel_latest_version="v2.1.2"
   trojan_panel_core_current_version=""
   trojan_panel_core_latest_version="v2.1.0"
 
@@ -101,6 +101,7 @@ init_var() {
   sql_205="DROP TABLE IF EXISTS \`file_task\`;CREATE TABLE \`file_task\` ( \`id\` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增主键', \`name\` varchar(64) NOT NULL DEFAULT '' COMMENT '文件名称', \`path\` varchar(128) NOT NULL DEFAULT '' COMMENT '文件路径', \`type\` tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '类型 1/用户导入 2/服务器导入 3/用户导出 4/服务器导出', \`status\` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 -1/失败 0/等待 1/正在执行 2/成功', \`err_msg\` varchar(128) NOT NULL DEFAULT '' COMMENT '错误信息', \`account_id\` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '账户id', \`account_username\` varchar(64) NOT NULL DEFAULT '' COMMENT '账户登录用户名', \`create_time\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间', \`update_time\` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间', PRIMARY KEY (\`id\`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件任务';INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/exportAccount', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/importAccount', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/system/uploadLogo', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/nodeServer/exportNodeServer', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/nodeServer/importNodeServer', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/fileTask/selectFileTaskPage', 'GET', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/fileTask/deleteFileTaskById', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/fileTask/downloadFileTask', 'POST', '', '', '');INSERT INTO trojan_panel_db.casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/fileTask/downloadCsvTemplate', 'POST', '', '', '');"
   sql_210="UPDATE casbin_rule SET v1 = '/api/fileTask/downloadTemplate' WHERE v1 = '/api/fileTask/downloadCsvTemplate';UPDATE casbin_rule SET v1 = '/api/account/updateAccountPass' WHERE v1 = '/api/account/updateAccountProfile';INSERT INTO casbin_rule (p_type, v0, v1, v2) VALUES ('p', 'sysadmin', '/api/account/updateAccountProperty', 'POST');INSERT INTO casbin_rule (p_type, v0, v1, v2) VALUES ('p', 'user', '/api/account/updateAccountProperty', 'POST');alter table node_xray modify settings varchar(1024) default '' not null comment 'settings';alter table node_xray modify stream_settings varchar(1024) default '' not null comment 'streamSettings';alter table node_xray add reality_pbk varchar(64) default '' not null comment 'reality的公钥' after xray_ss_method;alter table node_hysteria add obfs varchar(64) default '' not null comment '混淆密码' after protocol;"
   sql_211="UPDATE \`system\` SET account_config = '{\"registerEnable\":1,\"registerQuota\":0,\"registerExpireDays\":0,\"resetDownloadAndUploadMonth\":0,\"trafficRankEnable\":1,\"captchaEnable\":0}' WHERE name = 'trojan-panel';INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/node/nodeDefault', 'GET', '', '', '');INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'user', '/api/node/nodeDefault', 'GET', '', '', '');"
+  sql_212="alter table account add validity_period int unsigned default 0 not null comment '账户有效期' after email;alter table account add last_login_time bigint unsigned default 0 not null comment '最后一次登录时间' after validity_period;INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/createAccountBatch', 'POST', '', '', '');INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/exportAccountUnused', 'POST', '', '', '');"
 }
 
 echo_content() {
@@ -948,7 +949,7 @@ install_trojan_panel() {
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
-    docker pull jonssonyan/trojan-panel:2.1.1 &&
+    docker pull jonssonyan/trojan-panel:2.1.2 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -964,7 +965,7 @@ install_trojan_panel() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        jonssonyan/trojan-panel:2.1.1
+        jonssonyan/trojan-panel:2.1.2
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
@@ -1057,12 +1058,12 @@ EOF
       fi
     done
 
-    docker pull jonssonyan/trojan-panel-ui:2.1.1 &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.2 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui:2.1.1
+        jonssonyan/trojan-panel-ui:2.1.2
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
@@ -1201,6 +1202,11 @@ update__trojan_panel_database() {
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_211}" &>/dev/null &&
       trojan_panel_current_version="v2.1.1"
   fi
+  version_211_212=("v2.1.1")
+  if [[ "${version_211_212[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_212}" &>/dev/null &&
+      trojan_panel_current_version="v2.1.2"
+  fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
@@ -1277,9 +1283,9 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel:2.1.1
+      docker rmi -f jonssonyan/trojan-panel:2.1.2
 
-    docker pull jonssonyan/trojan-panel:2.1.1 &&
+    docker pull jonssonyan/trojan-panel:2.1.2 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1295,7 +1301,7 @@ update_trojan_panel() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
-        jonssonyan/trojan-panel:2.1.1
+        jonssonyan/trojan-panel:2.1.2
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端更新完成"
@@ -1304,14 +1310,14 @@ update_trojan_panel() {
     fi
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui:2.1.1
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.2
 
-    docker pull jonssonyan/trojan-panel-ui:2.1.1 &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.2 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui:2.1.1
+        jonssonyan/trojan-panel-ui:2.1.2
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端更新完成"
@@ -1487,11 +1493,11 @@ uninstall_trojan_panel() {
     echo_content green "---> 卸载Trojan Panel"
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel:2.1.1 &&
+      docker rmi -f jonssonyan/trojan-panel:2.1.2 &&
       rm -rf ${TROJAN_PANEL_DATA}
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui:2.1.1 &&
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.2 &&
       rm -rf ${TROJAN_PANEL_UI_DATA}
 
     echo_content skyBlue "---> Trojan Panel卸载完成"
@@ -1693,7 +1699,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.1.1"
+  echo_content skyBlue "Version: v2.1.2"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
