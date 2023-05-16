@@ -17,7 +17,7 @@ init_var() {
   can_google=0
 
   # Docker
-  DOCKER_MIRROR='"https://registry.docker-cn.com","https://hub-mirror.c.163.com","https://docker.mirrors.ustc.edu.cn"'
+  DOCKER_MIRROR='"https://hub-mirror.c.163.com","https://ccr.ccs.tencentyun.com","https://mirror.baidubce.com","https://dockerproxy.com"'
 
   # 项目目录
   TP_DATA="/tpdata/"
