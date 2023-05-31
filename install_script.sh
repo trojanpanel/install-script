@@ -927,7 +927,9 @@ install_trojan_panel_ui() {
     read -r -p "请输入Trojan Panel后端地址(默认:本机): " trojan_panel_ip
     [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
 
-    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
+    domain=$(cat "${DOMAIN_FILE}")
+    if [[ -z "${domain}" ]]; then
+while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
       if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
         domain=$(cat "${DOMAIN_FILE}")
         # 配置Nginx
@@ -1003,6 +1005,30 @@ EOF
         fi
       fi
     done
+      else
+          cat >${UI_NGINX_CONFIG} <<-EOF
+server {
+    listen       ${trojan_panel_ui_port};
+    server_name  localhost;
+
+    location / {
+        root   ${TROJAN_PANEL_UI_DATA};
+        index  index.html index.htm;
+    }
+
+    location /api {
+        proxy_pass http://${trojan_panel_ip}:8081;
+    }
+
+    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+      fi
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
