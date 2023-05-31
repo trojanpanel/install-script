@@ -66,13 +66,6 @@ init_var() {
   redis_port=6378
   redis_pass=""
 
-  # Trojan Panel
-  TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
-  TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
-  TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
-  TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
-  TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
-
   # Trojan Panel前端
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
   # Nginx
@@ -80,6 +73,13 @@ init_var() {
   UI_NGINX_CONFIG="${UI_NGINX_DATA}default.conf"
   trojan_panel_ui_port=8888
   ui_https=1
+
+  # Trojan Panel
+  TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
+  TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
+  TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
+  TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
+  TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
@@ -91,9 +91,9 @@ init_var() {
 
   # Update
   trojan_panel_ui_current_version=""
-  trojan_panel_ui_latest_version="v2.1.4"
+  trojan_panel_ui_latest_version="v2.1.5"
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.1.3"
+  trojan_panel_latest_version="v2.1.4"
   trojan_panel_core_current_version=""
   trojan_panel_core_latest_version="v2.1.0"
 
@@ -158,15 +158,15 @@ mkdir_tools() {
   # Redis
   mkdir -p ${REDIS_DATA}
 
-  # Trojan Panel
-  mkdir -p ${TROJAN_PANEL_DATA}
-  mkdir -p ${TROJAN_PANEL_LOGS}
-
   # Trojan Panel前端
   mkdir -p ${TROJAN_PANEL_UI_DATA}
   # # Nginx
   mkdir -p ${UI_NGINX_DATA}
   touch ${UI_NGINX_CONFIG}
+
+  # Trojan Panel后端
+  mkdir -p ${TROJAN_PANEL_DATA}
+  mkdir -p ${TROJAN_PANEL_LOGS}
 
   # Trojan Panel Core
   mkdir -p ${TROJAN_PANEL_CORE_DATA}
