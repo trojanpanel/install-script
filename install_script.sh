@@ -73,6 +73,7 @@ init_var() {
   UI_NGINX_CONFIG="${UI_NGINX_DATA}default.conf"
   trojan_panel_ui_port=8888
   ui_https=1
+  trojan_panel_ip="127.0.0.1"
 
   # Trojan Panel
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
@@ -923,6 +924,8 @@ install_trojan_panel_ui() {
 
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
+    read -r -p "请输入Trojan Panel后端地址(默认:本机): " trojan_panel_ip
+    [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
 
     while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
       if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
@@ -954,7 +957,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://127.0.0.1:8081;
+        proxy_pass http://${trojan_panel_ip}:8081;
     }
 
     #error_page  404              /404.html;
@@ -985,7 +988,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://127.0.0.1:8081;
+        proxy_pass http://${trojan_panel_ip}:8081;
     }
 
     error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
