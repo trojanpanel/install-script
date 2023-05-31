@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.1.4
+# Version: v2.1.5
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -73,7 +73,7 @@ init_var() {
   TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
   TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
 
-  # Trojan Panel UI
+  # Trojan Panel前端
   TROJAN_PANEL_UI_DATA="/tpdata/trojan-panel-ui/"
   # Nginx
   UI_NGINX_DATA="${TROJAN_PANEL_UI_DATA}nginx/"
@@ -90,6 +90,8 @@ init_var() {
   grpc_port=8100
 
   # Update
+  trojan_panel_ui_current_version=""
+  trojan_panel_ui_latest_version="v2.1.4"
   trojan_panel_current_version=""
   trojan_panel_latest_version="v2.1.3"
   trojan_panel_core_current_version=""
@@ -160,7 +162,7 @@ mkdir_tools() {
   mkdir -p ${TROJAN_PANEL_DATA}
   mkdir -p ${TROJAN_PANEL_LOGS}
 
-  # Trojan Panel UI
+  # Trojan Panel前端
   mkdir -p ${TROJAN_PANEL_UI_DATA}
   # # Nginx
   mkdir -p ${UI_NGINX_DATA}
@@ -1233,11 +1235,48 @@ update__trojan_panel_core_database() {
   echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
 }
 
-# 更新Trojan Panel
+# 更新Trojan Panel前端
+update_trojan_panel_ui() {
+  # 判断Trojan Panel前端是否安装
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
+    echo_content red "---> 请先安装Trojan Panel前端"
+    exit 0
+  fi
+
+  trojan_panel_ui_current_version=$(docker exec cat ${TROJAN_PANEL_UI_DATA}/version)
+  if [[ -z "${trojan_panel_ui_current_version}" || ! "${trojan_panel_ui_current_version}" =~ ^v.* ]]; then
+    echo_content red "---> 当前版本不支持自动化更新"
+    exit 0
+  fi
+
+  echo_content yellow "提示：Trojan Panel前端(trojan-panel-ui)当前版本为 ${trojan_panel_ui_current_version} 最新版本为 ${trojan_panel_ui_latest_version}"
+
+  if [[ "${trojan_panel_ui_current_version}" != "${trojan_panel_ui_latest_version}" ]]; then
+    echo_content green "---> 更新Trojan Panel前端"
+
+    docker rm -f trojan-panel-ui &&
+      docker rmi -f jonssonyan/trojan-panel-ui
+
+    docker pull jonssonyan/trojan-panel-ui &&
+      docker run -d --name trojan-panel-ui --restart always \
+        --network=host \
+        -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
+        -v ${CERT_PATH}:${CERT_PATH} \
+        jonssonyan/trojan-panel-ui
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Trojan Panel前端更新完成"
+    else
+      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+    fi
+  fi
+}
+
+# 更新Trojan Panel后端
 update_trojan_panel() {
-  # 判断Trojan Panel是否安装
+  # 判断Trojan Panel后端是否安装
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
-    echo_content red "---> 请先安装Trojan Panel"
+    echo_content red "---> 请先安装Trojan Panel后端"
     exit 0
   fi
 
@@ -1307,22 +1346,6 @@ update_trojan_panel() {
       echo_content skyBlue "---> Trojan Panel后端更新完成"
     else
       echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
-    fi
-
-    docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui
-
-    docker pull jonssonyan/trojan-panel-ui &&
-      docker run -d --name trojan-panel-ui --restart always \
-        --network=host \
-        -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
-        -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui
-
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content skyBlue "---> Trojan Panel前端更新完成"
-    else
-      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
     fi
   else
     echo_content skyBlue "---> 你安装的Trojan Panel已经是最新版"
@@ -1699,7 +1722,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.1.4"
+  echo_content skyBlue "Version: v2.1.5"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
