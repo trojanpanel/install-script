@@ -803,6 +803,7 @@ install_cert() {
     while :; do
       echo_content yellow "1. 安装Caddy 2（自动申请/续签证书）"
       echo_content yellow "2. 手动设置证书路径"
+      echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_cert
       [[ -z "${whether_install_cert}" ]] && whether_install_cert=1
 
@@ -813,6 +814,9 @@ install_cert() {
         ;;
       2)
         install_custom_cert "custom_cert"
+        break
+        ;;
+      3)
         break
         ;;
       *)
