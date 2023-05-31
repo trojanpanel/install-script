@@ -1816,8 +1816,6 @@ main() {
   1)
     install_docker
     install_cert
-    install_mariadb
-    install_redis
     install_trojan_panel_ui
     ;;
   2)
