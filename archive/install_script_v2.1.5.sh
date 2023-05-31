@@ -1035,12 +1035,12 @@ server {
 EOF
       fi
 
-    docker pull jonssonyan/trojan-panel-ui:v2.1.5 &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.5 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui:v2.1.5
+        jonssonyan/trojan-panel-ui:2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
