@@ -1286,7 +1286,7 @@ update_trojan_panel_ui() {
     exit 0
   fi
 
-  trojan_panel_ui_current_version=$(docker exec cat ${TROJAN_PANEL_UI_DATA}/version)
+  trojan_panel_ui_current_version=$(docker exec trojan-panel-ui cat ${TROJAN_PANEL_UI_DATA}version)
   if [[ -z "${trojan_panel_ui_current_version}" || ! "${trojan_panel_ui_current_version}" =~ ^v.* ]]; then
     echo_content red "---> 当前版本不支持自动化更新"
     exit 0
