@@ -1785,7 +1785,6 @@ main() {
   case ${selectInstall_type} in
   1)
     install_docker
-    install_reverse_proxy
     install_cert
     install_mariadb
     install_redis
@@ -1793,8 +1792,6 @@ main() {
     ;;
   2)
     install_docker
-    install_reverse_proxy
-    install_cert
     install_mariadb
     install_redis
     install_trojan_panel
