@@ -1269,6 +1269,8 @@ update_trojan_panel_ui() {
     else
       echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
     fi
+  else
+    echo_content skyBlue "---> 你安装的Trojan Panel前端已经是最新版"
   fi
 }
 
@@ -1289,7 +1291,7 @@ update_trojan_panel() {
   echo_content yellow "提示：Trojan Panel后端(trojan-panel)当前版本为 ${trojan_panel_current_version} 最新版本为 ${trojan_panel_latest_version}"
 
   if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
-    echo_content green "---> 更新Trojan Panel"
+    echo_content green "---> 更新Trojan Panel后端"
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
@@ -1348,7 +1350,7 @@ update_trojan_panel() {
       echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
     fi
   else
-    echo_content skyBlue "---> 你安装的Trojan Panel已经是最新版"
+    echo_content skyBlue "---> 你安装的Trojan Panel后端已经是最新版"
   fi
 }
 
@@ -1728,30 +1730,33 @@ main() {
   echo_content skyBlue "Github: https://github.com/trojanpanel"
   echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 安装Trojan Panel"
-  echo_content yellow "2. 安装Trojan Panel Core"
-  echo_content yellow "3. 安装Caddy TLS"
-  echo_content yellow "4. 安装Nginx"
-  echo_content yellow "5. 安装MariaDB"
-  echo_content yellow "6. 安装Redis"
+  echo_content yellow "1. 安装Trojan Panel前端"
+  echo_content yellow "2. 安装Trojan Panel后端"
+  echo_content yellow "3. 安装Trojan Panel Core"
+  echo_content yellow "4. 安装Caddy TLS"
+  echo_content yellow "5. 安装Nginx"
+  echo_content yellow "6. 安装MariaDB"
+  echo_content yellow "7. 安装Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "7. 更新Trojan Panel"
-  echo_content yellow "8. 更新Trojan Panel Core"
+  echo_content yellow "8. 更新Trojan Panel前端"
+  echo_content yellow "9. 更新Trojan Panel后端"
+  echo_content yellow "10. 更新Trojan Panel Core"
   echo_content green "\n=============================================================="
-  echo_content yellow "9. 卸载Trojan Panel"
-  echo_content yellow "10. 卸载Trojan Panel Core"
-  echo_content yellow "11. 卸载Caddy TLS"
-  echo_content yellow "12. 卸载Nginx"
-  echo_content yellow "13. 卸载MariaDB"
-  echo_content yellow "14. 卸载Redis"
-  echo_content yellow "15. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "11. 卸载Trojan Panel前端"
+  echo_content yellow "12. 卸载Trojan Panel后端"
+  echo_content yellow "13. 卸载Trojan Panel Core"
+  echo_content yellow "14. 卸载Caddy TLS"
+  echo_content yellow "15. 卸载Nginx"
+  echo_content yellow "16. 卸载MariaDB"
+  echo_content yellow "17. 卸载Redis"
+  echo_content yellow "18. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
-  echo_content yellow "16. 修改Trojan Panel前端端口"
-  echo_content yellow "17. 刷新Redis缓存"
+  echo_content yellow "19. 修改Trojan Panel前端端口"
+  echo_content yellow "20. 刷新Redis缓存"
   echo_content green "\n=============================================================="
-  echo_content yellow "18. 故障检测"
-  echo_content yellow "19. 日志查询"
-  echo_content yellow "20. 版本查询"
+  echo_content yellow "21. 故障检测"
+  echo_content yellow "22. 日志查询"
+  echo_content yellow "23. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
