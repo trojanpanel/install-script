@@ -1010,6 +1010,7 @@ EOF
       fi
     done
       else
+        ui_https=0
           cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
