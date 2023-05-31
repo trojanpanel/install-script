@@ -932,7 +932,7 @@ install_trojan_panel_ui() {
     [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
 
     domain=$(cat "${DOMAIN_FILE}")
-    if [[ -z "${domain}" ]]; then
+    if [[ -n "${domain}" ]]; then
 while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
       if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
         domain=$(cat "${DOMAIN_FILE}")
