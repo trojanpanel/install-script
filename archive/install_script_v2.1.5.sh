@@ -293,10 +293,10 @@ EOF
   fi
 }
 
-# 安装Caddy TLS
+# 安装Caddy2
 install_caddy2() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 安装Caddy TLS"
+    echo_content green "---> 安装Caddy2"
 
     wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
       tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
@@ -1494,24 +1494,24 @@ update_trojan_panel_core() {
   fi
 }
 
-# 卸载Caddy TLS
+# 卸载Caddy2
 uninstall_caddy2() {
-  # 判断Caddy TLS是否安装
+  # 判断Caddy2是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 卸载Caddy TLS"
+    echo_content green "---> 卸载Caddy2"
 
     docker rm -f trojan-panel-caddy &&
       rm -rf ${CADDY_DATA}
 
-    echo_content skyBlue "---> Caddy TLS卸载完成"
+    echo_content skyBlue "---> Caddy2卸载完成"
   else
-    echo_content red "---> 请先安装Caddy TLS"
+    echo_content red "---> 请先安装Caddy2"
   fi
 }
 
 # 卸载Nginx
 uninstall_nginx() {
-  # 判断Caddy TLS是否安装
+  # 判断Caddy2是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-nginx") ]]; then
     echo_content green "---> 卸载Nginx"
 
@@ -1694,7 +1694,7 @@ failure_testing() {
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy TLS运行异常 错误日志如下："
+        echo_content red "---> Caddy2运行异常 错误日志如下："
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
