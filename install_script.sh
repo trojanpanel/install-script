@@ -933,11 +933,11 @@ install_trojan_panel_ui() {
 
     domain=$(cat "${DOMAIN_FILE}")
     if [[ -n "${domain}" ]]; then
-while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
-      if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
-        domain=$(cat "${DOMAIN_FILE}")
-        # 配置Nginx
-        cat >${UI_NGINX_CONFIG} <<-EOF
+      while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
+        if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
+          domain=$(cat "${DOMAIN_FILE}")
+          # 配置Nginx
+          cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  localhost;
@@ -978,40 +978,12 @@ server {
     }
 }
 EOF
-        break
-      else
-        if [[ ${ui_https} != 0 ]]; then
-          echo_content red "不可以输入除0和1之外的其他字符"
-        else
-          cat >${UI_NGINX_CONFIG} <<-EOF
-server {
-    listen       ${trojan_panel_ui_port};
-    server_name  localhost;
-
-    location / {
-        root   ${TROJAN_PANEL_UI_DATA};
-        index  index.html index.htm;
-    }
-
-    location /api {
-        proxy_pass http://${trojan_panel_ip}:8081;
-    }
-
-    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-EOF
           break
-        fi
-      fi
-    done
-      else
-        ui_https=0
-          cat >${UI_NGINX_CONFIG} <<-EOF
+        else
+          if [[ ${ui_https} != 0 ]]; then
+            echo_content red "不可以输入除0和1之外的其他字符"
+          else
+            cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -1033,7 +1005,35 @@ server {
     }
 }
 EOF
-      fi
+            break
+          fi
+        fi
+      done
+    else
+      ui_https=0
+      cat >${UI_NGINX_CONFIG} <<-EOF
+server {
+    listen       ${trojan_panel_ui_port};
+    server_name  localhost;
+
+    location / {
+        root   ${TROJAN_PANEL_UI_DATA};
+        index  index.html index.htm;
+    }
+
+    location /api {
+        proxy_pass http://${trojan_panel_ip}:8081;
+    }
+
+    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+    fi
 
     docker pull jonssonyan/trojan-panel-ui &&
       docker run -d --name trojan-panel-ui --restart always \
@@ -1760,6 +1760,10 @@ log_query() {
 }
 
 version_query() {
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+    trojan_panel_ui_current_version=$(docker exec trojan-panel-ui cat ${TROJAN_PANEL_UI_DATA}version)
+    echo_content yellow "Trojan Panel前端(trojan-panel-ui)当前版本为 ${trojan_panel_ui_current_version} 最新版本为 ${trojan_panel_ui_latest_version}"
+  fi
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
     trojan_panel_current_version=$(docker exec trojan-panel ./trojan-panel -version)
     echo_content yellow "Trojan Panel后端(trojan-panel)当前版本为 ${trojan_panel_current_version} 最新版本为 ${trojan_panel_latest_version}"
