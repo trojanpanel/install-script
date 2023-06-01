@@ -239,10 +239,10 @@ EOF
   fi
 }
 
-# 安装Caddy TLS
-install_caddy_tls() {
+# 安装Caddy2
+install_caddy2() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 安装Caddy TLS"
+    echo_content green "---> 安装Caddy2"
 
     wget --no-check-certificate -O ${CADDY_DATA}html.tar.gz ${STATIC_HTML} &&
       tar -zxvf ${CADDY_DATA}html.tar.gz -C ${CADDY_SRV}
@@ -1084,18 +1084,18 @@ EOF
   fi
 }
 
-# 卸载Caddy TLS
-uninstall_caddy_tls() {
-  # 判断Caddy TLS是否安装
+# 卸载Caddy2
+uninstall_caddy2() {
+  # 判断Caddy2是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 卸载Caddy TLS"
+    echo_content green "---> 卸载Caddy2"
 
     docker rm -f trojan-panel-caddy &&
       rm -rf ${CADDY_DATA}
 
-    echo_content skyBlue "---> Caddy TLS卸载完成"
+    echo_content skyBlue "---> Caddy2卸载完成"
   else
-    echo_content red "---> 请先安装Caddy TLS"
+    echo_content red "---> 请先安装Caddy2"
   fi
 }
 
@@ -1177,7 +1177,7 @@ failure_testing() {
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy TLS运行异常 错误日志如下："
+        echo_content red "---> Caddy2运行异常 错误日志如下："
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
@@ -1221,17 +1221,17 @@ main() {
   echo_content skyBlue "Github: https://github.com/trojanpanel"
   echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 安装TrojanGFW+Caddy+Web+TLS"
-  echo_content yellow "2. 安装TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "1. 安装TrojanGFW+Caddy2+Web+TLS"
+  echo_content yellow "2. 安装TrojanGO+Caddy2+Web+TLS+Websocket"
   echo_content yellow "3. 安装Hysteria"
-  echo_content yellow "4. 安装NaiveProxy(Caddy+ForwardProxy)"
-  echo_content yellow "5. 安装Caddy TLS"
+  echo_content yellow "4. 安装NaiveProxy(Caddy2+ForwardProxy)"
+  echo_content yellow "5. 安装Caddy2"
   echo_content green "\n=============================================================="
-  echo_content yellow "6. 卸载TrojanGFW+Caddy+Web+TLS"
-  echo_content yellow "7. 卸载TrojanGO+Caddy+Web+TLS+Websocket"
+  echo_content yellow "6. 卸载TrojanGFW+Caddy2+Web+TLS"
+  echo_content yellow "7. 卸载TrojanGO+Caddy2+Web+TLS+Websocket"
   echo_content yellow "8. 卸载Hysteria"
-  echo_content yellow "9. 卸载NaiveProxy(Caddy+ForwardProxy)"
-  echo_content yellow "10. 卸载Caddy TLS"
+  echo_content yellow "9. 卸载NaiveProxy(Caddy2+ForwardProxy)"
+  echo_content yellow "10. 卸载Caddy2"
   echo_content yellow "11. 卸载全部Trojan Panel相关的应用"
   echo_content green "\n=============================================================="
   echo_content yellow "12. 故障检测"
@@ -1239,27 +1239,27 @@ main() {
   case ${selectInstall_type} in
   1)
     install_docker
-    install_caddy_tls
+    install_caddy2
     install_trojan_gfw_standalone
     ;;
   2)
     install_docker
-    install_caddy_tls
+    install_caddy2
     install_trojanGO_standalone
     ;;
   3)
     install_docker
-    install_caddy_tls
+    install_caddy2
     install_hysteria_standalone
     ;;
   4)
     install_docker
-    install_caddy_tls
+    install_caddy2
     install_navieproxy_standalone
     ;;
   5)
     install_docker
-    install_caddy_tls
+    install_caddy2
     ;;
   6)
     uninstall_trojan_gfw_standalone
@@ -1274,7 +1274,7 @@ main() {
     uninstall_navieproxy_standalone
     ;;
   10)
-    uninstall_caddy_tls
+    uninstall_caddy2
     ;;
   11)
     uninstall_all
