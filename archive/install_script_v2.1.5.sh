@@ -1201,7 +1201,7 @@ install_trojan_panel_core() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
     else
-      echo_content red "---> Trojan Panel Core后端安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel Core安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
