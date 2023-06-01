@@ -1619,13 +1619,30 @@ update_trojan_panel_ui_port() {
     echo_content green "---> 修改Trojan Panel前端端口"
 
     trojan_panel_ui_port=$(grep 'listen.*ssl' ${UI_NGINX_CONFIG} | awk '{print $2}')
+    if [[ -z "${trojan_panel_ui_port}" ]]; then
+      ui_https=0
+      trojan_panel_ui_port=$(grep -oP 'listen\s+\K\d+' nginx.conf | awk 'NR==1')
+    fi
+    if [[ -z "${trojan_panel_ui_port}" ]]; then
+      echo_content red "---> 未查询到Trojan Panel前端的端口"
+      exit 0
+    fi
     echo_content yellow "提示：Trojan Panel前端(trojan-panel-ui)当前端口为 ${trojan_panel_ui_port}"
 
     read -r -p "请输入Trojan Panel前端新端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
-    sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${UI_NGINX_CONFIG} &&
-      sed -i "s/https:\/\/\$host:.*\$request_uri/https:\/\/\$host:${trojan_panel_ui_port}\$request_uri/g" ${UI_NGINX_CONFIG} &&
-      docker restart trojan-panel-ui
+
+    if [[ ${ui_https} == 0 ]]; then
+      # http
+      sed -i "s/listen.*;/listen       ${trojan_panel_ui_port};/g" ${UI_NGINX_CONFIG} &&
+        sed -i "s/http:\/\/\$host:.*\$request_uri;/http:\/\/\$host:${trojan_panel_ui_port}\$request_uri;/g" ${UI_NGINX_CONFIG} &&
+        docker restart trojan-panel-ui
+    else
+      # https
+      sed -i "s/listen.*ssl;/listen       ${trojan_panel_ui_port} ssl;/g" ${UI_NGINX_CONFIG} &&
+        sed -i "s/https:\/\/\$host:.*\$request_uri;/https:\/\/\$host:${trojan_panel_ui_port}\$request_uri;/g" ${UI_NGINX_CONFIG} &&
+        docker restart trojan-panel-ui
+    fi
 
     if [[ "$?" == "0" ]]; then
       echo_content skyBlue "---> Trojan Panel前端端口修改完成"
