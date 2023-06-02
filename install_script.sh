@@ -74,6 +74,7 @@ init_var() {
   trojan_panel_ui_port=8888
   ui_https=1
   trojan_panel_ip="127.0.0.1"
+  trojan_panel_server_port=8081
 
   # Trojan Panel
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
@@ -81,6 +82,7 @@ init_var() {
   TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
   TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
   TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
+  trojan_panel_port=8081
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
@@ -89,6 +91,7 @@ init_var() {
   database="trojan_panel_db"
   account_table="account"
   grpc_port=8100
+  trojan_panel_core_port=8082
 
   # Update
   trojan_panel_ui_current_version=""
@@ -96,7 +99,7 @@ init_var() {
   trojan_panel_current_version=""
   trojan_panel_latest_version="v2.1.4"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v2.1.0"
+  trojan_panel_core_latest_version="v2.1.1"
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
@@ -930,6 +933,8 @@ install_trojan_panel_ui() {
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
     read -r -p "请输入Trojan Panel后端的IP地址(默认:本机后端): " trojan_panel_ip
     [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
+    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_server_port
+    [[ -z "${trojan_panel_server_port}" ]] && trojan_panel_server_port=8081
 
     while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
         if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
@@ -962,7 +967,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://${trojan_panel_ip}:8081;
+        proxy_pass http://${trojan_panel_ip}:${trojan_panel_server_port};
     }
 
     #error_page  404              /404.html;
@@ -993,7 +998,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://${trojan_panel_ip}:8081;
+        proxy_pass http://${trojan_panel_ip}:${trojan_panel_server_port};
     }
 
     error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
@@ -1040,6 +1045,9 @@ install_trojan_panel() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
     echo_content green "---> 安装Trojan Panel后端"
 
+    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_port
+    [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
+    
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
@@ -1086,6 +1094,7 @@ install_trojan_panel() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
+        -e "server_port=${trojan_panel_port}" \
         jonssonyan/trojan-panel
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
@@ -1112,6 +1121,9 @@ install_trojan_panel_core() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
     echo_content green "---> 安装Trojan Panel Core"
 
+    read -r -p "请输入Trojan Panel Core的服务端口(默认:8082): " trojan_panel_core_port
+    [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
+    
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
@@ -1171,6 +1183,7 @@ install_trojan_panel_core() {
         -e "crt_path=${CERT_PATH}${domain}.crt" \
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
+        -e "server_port=${trojan_panel_core_port}" \
         jonssonyan/trojan-panel-core
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
@@ -1310,6 +1323,10 @@ update_trojan_panel() {
   if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel后端"
 
+    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_port
+    [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
+
+
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
@@ -1359,6 +1376,7 @@ update_trojan_panel() {
         -e "redis_host=${redis_host}" \
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
+        -e "server_port=${trojan_panel_port}" \
         jonssonyan/trojan-panel
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
@@ -1389,6 +1407,9 @@ update_trojan_panel_core() {
 
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel Core"
+
+    read -r -p "请输入Trojan Panel Core的服务端口(默认:8082): " trojan_panel_core_port
+    [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
 
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
@@ -1456,6 +1477,7 @@ update_trojan_panel_core() {
         -e "crt_path=${CERT_PATH}${domain}.crt" \
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
+        -e "server_port=${trojan_panel_core_port}" \
         jonssonyan/trojan-panel-core
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
