@@ -928,7 +928,7 @@ install_trojan_panel_ui() {
 
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
-    read -r -p "请输入Trojan Panel后端地址(默认:本机): " trojan_panel_ip
+    read -r -p "请输入Trojan Panel后端的IP地址(默认:本机后端): " trojan_panel_ip
     [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
 
     domain=$(cat "${DOMAIN_FILE}")
