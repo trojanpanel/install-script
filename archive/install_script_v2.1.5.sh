@@ -1044,12 +1044,12 @@ EOF
         fi
     done
 
-    docker pull jonssonyan/trojan-panel-ui &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.5 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui
+        jonssonyan/trojan-panel-ui:2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
@@ -1108,7 +1108,7 @@ install_trojan_panel() {
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
-    docker pull jonssonyan/trojan-panel &&
+    docker pull jonssonyan/trojan-panel:2.1.4 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1124,7 +1124,7 @@ install_trojan_panel() {
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
         -e "server_port=${trojan_panel_port}" \
-        jonssonyan/trojan-panel
+        jonssonyan/trojan-panel:2.1.4
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
@@ -1187,7 +1187,7 @@ install_trojan_panel_core() {
 
     domain=$(cat "${DOMAIN_FILE}")
 
-    docker pull jonssonyan/trojan-panel-core &&
+    docker pull jonssonyan/trojan-panel-core:2.1.1 &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
         -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
@@ -1213,7 +1213,7 @@ install_trojan_panel_core() {
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         -e "server_port=${trojan_panel_core_port}" \
-        jonssonyan/trojan-panel-core
+        jonssonyan/trojan-panel-core:2.1.1
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core安装完成"
     else
@@ -1330,14 +1330,14 @@ update_trojan_panel_ui() {
     echo_content green "---> 更新Trojan Panel前端"
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.5
 
-    docker pull jonssonyan/trojan-panel-ui &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.5 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui
+        jonssonyan/trojan-panel-ui:2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端更新完成"
@@ -1386,9 +1386,9 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel
+      docker rmi -f jonssonyan/trojan-panel:2.1.4
 
-    docker pull jonssonyan/trojan-panel &&
+    docker pull jonssonyan/trojan-panel:2.1.4 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1404,7 +1404,7 @@ update_trojan_panel() {
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
         -e "server_port=${trojan_panel_port}" \
-        jonssonyan/trojan-panel
+        jonssonyan/trojan-panel:2.1.4
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端更新完成"
@@ -1450,11 +1450,11 @@ update_trojan_panel_core() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel-core &&
-      docker rmi -f jonssonyan/trojan-panel-core
+      docker rmi -f jonssonyan/trojan-panel-core:2.1.0
 
     domain=$(cat "${DOMAIN_FILE}")
 
-    docker pull jonssonyan/trojan-panel-core &&
+    docker pull jonssonyan/trojan-panel-core:2.1.0 &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
         -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
@@ -1480,7 +1480,7 @@ update_trojan_panel_core() {
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         -e "server_port=${trojan_panel_core_port}" \
-        jonssonyan/trojan-panel-core
+        jonssonyan/trojan-panel-core:2.1.0
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel Core更新完成"
@@ -1559,7 +1559,7 @@ uninstall_trojan_panel_ui() {
     echo_content green "---> 卸载Trojan Panel前端"
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui &&
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.5 &&
       rm -rf ${TROJAN_PANEL_UI_DATA}
 
     echo_content skyBlue "---> Trojan Panel前端卸载完成"
@@ -1575,7 +1575,7 @@ uninstall_trojan_panel() {
     echo_content green "---> 卸载Trojan Panel后端"
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel &&
+      docker rmi -f jonssonyan/trojan-panel:2.1.4 &&
       rm -rf ${TROJAN_PANEL_DATA}
 
     echo_content skyBlue "---> Trojan Panel后端卸载完成"
@@ -1591,7 +1591,7 @@ uninstall_trojan_panel_core() {
     echo_content green "---> 卸载Trojan Panel Core"
 
     docker rm -f trojan-panel-core &&
-      docker rmi -f jonssonyan/trojan-panel-core &&
+      docker rmi -f jonssonyan/trojan-panel-core:2.1.1 &&
       rm -rf ${TROJAN_PANEL_CORE_DATA}
 
     echo_content skyBlue "---> Trojan Panel Core卸载完成"
