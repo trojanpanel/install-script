@@ -1272,9 +1272,8 @@ update__trojan_panel_database() {
   if [[ "${version_212_214[*]}" =~ "${trojan_panel_current_version}" ]]; then
     docker cp trojan-panel:${trojan_panel_config_path} ${trojan_panel_config_path} &&
       trojan_panel_current_version="v2.1.4"
-      sed '$ a\
-[server]\
-port=8081' ${trojan_panel_config_path}
+    echo '[server]
+port=8081'>>${trojan_panel_config_path}
   fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
@@ -1302,9 +1301,8 @@ update__trojan_panel_core_database() {
   if [[ "${version_210_211[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
     docker cp trojan-panel-core:${trojan_panel_core_config_path} ${trojan_panel_core_config_path} &&
     trojan_panel_core_current_version="v2.1.1"
-    sed '$ a\
-[server]\
-port=8082' ${trojan_panel_core_config_path}
+    echo '[server]
+port=8082'>>${trojan_panel_core_config_path}
   fi
 
   echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
