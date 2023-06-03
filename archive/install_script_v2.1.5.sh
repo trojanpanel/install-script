@@ -1629,7 +1629,7 @@ update_trojan_panel_ui_port() {
     trojan_panel_ui_port=$(grep 'listen.*ssl' ${UI_NGINX_CONFIG} | awk '{print $2}')
     if [[ -z "${trojan_panel_ui_port}" ]]; then
       ui_https=0
-      trojan_panel_ui_port=$(grep -oP 'listen\s+\K\d+' nginx.conf | awk 'NR==1')
+      trojan_panel_ui_port=$(grep -oP 'listen\s+\K\d+' ${UI_NGINX_CONFIG} | awk 'NR==1')
     fi
     if [[ -z "${trojan_panel_ui_port}" ]]; then
       echo_content red "---> 未查询到Trojan Panel前端的端口"
