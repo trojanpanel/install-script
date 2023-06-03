@@ -1368,10 +1368,6 @@ update_trojan_panel() {
   if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel后端"
 
-    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_port
-    [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
-
-
     mariadb_ip=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.host)
     mariadb_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.port)
     mariadb_user=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.user)
