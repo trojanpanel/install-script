@@ -940,7 +940,7 @@ install_redis() {
       docker run -d --name trojan-panel-redis --restart always \
         --network=host \
         redis:6.2.7 \
-        redis-server --requirepass "${redis_pass}" --port ${redis_port}
+        redis-server --requirepass "${redis_pass}" --port "${redis_port}"
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
       echo_content skyBlue "---> Redis安装完成"
@@ -1106,7 +1106,7 @@ install_trojan_panel() {
       fi
     done
 
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker pull jonssonyan/trojan-panel &&
       docker run -d --name trojan-panel --restart always \
@@ -1368,18 +1368,18 @@ update_trojan_panel() {
   if [[ "${trojan_panel_current_version}" != "${trojan_panel_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel后端"
 
-    mariadb_ip=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.host)
-    mariadb_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.port)
-    mariadb_user=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.user)
-    mariadb_pas=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.password)
-    redis_host=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.host)
-    redis_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.port)
-    redis_pass=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.password)
-    trojan_panel_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} server.port)
+    mariadb_ip=$(get_ini_value ${trojan_panel_config_path} mysql.host)
+    mariadb_port=$(get_ini_value ${trojan_panel_config_path} mysql.port)
+    mariadb_user=$(get_ini_value ${trojan_panel_config_path} mysql.user)
+    mariadb_pas=$(get_ini_value ${trojan_panel_config_path} mysql.password)
+    redis_host=$(get_ini_value ${trojan_panel_config_path} redis.host)
+    redis_port=$(get_ini_value ${trojan_panel_config_path} redis.port)
+    redis_pass=$(get_ini_value ${trojan_panel_config_path} redis.password)
+    trojan_panel_port=$(get_ini_value ${trojan_panel_config_path} server.port)
 
     update__trojan_panel_database
 
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
       docker rmi -f jonssonyan/trojan-panel
@@ -1431,19 +1431,19 @@ update_trojan_panel_core() {
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel Core"
 
-    mariadb_ip=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.host)
-    mariadb_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.port)
-    mariadb_user=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.user)
-    mariadb_pas=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.password)
-    redis_host=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.host)
-    redis_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.port)
-    redis_pass=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.password)
-    grpc_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} grpc.port)
-    trojan_panel_core_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} server.port)
+    mariadb_ip=$(get_ini_value ${trojan_panel_core_config_path} mysql.host)
+    mariadb_port=$(get_ini_value ${trojan_panel_core_config_path} mysql.port)
+    mariadb_user=$(get_ini_value ${trojan_panel_core_config_path} mysql.user)
+    mariadb_pas=$(get_ini_value ${trojan_panel_core_config_path} mysql.password)
+    redis_host=$(get_ini_value ${trojan_panel_core_config_path} redis.host)
+    redis_port=$(get_ini_value ${trojan_panel_core_config_path} redis.port)
+    redis_pass=$(get_ini_value ${trojan_panel_core_config_path} redis.password)
+    grpc_port=$(get_ini_value ${trojan_panel_core_config_path} grpc.port)
+    trojan_panel_core_port=$(get_ini_value ${trojan_panel_core_config_path} server.port)
 
     update__trojan_panel_core_database
 
-    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+    docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel-core &&
       docker rmi -f jonssonyan/trojan-panel-core
@@ -1675,7 +1675,7 @@ redis_flush_all() {
     fi
   done
 
-  docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
+  docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
   echo_content skyBlue "---> Redis缓存刷新完成"
 }
