@@ -39,6 +39,7 @@ services:
     volumes:
       - "/tpdata/caddy/srv/:/tpdata/trojan-panel/webfile/"
       - "/tpdata/trojan-panel/logs/:/tpdata/trojan-panel/logs/"
+      - "/tpdata/trojan-panel/config/:/tpdata/trojan-panel/config/"
       - "/etc/localtime:/etc/localtime"
     environment:
       - "mariadb_ip=127.0.0.1"
@@ -48,6 +49,7 @@ services:
       - "redis_host=127.0.0.1"
       - "redis_port=6378"
       - "redis_pass=${redis_pass}"
+      - "server_port=8081"
 
   trojan-panel-ui:
     image: jonssonyan/trojan-panel-ui
@@ -69,7 +71,7 @@ services:
       - "/tpdata/trojan-panel-core/bin/hysteria/config:/tpdata/trojan-panel-core/bin/hysteria/config"
       - "/tpdata/trojan-panel-core/bin/naiveproxy/config:/tpdata/trojan-panel-core/bin/naiveproxy/config"
       - "/tpdata/trojan-panel-core/logs/:/tpdata/trojan-panel-core/logs/"
-      - "/tpdata/trojan-panel-core/config/sqlite/:/tpdata/trojan-panel-core/config/sqlite/"
+      - "/tpdata/trojan-panel-core/config/:/tpdata/trojan-panel-core/config/"
       - "/tpdata/caddy/cert/:/tpdata/caddy/cert/"
       - "/tpdata/caddy/srv/:/tpdata/caddy/srv/"
       - "/etc/localtime:/etc/localtime"
@@ -86,3 +88,4 @@ services:
       - "crt_path=/tpdata/caddy/cert/${domain}.crt"
       - "key_path=/tpdata/caddy/cert/${domain}.key"
       - "grpc_port=8100"
+      - "server_port=8082"
