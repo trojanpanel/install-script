@@ -82,12 +82,14 @@ init_var() {
   TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
   TROJAN_PANEL_EXPORT="${TROJAN_PANEL_DATA}config/export/"
   TROJAN_PANEL_TEMPLATE="${TROJAN_PANEL_DATA}config/template/"
+  TROJAN_PANEL_CONFIG="${TROJAN_PANEL_DATA}config/config.ini"
   trojan_panel_port=8081
 
   # Trojan Panel Core
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
   TROJAN_PANEL_CORE_LOGS="${TROJAN_PANEL_CORE_DATA}logs/"
   TROJAN_PANEL_CORE_SQLITE="${TROJAN_PANEL_CORE_DATA}config/sqlite/"
+  TROJAN_PANEL_CORE_CONFIG="${TROJAN_PANEL_CORE_DATA}config/config.ini"
   database="trojan_panel_db"
   account_table="account"
   grpc_port=8100
@@ -185,6 +187,36 @@ can_connect() {
   else
     return 1
   fi
+}
+
+get_ini_value() {
+  local config_file="$1"
+  local key="$2"
+  local section=""
+  local section_flag=0
+
+  # 拆分组名和键名
+  IFS='.' read -r group_name key_name <<< "$key"
+
+  while IFS='=' read -r name val
+  do
+    # 处理节名称
+    if [[ $name =~ ^\[(.*)\]$ ]]; then
+      section="${BASH_REMATCH[1]}"
+      if [[ $section == $group_name ]]; then
+        section_flag=1
+      else
+        section_flag=0
+      fi
+      continue
+    fi
+
+    # 提取配置项的值
+    if [[ $section_flag -eq 1 && $name == $key_name ]]; then
+      echo "$val"
+      return
+    fi
+  done < "$config_file"
 }
 
 check_sys() {
@@ -1085,6 +1117,7 @@ install_trojan_panel() {
         -v ${TROJAN_PANEL_LOGS}:${TROJAN_PANEL_LOGS} \
         -v ${TROJAN_PANEL_EXPORT}:${TROJAN_PANEL_EXPORT} \
         -v ${TROJAN_PANEL_TEMPLATE}:${TROJAN_PANEL_TEMPLATE} \
+        -v ${TROJAN_PANEL_CORE_CONFIG}:${TROJAN_PANEL_CORE_CONFIG} \
         -v /etc/localtime:/etc/localtime \
         -e GIN_MODE=release \
         -e "mariadb_ip=${mariadb_ip}" \
@@ -1167,6 +1200,7 @@ install_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${TROJAN_PANEL_CORE_SQLITE}:${TROJAN_PANEL_CORE_SQLITE} \
+        -v ${TROJAN_PANEL_CORE_CONFIG}:${TROJAN_PANEL_CORE_CONFIG} \
         -v ${CERT_PATH}:${CERT_PATH} \
         -v ${WEB_PATH}:${WEB_PATH} \
         -v /etc/localtime:/etc/localtime \
@@ -1239,6 +1273,14 @@ update__trojan_panel_database() {
     docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_212}" &>/dev/null &&
       trojan_panel_current_version="v2.1.2"
   fi
+  version_212_214=("v2.1.2" "v2.1.3")
+  if [[ "${version_212_214[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    docker cp trojan-panel:${TROJAN_PANEL_CONFIG} ${TROJAN_PANEL_CONFIG} &&
+      trojan_panel_current_version="v2.1.4"
+      sed '$ a\
+      [server]\
+      port=8081' ${TROJAN_PANEL_CONFIG}
+  fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
@@ -1260,6 +1302,14 @@ update__trojan_panel_core_database() {
         sed -i "s#/tpdata/caddy/cert/#${CERT_PATH}#g" ${UI_NGINX_CONFIG}
     fi
     trojan_panel_core_current_version="v2.1.0"
+  fi
+  version_210_211=("v2.1.0")
+  if [[ "${version_210_211[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
+    docker cp trojan-panel-core:${TROJAN_PANEL_CORE_CONFIG} ${TROJAN_PANEL_CORE_CONFIG} &&
+    trojan_panel_core_current_version="v2.1.1"
+    sed '$ a\
+    [server]\
+    port=8082' ${TROJAN_PANEL_CORE_CONFIG}
   fi
 
   echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
@@ -1327,31 +1377,14 @@ update_trojan_panel() {
     [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
 
 
-    read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-    read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-    [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-      if [[ -z "${mariadb_pas}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-
-    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-    read -r -p "请输入Redis的端口(默认:6378): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6378
-    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
-      if [[ -z "${redis_pass}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
+    mariadb_ip=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.host)
+    mariadb_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.port)
+    mariadb_user=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.user)
+    mariadb_pas=$(get_ini_value ${TROJAN_PANEL_CONFIG} mysql.password)
+    redis_host=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.host)
+    redis_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.port)
+    redis_pass=$(get_ini_value ${TROJAN_PANEL_CONFIG} redis.password)
+    trojan_panel_port=$(get_ini_value ${TROJAN_PANEL_CONFIG} server.port)
 
     update__trojan_panel_database
 
@@ -1408,40 +1441,15 @@ update_trojan_panel_core() {
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel Core"
 
-    read -r -p "请输入Trojan Panel Core的服务端口(默认:8082): " trojan_panel_core_port
-    [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
-
-    read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
-    [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
-    [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-    read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
-    [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
-      if [[ -z "${mariadb_pas}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-    read -r -p "请输入数据库名称(默认:trojan_panel_db): " database
-    [[ -z "${database}" ]] && database="trojan_panel_db"
-    read -r -p "请输入数据库的用户表名称(默认:account): " account_table
-    [[ -z "${account_table}" ]] && account_table="account"
-
-    read -r -p "请输入Redis的IP地址(默认:本机Redis): " redis_host
-    [[ -z "${redis_host}" ]] && redis_host="127.0.0.1"
-    read -r -p "请输入Redis的端口(默认:6378): " redis_port
-    [[ -z "${redis_port}" ]] && redis_port=6378
-    while read -r -p "请输入Redis的密码(必填): " redis_pass; do
-      if [[ -z "${redis_pass}" ]]; then
-        echo_content red "密码不能为空"
-      else
-        break
-      fi
-    done
-    read -r -p "请输入API的端口(默认:8100): " grpc_port
-    [[ -z "${grpc_port}" ]] && grpc_port=8100
+    mariadb_ip=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.host)
+    mariadb_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.port)
+    mariadb_user=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.user)
+    mariadb_pas=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} mysql.password)
+    redis_host=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.host)
+    redis_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.port)
+    redis_pass=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} redis.password)
+    grpc_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} grpc.port)
+    trojan_panel_core_port=$(get_ini_value ${TROJAN_PANEL_CORE_CONFIG} server.port)
 
     update__trojan_panel_core_database
 
