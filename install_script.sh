@@ -1274,6 +1274,22 @@ update__trojan_panel_database() {
       trojan_panel_current_version="v2.1.4" &&
       echo '[server]
 port=8081'>>${trojan_panel_config_path}
+
+    docker rm -f trojan-panel-ui &&
+      docker rmi -f jonssonyan/trojan-panel-ui
+
+    docker pull jonssonyan/trojan-panel-ui &&
+      docker run -d --name trojan-panel-ui --restart always \
+        --network=host \
+        -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
+        -v ${CERT_PATH}:${CERT_PATH} \
+        jonssonyan/trojan-panel-ui
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
+      echo_content skyBlue "---> Trojan Panel前端更新完成"
+    else
+      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+    fi
   fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
