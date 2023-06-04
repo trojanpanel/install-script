@@ -76,7 +76,7 @@ init_var() {
   trojan_panel_ip="127.0.0.1"
   trojan_panel_server_port=8081
 
-  # Trojan Panel
+  # Trojan Panel后端
   TROJAN_PANEL_DATA="/tpdata/trojan-panel/"
   TROJAN_PANEL_WEBFILE="${TROJAN_PANEL_DATA}webfile/"
   TROJAN_PANEL_LOGS="${TROJAN_PANEL_DATA}logs/"
@@ -84,7 +84,7 @@ init_var() {
   trojan_panel_config_path="${TROJAN_PANEL_DATA}config/config.ini"
   trojan_panel_port=8081
 
-  # Trojan Panel Core
+  # Trojan Panel内核
   TROJAN_PANEL_CORE_DATA="/tpdata/trojan-panel-core/"
   TROJAN_PANEL_CORE_LOGS="${TROJAN_PANEL_CORE_DATA}logs/"
   TROJAN_PANEL_CORE_CONFIG="${TROJAN_PANEL_CORE_DATA}config/"
@@ -173,7 +173,7 @@ mkdir_tools() {
   mkdir -p ${TROJAN_PANEL_DATA}
   mkdir -p ${TROJAN_PANEL_LOGS}
 
-  # Trojan Panel Core
+  # Trojan Panel内核
   mkdir -p ${TROJAN_PANEL_CORE_DATA}
   mkdir -p ${TROJAN_PANEL_CORE_LOGS}
 }
@@ -1145,12 +1145,12 @@ install_trojan_panel() {
   fi
 }
 
-# 安装Trojan Panel Core
+# 安装Trojan Panel内核
 install_trojan_panel_core() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
-    echo_content green "---> 安装Trojan Panel Core"
+    echo_content green "---> 安装Trojan Panel内核"
 
-    read -r -p "请输入Trojan Panel Core的服务端口(默认:8082): " trojan_panel_core_port
+    read -r -p "请输入Trojan Panel内核的服务端口(默认:8082): " trojan_panel_core_port
     [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
     
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
@@ -1215,13 +1215,13 @@ install_trojan_panel_core() {
         -e "server_port=${trojan_panel_core_port}" \
         jonssonyan/trojan-panel-core:2.1.1
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content skyBlue "---> Trojan Panel Core安装完成"
+      echo_content skyBlue "---> Trojan Panel内核安装完成"
     else
-      echo_content red "---> Trojan Panel Core安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel内核安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Trojan Panel Core"
+    echo_content skyBlue "---> 你已经安装了Trojan Panel内核"
   fi
 }
 
@@ -1295,9 +1295,9 @@ port=8081'>>${trojan_panel_config_path}
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
 
-# 更新Trojan Panel Core数据结构
+# 更新Trojan Panel内核数据结构
 update__trojan_panel_core_database() {
-  echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
+  echo_content skyBlue "---> 更新Trojan Panel内核数据结构"
 
   version_204_210=("v2.0.4")
   if [[ "${version_204_210[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
@@ -1321,7 +1321,7 @@ update__trojan_panel_core_database() {
 port=8082'>>${trojan_panel_core_config_path}
   fi
 
-  echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
+  echo_content skyBlue "---> Trojan Panel内核数据结构更新完成"
 }
 
 # 更新Trojan Panel前端
@@ -1426,11 +1426,11 @@ update_trojan_panel() {
   fi
 }
 
-# 更新Trojan Panel Core
+# 更新Trojan Panel内核
 update_trojan_panel_core() {
-  # 判断Trojan Panel Core是否安装
+  # 判断Trojan Panel内核是否安装
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
-    echo_content red "---> 请先安装Trojan Panel Core"
+    echo_content red "---> 请先安装Trojan Panel内核"
     exit 0
   fi
 
@@ -1443,7 +1443,7 @@ update_trojan_panel_core() {
   echo_content yellow "提示：Trojan Panel内核(trojan-panel-core)当前版本为 ${trojan_panel_core_current_version} 最新版本为 ${trojan_panel_core_latest_version}"
 
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
-    echo_content green "---> 更新Trojan Panel Core"
+    echo_content green "---> 更新Trojan Panel内核"
 
     update__trojan_panel_core_database
 
@@ -1493,12 +1493,12 @@ update_trojan_panel_core() {
         jonssonyan/trojan-panel-core:2.1.1
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content skyBlue "---> Trojan Panel Core更新完成"
+      echo_content skyBlue "---> Trojan Panel内核更新完成"
     else
-      echo_content red "---> Trojan Panel Core更新失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel内核更新失败或运行异常,请尝试修复或卸载重装"
     fi
   else
-    echo_content skyBlue "---> 你安装的Trojan Panel Core已经是最新版"
+    echo_content skyBlue "---> 你安装的Trojan Panel内核已经是最新版"
   fi
 }
 
@@ -1594,19 +1594,19 @@ uninstall_trojan_panel() {
   fi
 }
 
-# 卸载Trojan Panel Core
+# 卸载Trojan Panel内核
 uninstall_trojan_panel_core() {
-  # 判断Trojan Panel Core是否安装
+  # 判断Trojan Panel内核是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
-    echo_content green "---> 卸载Trojan Panel Core"
+    echo_content green "---> 卸载Trojan Panel内核"
 
     docker rm -f trojan-panel-core &&
       docker rmi -f jonssonyan/trojan-panel-core:2.1.1 &&
       rm -rf ${TROJAN_PANEL_CORE_DATA}
 
-    echo_content skyBlue "---> Trojan Panel Core卸载完成"
+    echo_content skyBlue "---> Trojan Panel内核卸载完成"
   else
-    echo_content red "---> 请先安装Trojan Panel Core"
+    echo_content red "---> 请先安装Trojan Panel内核"
   fi
 }
 
@@ -1736,7 +1736,7 @@ failure_testing() {
       docker logs trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel Core运行异常 日志如下："
+      echo_content red "---> Trojan Panel内核运行异常 日志如下："
       if [[ -f ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log ]]; then
         tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log | grep error
       else
@@ -1750,8 +1750,8 @@ failure_testing() {
 log_query() {
   while :; do
     echo_content skyBlue "可以查询日志的应用如下:"
-    echo_content yellow "1. Trojan Panel"
-    echo_content yellow "2. Trojan Panel Core"
+    echo_content yellow "1. Trojan Panel后端"
+    echo_content yellow "2. Trojan Panel内核"
     echo_content yellow "3. 退出"
     read -r -p "请选择应用(默认:1): " select_log_query_type
     [[ -z "${select_log_query_type}" ]] && select_log_query_type=1
@@ -1816,7 +1816,7 @@ main() {
   echo_content red "\n=============================================================="
   echo_content yellow "1. 安装Trojan Panel前端"
   echo_content yellow "2. 安装Trojan Panel后端"
-  echo_content yellow "3. 安装Trojan Panel Core"
+  echo_content yellow "3. 安装Trojan Panel内核"
   echo_content yellow "4. 安装Caddy2"
   echo_content yellow "5. 安装Nginx"
   echo_content yellow "6. 安装MariaDB"
@@ -1824,11 +1824,11 @@ main() {
   echo_content green "\n=============================================================="
   echo_content yellow "8. 更新Trojan Panel前端"
   echo_content yellow "9. 更新Trojan Panel后端"
-  echo_content yellow "10. 更新Trojan Panel Core"
+  echo_content yellow "10. 更新Trojan Panel内核"
   echo_content green "\n=============================================================="
   echo_content yellow "11. 卸载Trojan Panel前端"
   echo_content yellow "12. 卸载Trojan Panel后端"
-  echo_content yellow "13. 卸载Trojan Panel Core"
+  echo_content yellow "13. 卸载Trojan Panel内核"
   echo_content yellow "14. 卸载Caddy2"
   echo_content yellow "15. 卸载Nginx"
   echo_content yellow "16. 卸载MariaDB"
