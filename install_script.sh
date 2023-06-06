@@ -1696,7 +1696,7 @@ redis_flush_all() {
 # 更换证书
 change_cert() {
   domain_1=$(cat "${DOMAIN_FILE}")
-  if [[ -z "${domain}" ]]; then
+  if [[ -z "${domain_1}" ]]; then
     echo_content red "你没有设置证书"
     exit 0
   fi
@@ -1709,7 +1709,7 @@ change_cert() {
   install_cert
 
   domain_2=$(cat "${DOMAIN_FILE}")
-  if [[ -n "${domain}" ]]; then
+  if [[ -n "${domain_2}" ]]; then
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
       sed -i "s/${domain_1}/${domain_2}/g" ${NGINX_CONFIG} &&
         docker reatart trojan-panel-ui
