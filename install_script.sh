@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.1.5
+# Version: v2.1.6
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -194,10 +194,9 @@ get_ini_value() {
   local section_flag=0
 
   # 拆分组名和键名
-  IFS='.' read -r group_name key_name <<< "$key"
+  IFS='.' read -r group_name key_name <<<"$key"
 
-  while IFS='=' read -r name val
-  do
+  while IFS='=' read -r name val; do
     # 处理节名称
     if [[ $name =~ ^\[(.*)\]$ ]]; then
       section="${BASH_REMATCH[1]}"
@@ -214,7 +213,7 @@ get_ini_value() {
       echo "$val"
       return
     fi
-  done < "$config_file"
+  done <"$config_file"
 }
 
 check_sys() {
@@ -967,11 +966,11 @@ install_trojan_panel_ui() {
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
     while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
-        if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
-          install_cert
-          domain=$(cat "${DOMAIN_FILE}")
-          # 配置Nginx
-          cat >${UI_NGINX_CONFIG} <<-EOF
+      if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
+        install_cert
+        domain=$(cat "${DOMAIN_FILE}")
+        # 配置Nginx
+        cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  localhost;
@@ -1012,12 +1011,12 @@ server {
     }
 }
 EOF
-          break
+        break
+      else
+        if [[ ${ui_https} != 0 ]]; then
+          echo_content red "不可以输入除0和1之外的其他字符"
         else
-          if [[ ${ui_https} != 0 ]]; then
-            echo_content red "不可以输入除0和1之外的其他字符"
-          else
-            cat >${UI_NGINX_CONFIG} <<-EOF
+          cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port};
     server_name  localhost;
@@ -1039,9 +1038,9 @@ server {
     }
 }
 EOF
-            break
-          fi
+          break
         fi
+      fi
     done
 
     docker pull jonssonyan/trojan-panel-ui &&
@@ -1077,7 +1076,7 @@ install_trojan_panel() {
 
     read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_port
     [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
-    
+
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
@@ -1152,7 +1151,7 @@ install_trojan_panel_core() {
 
     read -r -p "请输入Trojan Panel内核的服务端口(默认:8082): " trojan_panel_core_port
     [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
-    
+
     read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
     read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
@@ -1273,7 +1272,7 @@ update__trojan_panel_database() {
     docker cp trojan-panel:${trojan_panel_config_path} ${trojan_panel_config_path} &&
       trojan_panel_current_version="v2.1.4" &&
       echo '[server]
-port=8081'>>${trojan_panel_config_path}
+port=8081' >>${trojan_panel_config_path}
 
     docker rm -f trojan-panel-ui &&
       docker rmi -f jonssonyan/trojan-panel-ui
@@ -1318,7 +1317,7 @@ update__trojan_panel_core_database() {
     docker cp trojan-panel-core:${trojan_panel_core_config_path} ${trojan_panel_core_config_path} &&
       trojan_panel_core_current_version="v2.1.1" &&
       echo '[server]
-port=8082'>>${trojan_panel_core_config_path}
+port=8082' >>${trojan_panel_core_config_path}
   fi
 
   echo_content skyBlue "---> Trojan Panel内核数据结构更新完成"
@@ -1694,6 +1693,35 @@ redis_flush_all() {
   echo_content skyBlue "---> Redis缓存刷新完成"
 }
 
+# 更换证书
+change_cert() {
+  domain_1=$(cat "${DOMAIN_FILE}")
+  if [[ -z "${domain}" ]]; then
+    echo_content red "你没有设置证书"
+    exit 0
+  fi
+
+  docker rm -f trojan-panel-caddy &&
+    rm -rf ${CADDY_DATA}
+  rm -rf ${WEB_PATH}*
+  rm -rf ${CERT_PATH}*
+  rm -f ${DOMAIN_FILE}
+  install_cert
+
+  domain_2=$(cat "${DOMAIN_FILE}")
+  if [[ -n "${domain}" ]]; then
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
+      sed -i "s/${domain_1}/${domain_2}/g" ${NGINX_CONFIG} &&
+        docker reatart trojan-panel-ui
+    fi
+    if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
+      find /tpdata/trojan-panel-core/bin/ -type f -exec sed -i "s/${domain_1}/${domain_2}/g" {} + &&
+        sed -i "s/${domain_1}/${domain_2}/g" ${trojan_panel_core_config_path} &&
+        docker reatart trojan-panel-core
+    fi
+  fi
+}
+
 # 故障检测
 failure_testing() {
   echo_content green "---> 故障检测开始"
@@ -1808,7 +1836,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.1.5"
+  echo_content skyBlue "Version: v2.1.6"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
@@ -1837,10 +1865,11 @@ main() {
   echo_content green "\n=============================================================="
   echo_content yellow "19. 修改Trojan Panel前端端口"
   echo_content yellow "20. 刷新Redis缓存"
+  echo_content yellow "21. 更换证书"
   echo_content green "\n=============================================================="
-  echo_content yellow "21. 故障检测"
-  echo_content yellow "22. 日志查询"
-  echo_content yellow "23. 版本查询"
+  echo_content yellow "22. 故障检测"
+  echo_content yellow "23. 日志查询"
+  echo_content yellow "24. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1916,12 +1945,15 @@ main() {
     redis_flush_all
     ;;
   21)
-    failure_testing
+    change_cert
     ;;
   22)
-    log_query
+    failure_testing
     ;;
   23)
+    log_query
+    ;;
+  24)
     version_query
     ;;
   *)
