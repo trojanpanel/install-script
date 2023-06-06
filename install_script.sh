@@ -1702,22 +1702,24 @@ change_cert() {
   fi
 
   docker rm -f trojan-panel-caddy &&
-    rm -rf ${CADDY_DATA}
-  rm -rf ${WEB_PATH}*
-  rm -rf ${CERT_PATH}*
-  rm -f ${DOMAIN_FILE}
+    rm -rf ${CADDY_LOG}* &&
+    cat /dev/null >${CADDY_CONFIG} &&
+    rm -rf ${WEB_PATH}* &&
+    rm -rf ${CERT_PATH}* &&
+    cat /dev/null >${DOMAIN_FILE}
+
   install_cert
 
   domain_2=$(cat "${DOMAIN_FILE}")
   if [[ -n "${domain_2}" ]]; then
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
       sed -i "s/${domain_1}/${domain_2}/g" ${NGINX_CONFIG} &&
-        docker reatart trojan-panel-ui
+        docker restart trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
       find /tpdata/trojan-panel-core/bin/ -type f -exec sed -i "s/${domain_1}/${domain_2}/g" {} + &&
         sed -i "s/${domain_1}/${domain_2}/g" ${trojan_panel_core_config_path} &&
-        docker reatart trojan-panel-core
+        docker restart trojan-panel-core
     fi
   fi
 }
