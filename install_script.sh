@@ -1696,17 +1696,15 @@ redis_flush_all() {
 # 更换证书
 change_cert() {
   domain_1=$(cat "${DOMAIN_FILE}")
-  if [[ -z "${domain_1}" ]]; then
-    echo_content red "你没有设置证书"
-    exit 0
-  fi
 
-  docker rm -f trojan-panel-caddy &&
-    rm -rf ${CADDY_LOG}* &&
-    cat /dev/null >${CADDY_CONFIG} &&
-    rm -rf ${WEB_PATH}* &&
-    rm -rf ${CERT_PATH}* &&
-    cat /dev/null >${DOMAIN_FILE}
+  if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+    docker rm -f trojan-panel-caddy &&
+      rm -rf ${CADDY_LOG}* &&
+      cat /dev/null >${CADDY_CONFIG} &&
+      rm -rf ${WEB_PATH}* &&
+      rm -rf ${CERT_PATH}* &&
+      cat /dev/null >${DOMAIN_FILE}
+  fi
 
   install_cert
 
