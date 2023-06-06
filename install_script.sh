@@ -1712,7 +1712,7 @@ change_cert() {
   domain_2=$(cat "${DOMAIN_FILE}")
   if [[ -n "${domain_2}" ]]; then
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
-      sed -i "s/${domain_1}/${domain_2}/g" ${NGINX_CONFIG} &&
+      sed -i "s/${domain_1}/${domain_2}/g" ${UI_NGINX_DATA} &&
         docker restart trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
