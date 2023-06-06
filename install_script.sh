@@ -1700,10 +1700,10 @@ change_cert() {
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
     docker rm -f trojan-panel-caddy &&
       rm -rf ${CADDY_LOG}* &&
-      cat /dev/null >${CADDY_CONFIG} &&
+      echo "" >${CADDY_CONFIG} &&
       rm -rf ${WEB_PATH}* &&
       rm -rf ${CERT_PATH}* &&
-      cat /dev/null >${DOMAIN_FILE}
+      echo "" >${DOMAIN_FILE}
   fi
 
   install_cert
