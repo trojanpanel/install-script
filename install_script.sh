@@ -1710,7 +1710,7 @@ change_cert() {
   install_cert
 
   domain_2=$(cat "${DOMAIN_FILE}")
-  if [[ -n "${domain_2}" ]]; then
+  if [[ -n "${domain_1}" && -n "${domain_2}" ]]; then
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-nginx$") ]]; then
       sed -i "s/${domain_1}/${domain_2}/g" ${NGINX_CONFIG} &&
         docker restart trojan-panel-nginx
