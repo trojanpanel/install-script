@@ -1735,7 +1735,7 @@ forget_pass() {
     echo_content yellow "4. 退出"
     read -r -p "请选择(默认:4): " forget_pass_option
     [[ -z "${forget_pass_option}" ]] && forget_pass_option=4
-    case ${whether_install_reverse_proxy} in
+    case ${forget_pass_option} in
     1)
       if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
         mariadb_user=$(get_ini_value ${trojan_panel_config_path} mysql.user)
