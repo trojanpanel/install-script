@@ -1740,7 +1740,9 @@ forget_pass() {
       if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
         mariadb_user=$(get_ini_value ${trojan_panel_config_path} mysql.user)
         mariadb_pas=$(get_ini_value ${trojan_panel_config_path} mysql.password)
+        echo_content red "\n=============================================================="
         echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
+        echo_content red "\n=============================================================="
       else
         echo_content red "---> 请先安装Trojan Panel后端"
       fi
@@ -1748,7 +1750,9 @@ forget_pass() {
     2)
       if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
         redis_pass=$(get_ini_value ${trojan_panel_config_path} redis.password)
+        echo_content red "\n=============================================================="
         echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
+        echo_content red "\n=============================================================="
       else
         echo_content red "---> 请先安装Trojan Panel后端"
       fi
@@ -1771,7 +1775,9 @@ forget_pass() {
 
         docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "update account set username = 'sysadmin',pass = 'tFjD2X1F6i9FfWp2GDU5Vbi1conuaChDKIYbw9zMFrqvMoSz',hash='4366294571b8b267d9cf15b56660f0a70659568a86fc270a52fdc9e5' where id = 1 limit 1"
         if [[ "$?" == "0" ]]; then
+          echo_content red "\n=============================================================="
           echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
+          echo_content red "\n=============================================================="
         else
           echo_content red "管理面板系统管理员用户名和密码重设失败"
         fi
