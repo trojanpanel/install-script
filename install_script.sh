@@ -1727,6 +1727,69 @@ change_cert() {
   fi
 }
 
+forget_pass() {
+  while :; do
+    echo_content yellow "1. 查询MariaDB密码"
+    echo_content yellow "2. 查询Redis密码"
+    echo_content yellow "3. 重设管理面板系统管理员用户名和密码"
+    echo_content yellow "4. 退出"
+    read -r -p "请选择(默认:4): " forget_pass_option
+    [[ -z "${forget_pass_option}" ]] && forget_pass_option=4
+    case ${whether_install_reverse_proxy} in
+    1)
+      if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
+        mariadb_user=$(get_ini_value ${trojan_panel_config_path} mysql.user)
+        mariadb_pas=$(get_ini_value ${trojan_panel_config_path} mysql.password)
+        echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
+      else
+        echo_content red "---> 请先安装Trojan Panel后端"
+      fi
+      ;;
+    2)
+      if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
+        redis_pass=$(get_ini_value ${trojan_panel_config_path} redis.password)
+        echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
+      else
+        echo_content red "---> 请先安装Trojan Panel后端"
+      fi
+      ;;
+    3)
+      if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
+        read -r -p "请输入数据库的IP地址(默认:本机数据库): " mariadb_ip
+        [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
+        read -r -p "请输入数据库的端口(默认:9507): " mariadb_port
+        [[ -z "${mariadb_port}" ]] && mariadb_port=9507
+        read -r -p "请输入数据库的用户名(默认:root): " mariadb_user
+        [[ -z "${mariadb_user}" ]] && mariadb_user="root"
+        while read -r -p "请输入数据库的密码(必填): " mariadb_pas; do
+          if [[ -z "${mariadb_pas}" ]]; then
+            echo_content red "密码不能为空"
+          else
+            break
+          fi
+        done
+
+        docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -e "update account set username = 'sysadmin',pass = 'tFjD2X1F6i9FfWp2GDU5Vbi1conuaChDKIYbw9zMFrqvMoSz',hash='4366294571b8b267d9cf15b56660f0a70659568a86fc270a52fdc9e5' where id = 1 limit 1" &>/dev/null
+        if [[ "$?" == "0" ]]; then
+          echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
+        else
+          echo_content red "管理面板系统管理员用户名和密码重设失败"
+        fi
+      else
+        echo_content red "---> 请先安装MariaDB"
+      fi
+      ;;
+    4)
+      break
+      ;;
+    *)
+      echo_content red "没有这个选项"
+      continue
+      ;;
+    esac
+  done
+}
+
 # 故障检测
 failure_testing() {
   echo_content green "---> 故障检测开始"
@@ -1871,10 +1934,11 @@ main() {
   echo_content yellow "19. 修改Trojan Panel前端端口"
   echo_content yellow "20. 刷新Redis缓存"
   echo_content yellow "21. 更换证书"
+  echo_content yellow "22. 忘记密码"
   echo_content green "\n=============================================================="
-  echo_content yellow "22. 故障检测"
-  echo_content yellow "23. 日志查询"
-  echo_content yellow "24. 版本查询"
+  echo_content yellow "23. 故障检测"
+  echo_content yellow "24. 日志查询"
+  echo_content yellow "25. 版本查询"
   read -r -p "请选择:" selectInstall_type
   case ${selectInstall_type} in
   1)
@@ -1953,12 +2017,15 @@ main() {
     change_cert
     ;;
   22)
-    failure_testing
+    forget_pass
     ;;
   23)
-    log_query
+    failure_testing
     ;;
   24)
+    log_query
+    ;;
+  25)
     version_query
     ;;
   *)
