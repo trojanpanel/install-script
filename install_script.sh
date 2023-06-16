@@ -96,9 +96,9 @@ init_var() {
 
   # Update
   trojan_panel_ui_current_version=""
-  trojan_panel_ui_latest_version="v2.1.5"
+  trojan_panel_ui_latest_version="v2.1.6"
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.1.4"
+  trojan_panel_latest_version="v2.1.5"
   trojan_panel_core_current_version=""
   trojan_panel_core_latest_version="v2.1.1"
 
@@ -1290,6 +1290,11 @@ port=8081' >>${trojan_panel_config_path}
     else
       echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
     fi
+  fi
+  version_214_215=("v2.1.4")
+  if [[ "${version_214_215[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_215}" &>/dev/null &&
+          trojan_panel_current_version="v2.1.5"
   fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
