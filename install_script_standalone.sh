@@ -1177,16 +1177,15 @@ failure_testing() {
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy2运行异常 错误日志如下："
+        echo_content red "---> Caddy2运行异常 运行日志如下："
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z $(cat "${DOMAIN_FILE}") || ! -d "${CADDY_CERT}" || ! -f "${CADDY_CERT}${domain}.crt" ]]; then
-        echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项 日志如下："
+      if [[ -n ${domain} && ! -f "${CADDY_CERT}${domain}.crt" ]]; then
+        echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项"
         if [[ -f ${CADDY_LOG}error.log ]]; then
-          tail -n 20 ${CADDY_LOG}error.log
-        else
-          docker logs trojan-panel-caddy
+          echo_content red "Caddy2错误日志如下："
+          tail -n 20 ${CADDY_LOG}error.log | grep error
         fi
       fi
     fi
