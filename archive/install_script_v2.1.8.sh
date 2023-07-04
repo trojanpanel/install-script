@@ -1108,7 +1108,7 @@ install_trojan_panel() {
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
-    docker pull jonssonyan/trojan-panel2.1.5 &&
+    docker pull jonssonyan/trojan-panel:2.1.5 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1124,7 +1124,7 @@ install_trojan_panel() {
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
         -e "server_port=${trojan_panel_port}" \
-        jonssonyan/trojan-panel2.1.5
+        jonssonyan/trojan-panel:2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
