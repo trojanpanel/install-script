@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.1.7
+# Version: v2.1.8
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -96,11 +96,11 @@ init_var() {
 
   # Update
   trojan_panel_ui_current_version=""
-  trojan_panel_ui_latest_version="v2.1.5"
+  trojan_panel_ui_latest_version="v2.1.6"
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.1.4"
+  trojan_panel_latest_version="v2.1.5"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v2.1.1"
+  trojan_panel_core_latest_version="v2.1.2"
 
   # SQL
   sql_200="alter table \`system\` add template_config varchar(512) default '' not null comment '模板设置' after email_config;update \`system\` set template_config = \"{\\\"systemName\\\":\\\"Trojan Panel\\\"}\" where name = \"trojan-panel\";insert into \`casbin_rule\` values ('p','sysadmin','/api/nodeServer/nodeServerState','GET','','','');insert into \`casbin_rule\` values ('p','user','/api/node/selectNodeInfo','GET','','','');insert into \`casbin_rule\` values ('p','sysadmin','/api/node/selectNodeInfo','GET','','','');"
@@ -109,6 +109,7 @@ init_var() {
   sql_210="UPDATE casbin_rule SET v1 = '/api/fileTask/downloadTemplate' WHERE v1 = '/api/fileTask/downloadCsvTemplate';UPDATE casbin_rule SET v1 = '/api/account/updateAccountPass' WHERE v1 = '/api/account/updateAccountProfile';INSERT INTO casbin_rule (p_type, v0, v1, v2) VALUES ('p', 'sysadmin', '/api/account/updateAccountProperty', 'POST');INSERT INTO casbin_rule (p_type, v0, v1, v2) VALUES ('p', 'user', '/api/account/updateAccountProperty', 'POST');alter table node_xray modify settings varchar(1024) default '' not null comment 'settings';alter table node_xray modify stream_settings varchar(1024) default '' not null comment 'streamSettings';alter table node_xray add reality_pbk varchar(64) default '' not null comment 'reality的公钥' after xray_ss_method;alter table node_hysteria add obfs varchar(64) default '' not null comment '混淆密码' after protocol;"
   sql_211="UPDATE \`system\` SET account_config = '{\"registerEnable\":1,\"registerQuota\":0,\"registerExpireDays\":0,\"resetDownloadAndUploadMonth\":0,\"trafficRankEnable\":1,\"captchaEnable\":0}' WHERE name = 'trojan-panel';INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/node/nodeDefault', 'GET', '', '', '');INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'user', '/api/node/nodeDefault', 'GET', '', '', '');"
   sql_212="alter table account add validity_period int unsigned default 0 not null comment '账户有效期' after email;alter table account add last_login_time bigint unsigned default 0 not null comment '最后一次登录时间' after validity_period;update account set last_login_time = unix_timestamp(NOW()) * 1000 where last_login_time = 0;INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/createAccountBatch', 'POST', '', '', '');INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/exportAccountUnused', 'POST', '', '', '');"
+  sql_215="alter table account change validity_period preset_expire int unsigned default 0 not null comment '预设过期时长';alter table account add preset_quota bigint default 0 not null comment '预设配额' after preset_expire;update account set preset_quota = quota where last_login_time = 0;update account set quota = 0 where last_login_time = 0;alter table node add priority int default 100 not null comment '优先级' after port;INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/clashSubscribeForSb', 'GET', 'default', 'default', 'default');"
 }
 
 echo_content() {
@@ -1043,12 +1044,12 @@ EOF
       fi
     done
 
-    docker pull jonssonyan/trojan-panel-ui:2.1.5 &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.6 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui:2.1.5
+        jonssonyan/trojan-panel-ui:2.1.6
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端安装完成"
@@ -1107,7 +1108,7 @@ install_trojan_panel() {
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
-    docker pull jonssonyan/trojan-panel:2.1.4 &&
+    docker pull jonssonyan/trojan-panel2.1.5 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1123,7 +1124,7 @@ install_trojan_panel() {
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
         -e "server_port=${trojan_panel_port}" \
-        jonssonyan/trojan-panel:2.1.4
+        jonssonyan/trojan-panel2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端安装完成"
@@ -1186,7 +1187,7 @@ install_trojan_panel_core() {
 
     domain=$(cat "${DOMAIN_FILE}")
 
-    docker pull jonssonyan/trojan-panel-core:2.1.1 &&
+    docker pull jonssonyan/trojan-panel-core:2.1.2 &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
         -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
@@ -1212,7 +1213,7 @@ install_trojan_panel_core() {
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         -e "server_port=${trojan_panel_core_port}" \
-        jonssonyan/trojan-panel-core:2.1.1
+        jonssonyan/trojan-panel-core:2.1.2
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel内核安装完成"
     else
@@ -1290,6 +1291,11 @@ port=8081' >>${trojan_panel_config_path}
       echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
     fi
   fi
+  version_214_215=("v2.1.4")
+  if [[ "${version_214_215[*]}" =~ "${trojan_panel_current_version}" ]]; then
+    docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "${sql_215}" &>/dev/null &&
+      trojan_panel_current_version="v2.1.5"
+  fi
 
   echo_content skyBlue "---> Trojan Panel数据结构更新完成"
 }
@@ -1343,14 +1349,14 @@ update_trojan_panel_ui() {
     echo_content green "---> 更新Trojan Panel前端"
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui:2.1.5
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.6
 
-    docker pull jonssonyan/trojan-panel-ui:2.1.5 &&
+    docker pull jonssonyan/trojan-panel-ui:2.1.6 &&
       docker run -d --name trojan-panel-ui --restart always \
         --network=host \
         -v "${UI_NGINX_CONFIG}":"/etc/nginx/conf.d/default.conf" \
         -v ${CERT_PATH}:${CERT_PATH} \
-        jonssonyan/trojan-panel-ui:2.1.5
+        jonssonyan/trojan-panel-ui:2.1.6
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端更新完成"
@@ -1395,9 +1401,9 @@ update_trojan_panel() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel:2.1.4
+      docker rmi -f jonssonyan/trojan-panel:2.1.5
 
-    docker pull jonssonyan/trojan-panel:2.1.4 &&
+    docker pull jonssonyan/trojan-panel:2.1.5 &&
       docker run -d --name trojan-panel --restart always \
         --network=host \
         -v ${WEB_PATH}:${TROJAN_PANEL_WEBFILE} \
@@ -1413,7 +1419,7 @@ update_trojan_panel() {
         -e "redis_port=${redis_port}" \
         -e "redis_pass=${redis_pass}" \
         -e "server_port=${trojan_panel_port}" \
-        jonssonyan/trojan-panel:2.1.4
+        jonssonyan/trojan-panel:2.1.5
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端更新完成"
@@ -1459,11 +1465,11 @@ update_trojan_panel_core() {
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
     docker rm -f trojan-panel-core &&
-      docker rmi -f jonssonyan/trojan-panel-core:2.1.1
+      docker rmi -f jonssonyan/trojan-panel-core:2.1.2
 
     domain=$(cat "${DOMAIN_FILE}")
 
-    docker pull jonssonyan/trojan-panel-core:2.1.1 &&
+    docker pull jonssonyan/trojan-panel-core:2.1.2 &&
       docker run -d --name trojan-panel-core --restart always \
         --network=host \
         -v ${TROJAN_PANEL_CORE_DATA}bin/xray/config:${TROJAN_PANEL_CORE_DATA}bin/xray/config \
@@ -1489,7 +1495,7 @@ update_trojan_panel_core() {
         -e "key_path=${CERT_PATH}${domain}.key" \
         -e "grpc_port=${grpc_port}" \
         -e "server_port=${trojan_panel_core_port}" \
-        jonssonyan/trojan-panel-core:2.1.1
+        jonssonyan/trojan-panel-core:2.1.2
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel内核更新完成"
@@ -1568,7 +1574,7 @@ uninstall_trojan_panel_ui() {
     echo_content green "---> 卸载Trojan Panel前端"
 
     docker rm -f trojan-panel-ui &&
-      docker rmi -f jonssonyan/trojan-panel-ui:2.1.5 &&
+      docker rmi -f jonssonyan/trojan-panel-ui:2.1.6 &&
       rm -rf ${TROJAN_PANEL_UI_DATA}
 
     echo_content skyBlue "---> Trojan Panel前端卸载完成"
@@ -1584,7 +1590,7 @@ uninstall_trojan_panel() {
     echo_content green "---> 卸载Trojan Panel后端"
 
     docker rm -f trojan-panel &&
-      docker rmi -f jonssonyan/trojan-panel:2.1.4 &&
+      docker rmi -f jonssonyan/trojan-panel:2.1.5 &&
       rm -rf ${TROJAN_PANEL_DATA}
 
     echo_content skyBlue "---> Trojan Panel后端卸载完成"
@@ -1600,7 +1606,7 @@ uninstall_trojan_panel_core() {
     echo_content green "---> 卸载Trojan Panel内核"
 
     docker rm -f trojan-panel-core &&
-      docker rmi -f jonssonyan/trojan-panel-core:2.1.1 &&
+      docker rmi -f jonssonyan/trojan-panel-core:2.1.2 &&
       rm -rf ${TROJAN_PANEL_CORE_DATA}
 
     echo_content skyBlue "---> Trojan Panel内核卸载完成"
@@ -1804,16 +1810,15 @@ failure_testing() {
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy2运行异常 错误日志如下："
+        echo_content red "---> Caddy2运行异常 运行日志如下："
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
-      if [[ -z ${domain} || ! -d "${CERT_PATH}" || ! -f "${CERT_PATH}${domain}.crt" ]]; then
-        echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项 日志如下："
+      if [[ -n ${domain} && ! -f "${CERT_PATH}${domain}.crt" ]]; then
+        echo_content red "---> 证书申请异常，请尝试 1.换个子域名重新搭建 2.重启服务器将重新申请证书 3.重新搭建选择自定义证书选项"
         if [[ -f ${CADDY_LOG}error.log ]]; then
+          echo_content red "Caddy2错误日志如下："
           tail -n 20 ${CADDY_LOG}error.log | grep error
-        else
-          docker logs trojan-panel-caddy
         fi
       fi
     fi
@@ -1910,7 +1915,7 @@ main() {
   clear
   echo_content red "\n=============================================================="
   echo_content skyBlue "System Required: CentOS 7+/Ubuntu 18+/Debian 10+"
-  echo_content skyBlue "Version: v2.1.7"
+  echo_content skyBlue "Version: v2.1.8"
   echo_content skyBlue "Description: One click Install Trojan Panel server"
   echo_content skyBlue "Author: jonssonyan <https://jonssonyan.com>"
   echo_content skyBlue "Github: https://github.com/trojanpanel"
