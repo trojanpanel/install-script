@@ -1,30 +1,30 @@
 # Trojan Panel
 
-支持Xray/Trojan-Go/Hysteria/NaiveProxy的多用户Web管理面板
+Many applications for Xray/trojan-Go/Hysteria/Naiveproxy
 
 # System Requirements
 
-系统支持: CentOS 7+/Ubuntu 18+/Debian 10+
+System Support: CentOS 7+/Ubuntu 18+/Debian 10+
 
-处理器架构: `linux/amd64` `liunx/arm/v6` `linux/arm/v7` `linux/arm64` `linux/s390x`
+processor architecture: `linux/amd64` `liunx/arm/v6` `linux/arm/v7` `linux/arm64` `linux/s390x`
 
-内存要求: ≥1G
+memory requirements: ≥1G
 
 # Quick installation
 
-1. 联机版（推荐）
+1. Online version (recommended)
 
 ```shell
 source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script.sh)
 ```
 
-2. 单机版
+2. stand-alone version
 
 ```shell
 source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
 ```
 
-3. [安装旧版](./archive)
+3. [legacy version](./archive)
 
 # Enjoy!
 
@@ -32,7 +32,7 @@ source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_
 
 # Features
 
-[使用教程](https://trojanpanel.github.io/tutorial/using-tutorials.html)
+[tutorial](https://trojanpanel.github.io/tutorial/using-tutorials.html)
 
 # Documentation
 
