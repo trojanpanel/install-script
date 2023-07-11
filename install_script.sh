@@ -1450,8 +1450,6 @@ update_trojan_panel_core() {
   if [[ "${trojan_panel_core_current_version}" != "${trojan_panel_core_latest_version}" ]]; then
     echo_content green "---> 更新Trojan Panel内核"
 
-    update__trojan_panel_core_database
-
     mariadb_ip=$(get_ini_value ${trojan_panel_core_config_path} mysql.host)
     mariadb_port=$(get_ini_value ${trojan_panel_core_config_path} mysql.port)
     mariadb_user=$(get_ini_value ${trojan_panel_core_config_path} mysql.user)
@@ -1461,6 +1459,8 @@ update_trojan_panel_core() {
     redis_pass=$(get_ini_value ${trojan_panel_core_config_path} redis.password)
     grpc_port=$(get_ini_value ${trojan_panel_core_config_path} grpc.port)
     trojan_panel_core_port=$(get_ini_value ${trojan_panel_core_config_path} server.port)
+
+    update__trojan_panel_core_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
