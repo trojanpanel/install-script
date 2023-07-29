@@ -349,9 +349,9 @@ install_caddy2() {
 
     read -r -p "请输入你的邮箱(可选): " your_email
 
-    while read -r -p "请选择设置证书的方式?(1/自动申请和续签证书 2/手动设置证书路径 默认:1/自动申请和续签证书): " ssl_option; do
+    while read -r -p "please choose设置证书的方式?(1/自动申请和续签证书 2/手动设置证书路径 默认:1/自动申请和续签证书): " ssl_option; do
       if [[ -z ${ssl_option} || ${ssl_option} == 1 ]]; then
-        while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
+        while read -r -p "please choose申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
           if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
             ssl_module="acme"
             CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
@@ -645,7 +645,7 @@ ${domain}
 EOF
       echo_content skyBlue "---> Caddy安装完成"
     else
-      echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Caddy安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -666,7 +666,7 @@ install_nginx() {
     read -r -p "请输入Nginx的转发端口(默认:8863): " nginx_remote_port
     [[ -z "${nginx_remote_port}" ]] && nginx_remote_port=8863
 
-    while read -r -p "请选择Nginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
+    while read -r -p "please chooseNginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
       if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
         install_custom_cert "custom_cert"
         domain=$(cat "${DOMAIN_FILE}")
@@ -753,7 +753,7 @@ EOF
     if [[ -n $(docker ps -q -f "name=^trojan-panel-nginx$" -f "status=running") ]]; then
       echo_content skyBlue "---> Nginx安装完成"
     else
-      echo_content red "---> Nginx安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Nginx安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -770,7 +770,7 @@ install_reverse_proxy() {
       echo_content yellow "1. 安装Caddy 2（推荐）"
       echo_content yellow "2. 安装Nginx"
       echo_content yellow "3. 不设置"
-      read -r -p "请选择(默认:1): " whether_install_reverse_proxy
+      read -r -p "please choose(默认:1): " whether_install_reverse_proxy
       [[ -z "${whether_install_reverse_proxy}" ]] && whether_install_reverse_proxy=1
 
       case ${whether_install_reverse_proxy} in
@@ -786,7 +786,7 @@ install_reverse_proxy() {
         break
         ;;
       *)
-        echo_content red "没有这个选项"
+        echo_content red "Without this option"
         continue
         ;;
       esac
@@ -836,7 +836,7 @@ install_cert() {
       echo_content yellow "1. 安装Caddy 2（自动申请/续签证书）"
       echo_content yellow "2. 手动设置证书路径"
       echo_content yellow "3. 不设置"
-      read -r -p "请选择(默认:1): " whether_install_cert
+      read -r -p "please choose(默认:1): " whether_install_cert
       [[ -z "${whether_install_cert}" ]] && whether_install_cert=1
 
       case ${whether_install_cert} in
@@ -852,7 +852,7 @@ install_cert() {
         break
         ;;
       *)
-        echo_content red "没有这个选项"
+        echo_content red "Without this option"
         continue
         ;;
       esac
@@ -912,7 +912,7 @@ install_mariadb() {
         echo_content yellow "---> MariaDB ${mariadb_user}的数据库密码(请妥善保存): ${mariadb_pas}"
       fi
     else
-      echo_content red "---> MariaDB安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> MariaDB安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -945,7 +945,7 @@ install_redis() {
       echo_content skyBlue "---> Redis安装完成"
       echo_content yellow "---> Redis的数据库密码(请妥善保存): ${redis_pass}"
     else
-      echo_content red "---> Redis安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Redis安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -965,7 +965,7 @@ install_trojan_panel_ui() {
 
     read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
     [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
-    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
+    while read -r -p "please chooseTrojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
       if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
         install_cert
         domain=$(cat "${DOMAIN_FILE}")
@@ -1061,7 +1061,7 @@ EOF
       echo_content yellow "管理面板地址: ${https_flag}://${domain_or_ip}:${trojan_panel_ui_port}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Trojan Panel前端安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel前端安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -1136,7 +1136,7 @@ install_trojan_panel() {
       echo_content yellow "Trojan Panel私钥和证书目录: ${CERT_PATH}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Trojan Panel后端安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel后端安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -1216,7 +1216,7 @@ install_trojan_panel_core() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel内核安装完成"
     else
-      echo_content red "---> Trojan Panel内核安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel内核安装失败或Run abnormally,请尝试修复或Uninstall 重装"
       exit 0
     fi
   else
@@ -1287,7 +1287,7 @@ port=8081' >>${trojan_panel_config_path}
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端更新完成"
     else
-      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel前端更新失败或Run abnormally,请尝试修复或Uninstall 重装"
     fi
   fi
 
@@ -1355,7 +1355,7 @@ update_trojan_panel_ui() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel前端更新完成"
     else
-      echo_content red "---> Trojan Panel前端更新失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel前端更新失败或Run abnormally,请尝试修复或Uninstall 重装"
     fi
   else
     echo_content skyBlue "---> 你安装的Trojan Panel前端已经是最新版"
@@ -1418,7 +1418,7 @@ update_trojan_panel() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel后端更新完成"
     else
-      echo_content red "---> Trojan Panel后端更新失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel后端更新失败或Run abnormally,请尝试修复或Uninstall 重装"
     fi
   else
     echo_content skyBlue "---> 你安装的Trojan Panel后端已经是最新版"
@@ -1494,130 +1494,130 @@ update_trojan_panel_core() {
     if [[ -n $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
       echo_content skyBlue "---> Trojan Panel内核更新完成"
     else
-      echo_content red "---> Trojan Panel内核更新失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Trojan Panel内核更新失败或Run abnormally,请尝试修复或Uninstall 重装"
     fi
   else
     echo_content skyBlue "---> 你安装的Trojan Panel内核已经是最新版"
   fi
 }
 
-# 卸载Caddy2
+# Uninstall Caddy2
 uninstall_caddy2() {
   # 判断Caddy2是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 卸载Caddy2"
+    echo_content green "---> Uninstall Caddy2"
 
     docker rm -f trojan-panel-caddy &&
       rm -rf ${CADDY_DATA}
 
-    echo_content skyBlue "---> Caddy2卸载完成"
+    echo_content skyBlue "---> Caddy2Uninstall 完成"
   else
     echo_content red "---> 请先安装Caddy2"
   fi
 }
 
-# 卸载Nginx
+# Uninstall Nginx
 uninstall_nginx() {
   # 判断Caddy2是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-nginx") ]]; then
-    echo_content green "---> 卸载Nginx"
+    echo_content green "---> Uninstall Nginx"
 
     docker rm -f trojan-panel-nginx &&
       rm -rf ${NGINX_DATA}
 
-    echo_content skyBlue "---> Nginx卸载完成"
+    echo_content skyBlue "---> NginxUninstall 完成"
   else
     echo_content red "---> 请先安装Nginx"
   fi
 }
 
-# 卸载MariaDB
+# Uninstall MariaDB
 uninstall_mariadb() {
   # 判断MariaDB是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
-    echo_content green "---> 卸载MariaDB"
+    echo_content green "---> Uninstall MariaDB"
 
     docker rm -f trojan-panel-mariadb &&
       rm -rf ${MARIA_DATA}
 
-    echo_content skyBlue "---> MariaDB卸载完成"
+    echo_content skyBlue "---> MariaDBUninstall 完成"
   else
     echo_content red "---> 请先安装MariaDB"
   fi
 }
 
-# 卸载Redis
+# Uninstall Redis
 uninstall_redis() {
   # 判断Redis是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") ]]; then
-    echo_content green "---> 卸载Redis"
+    echo_content green "---> Uninstall Redis"
 
     docker rm -f trojan-panel-redis &&
       rm -rf ${REDIS_DATA}
 
-    echo_content skyBlue "---> Redis卸载完成"
+    echo_content skyBlue "---> RedisUninstall 完成"
   else
     echo_content red "---> 请先安装Redis"
   fi
 }
 
-# 卸载Trojan Panel前端
+# Uninstall Trojan Panel前端
 uninstall_trojan_panel_ui() {
   # 判断Trojan Panel前端是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
-    echo_content green "---> 卸载Trojan Panel前端"
+    echo_content green "---> Uninstall Trojan Panel前端"
 
     docker rm -f trojan-panel-ui &&
       docker rmi -f jonssonyan/trojan-panel-ui &&
       rm -rf ${TROJAN_PANEL_UI_DATA}
 
-    echo_content skyBlue "---> Trojan Panel前端卸载完成"
+    echo_content skyBlue "---> Trojan Panel前端Uninstall 完成"
   else
     echo_content red "---> 请先安装Trojan Panel前端"
   fi
 }
 
-# 卸载Trojan Panel后端
+# Uninstall Trojan Panel后端
 uninstall_trojan_panel() {
   # 判断Trojan Panel后端是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
-    echo_content green "---> 卸载Trojan Panel后端"
+    echo_content green "---> Uninstall Trojan Panel后端"
 
     docker rm -f trojan-panel &&
       docker rmi -f jonssonyan/trojan-panel &&
       rm -rf ${TROJAN_PANEL_DATA}
 
-    echo_content skyBlue "---> Trojan Panel后端卸载完成"
+    echo_content skyBlue "---> Trojan Panel后端Uninstall 完成"
   else
     echo_content red "---> 请先安装Trojan Panel后端"
   fi
 }
 
-# 卸载Trojan Panel内核
+# Uninstall Trojan Panel内核
 uninstall_trojan_panel_core() {
   # 判断Trojan Panel内核是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
-    echo_content green "---> 卸载Trojan Panel内核"
+    echo_content green "---> Uninstall Trojan Panel内核"
 
     docker rm -f trojan-panel-core &&
       docker rmi -f jonssonyan/trojan-panel-core &&
       rm -rf ${TROJAN_PANEL_CORE_DATA}
 
-    echo_content skyBlue "---> Trojan Panel内核卸载完成"
+    echo_content skyBlue "---> Trojan Panel内核Uninstall 完成"
   else
     echo_content red "---> 请先安装Trojan Panel内核"
   fi
 }
 
-# 卸载全部Trojan Panel相关的容器
+# Uninstall 全部Trojan Panel相关的容器
 uninstall_all() {
-  echo_content green "---> 卸载全部Trojan Panel相关的容器"
+  echo_content green "---> Uninstall 全部Trojan Panel相关的容器"
 
   docker rm -f $(docker ps -a -q -f "name=^trojan-panel")
   docker rmi -f $(docker images | grep "^jonssonyan/trojan-panel" | awk '{print $3}')
   rm -rf ${TP_DATA}
 
-  echo_content skyBlue "---> 卸载全部Trojan Panel相关的容器完成"
+  echo_content skyBlue "---> Uninstall 全部Trojan Panel相关的容器完成"
 }
 
 # 修改Trojan Panel前端端口
@@ -1657,7 +1657,7 @@ update_trojan_panel_ui_port() {
       echo_content red "---> Trojan Panel前端端口修改失败"
     fi
   else
-    echo_content red "---> Trojan Panel前端未安装或运行异常,请修复或卸载重装后重试"
+    echo_content red "---> Trojan Panel前端未安装或Run abnormally,请修复或Uninstall 重装后重试"
   fi
 }
 
@@ -1670,7 +1670,7 @@ redis_flush_all() {
   fi
 
   if [[ -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
-    echo_content red "---> Redis运行异常"
+    echo_content red "---> RedisRun abnormally"
     exit 0
   fi
 
@@ -1733,7 +1733,7 @@ forget_pass() {
     echo_content yellow "2. 查询Redis密码"
     echo_content yellow "3. 重设管理面板系统管理员用户名和密码"
     echo_content yellow "4. 退出"
-    read -r -p "请选择(默认:4): " forget_pass_option
+    read -r -p "please choose(默认:4): " forget_pass_option
     [[ -z "${forget_pass_option}" ]] && forget_pass_option=4
     case ${forget_pass_option} in
     1)
@@ -1789,7 +1789,7 @@ forget_pass() {
       break
       ;;
     *)
-      echo_content red "没有这个选项"
+      echo_content red "Without this option"
       continue
       ;;
     esac
@@ -1798,13 +1798,13 @@ forget_pass() {
 
 # 故障检测
 failure_testing() {
-  echo_content green "---> 故障检测开始"
+  echo_content green "---> Fault detection starts"
   if [[ ! $(docker -v 2>/dev/null) ]]; then
-    echo_content red "---> Docker运行异常"
+    echo_content red "---> Docker Run abnormally"
   else
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
       if [[ -z $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-        echo_content red "---> Caddy2运行异常 错误日志如下："
+        echo_content red "---> Caddy2Run abnormally 错误日志如下："
         docker logs trojan-panel-caddy
       fi
       domain=$(cat "${DOMAIN_FILE}")
@@ -1818,15 +1818,15 @@ failure_testing() {
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
-      echo_content red "---> MariaDB运行异常 日志如下："
+      echo_content red "---> MariaDBRun abnormally 日志如下："
       docker logs trojan-panel-mariadb
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
-      echo_content red "---> Redis运行异常 日志如下："
+      echo_content red "---> RedisRun abnormally 日志如下："
       docker logs trojan-panel-redis
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel$") && -z $(docker ps -q -f "name=^trojan-panel$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel后端运行异常 日志如下："
+      echo_content red "---> Trojan Panel后端Run abnormally 日志如下："
       if [[ -f ${TROJAN_PANEL_LOGS}trojan-panel.log ]]; then
         tail -n 20 ${TROJAN_PANEL_LOGS}trojan-panel.log | grep error
       else
@@ -1834,11 +1834,11 @@ failure_testing() {
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-ui$") && -z $(docker ps -q -f "name=^trojan-panel-ui$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel前端运行异常 日志如下："
+      echo_content red "---> Trojan Panel前端Run abnormally 日志如下："
       docker logs trojan-panel-ui
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") && -z $(docker ps -q -f "name=^trojan-panel-core$" -f "status=running") ]]; then
-      echo_content red "---> Trojan Panel内核运行异常 日志如下："
+      echo_content red "---> Trojan Panel内核Run abnormally 日志如下："
       if [[ -f ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log ]]; then
         tail -n 20 ${TROJAN_PANEL_CORE_LOGS}trojan-panel.log | grep error
       else
@@ -1855,7 +1855,7 @@ log_query() {
     echo_content yellow "1. Trojan Panel后端"
     echo_content yellow "2. Trojan Panel内核"
     echo_content yellow "3. 退出"
-    read -r -p "请选择应用(默认:1): " select_log_query_type
+    read -r -p "please choose应用(默认:1): " select_log_query_type
     [[ -z "${select_log_query_type}" ]] && select_log_query_type=1
 
     case ${select_log_query_type} in
@@ -1869,7 +1869,7 @@ log_query() {
       break
       ;;
     *)
-      echo_content red "没有这个选项"
+      echo_content red "Without this option"
       continue
       ;;
     esac
@@ -1916,36 +1916,36 @@ main() {
   echo_content skyBlue "Github: https://github.com/trojanpanel"
   echo_content skyBlue "Docs: https://trojanpanel.github.io"
   echo_content red "\n=============================================================="
-  echo_content yellow "1. 安装Trojan Panel前端"
-  echo_content yellow "2. 安装Trojan Panel后端"
-  echo_content yellow "3. 安装Trojan Panel内核"
-  echo_content yellow "4. 安装Caddy2"
-  echo_content yellow "5. 安装Nginx"
-  echo_content yellow "6. 安装MariaDB"
-  echo_content yellow "7. 安装Redis"
+  echo_content yellow "1. Install Trojan Panel front end"
+  echo_content yellow "2. Install Trojan Panel back end"
+  echo_content yellow "3. Install the Trojan Panel kernel"
+  echo_content yellow "4. Install Caddy2"
+  echo_content yellow "5. Install nginx"
+  echo_content yellow "6. Install MariaDB"
+  echo_content yellow "7. Install Redis"
   echo_content green "\n=============================================================="
-  echo_content yellow "8. 更新Trojan Panel前端"
-  echo_content yellow "9. 更新Trojan Panel后端"
-  echo_content yellow "10. 更新Trojan Panel内核"
+  echo_content yellow "8.  Update Trojan Panel front end"
+  echo_content yellow "9.  Update Trojan Panel back end"
+  echo_content yellow "10. Update Trojan Panel kernel"
   echo_content green "\n=============================================================="
-  echo_content yellow "11. 卸载Trojan Panel前端"
-  echo_content yellow "12. 卸载Trojan Panel后端"
-  echo_content yellow "13. 卸载Trojan Panel内核"
-  echo_content yellow "14. 卸载Caddy2"
-  echo_content yellow "15. 卸载Nginx"
-  echo_content yellow "16. 卸载MariaDB"
-  echo_content yellow "17. 卸载Redis"
-  echo_content yellow "18. 卸载全部Trojan Panel相关的应用"
+  echo_content yellow "11. Uninstall the front end of Trojan Panel"
+  echo_content yellow "12. Uninstall the back end of Trojan Panel"
+  echo_content yellow "13. Uninstall Trojan Panel kernel"
+  echo_content yellow "14. Uninstall Caddy2"
+  echo_content yellow "15. Uninstall nginx"
+  echo_content yellow "16. Uninstall MariaDB"
+  echo_content yellow "17. Uninstall Redis"
+  echo_content yellow "18. Uninstall all applications related to Trojan Panel"
   echo_content green "\n=============================================================="
-  echo_content yellow "19. 修改Trojan Panel前端端口"
-  echo_content yellow "20. 刷新Redis缓存"
-  echo_content yellow "21. 更换证书"
-  echo_content yellow "22. 忘记密码"
+  echo_content yellow "19. Modify the front port of Trojan Panel"
+  echo_content yellow "20. Refresh the Redis cache"
+  echo_content yellow "21. Replace the certificate"
+  echo_content yellow "22. Forget password"
   echo_content green "\n=============================================================="
-  echo_content yellow "23. 故障检测"
-  echo_content yellow "24. 日志查询"
-  echo_content yellow "25. 版本查询"
-  read -r -p "请选择:" selectInstall_type
+  echo_content yellow "23. Failure testing"
+  echo_content yellow "24. Log query"
+  echo_content yellow "25. Version query"
+  read -r -p "please choose:" selectInstall_type
   case ${selectInstall_type} in
   1)
     install_docker
@@ -2035,7 +2035,7 @@ main() {
     version_query
     ;;
   *)
-    echo_content red "没有这个选项"
+    echo_content red "Without this option"
     ;;
   esac
 }
