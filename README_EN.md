@@ -1,10 +1,6 @@
-[中文 README_EN.md](README.md)
+[中文](README.md)
 <p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
 <p align="center"><b>Multi-user web administration panel supporting Xray/Trojan-Go/Hysteria/NaiveProxy</b></p>
-
-![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
-
-## Features
 
 - Speed build: One-click installation of scripts, lowering the deployment threshold, and quickly building the system
 - Globalization: System language support 中文/English/한국인/فارسی
@@ -16,6 +12,8 @@
 - What you see is what you get: Support multi-node management, automatic management of remote nodes, automatic
   application/renewal of certificates, editing nodes in the panel, remote service real-time modification of node
   configuration
+
+![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
 
 ## Recommended OS
 
