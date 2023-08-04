@@ -1,53 +1,59 @@
-[English](README_EN.md)
+[中文](README_ZH.md)
 <p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
-<p align="center"><b>支持Xray/Trojan-Go/Hysteria/NaiveProxy的多用户Web管理面板</b></p>
-
-- 极速搭建: 一键安装脚本，降低部署门槛，快速搭建系统
-- 国际化: 系统语言支持中文/English/한국인/فارسی
-- 多代理支持: 节点类型支持Xray/Trojan-Go/Hysteria/NaiveProxy
-- 分布式: 前后端分离开发，减少模块之间耦合度，可以自由组合部署在多个服务器
-- 功能强大: 支持登录注册/用户管理/节点管理/邮件管理/黑名单管理/自定义伪装网站/系统看板等
-- 所见即所得: 支持多节点管理，自动化管理远程节点，自动化申请/续签证书，面板内编辑节点，远程服务实时修改节点配置
+<p align="center"><b>Multi-user web administration panel supporting Xray/Trojan-Go/Hysteria/NaiveProxy</b></p>
 
 ![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
 
-## 系统要求
+## Features
 
-系统: CentOS 7+ / Ubuntu 18+ / Debian 10+
+- Speed build: One-click installation of scripts, lowering the deployment threshold, and quickly building the system
+- Globalization: System language support 中文/English/한국인/فارسی
+- Multi-agent support: Node type supports Xray/Trojan-Go/Hysteria/NaiveProxy
+- Distributed: The front-end and back-end are developed separately, reducing the coupling between modules, and can be
+  freely combined and deployed on multiple servers
+- Powerful: Support login registration/user management/node management/mail management/blacklist management/custom
+  camouflage website/system Kanban, etc.
+- What you see is what you get: Support multi-node management, automatic management of remote nodes, automatic
+  application/renewal of certificates, editing nodes in the panel, remote service real-time modification of node
+  configuration
+
+## Recommended OS
+
+OS: CentOS 7+ / Ubuntu 18+ / Debian 10+
 
 CPU: linux/amd64 / linux/arm/v6 / linux/arm/v7 / linux/arm64 / linux/s390x / linux/ppc64le / linux/386
 
-内存: ≥ 1G
+Memory: ≥ 1G
 
-## 安装
+## Installation
 
-- 多服务器（推荐）
+- Online(recommended)
 
     ```shell
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script.sh)
     ```
 
-- 单服务器
+- Single
 
     ```shell
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
     ```
 
-- [安装旧版本](./archive)
+- [Install old version](./archive)
 
-## 社区
+## Community
 
-Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
+Telegram Channel: [Trojan Panel](https://t.me/TrojanPanel)
 
-## 文档
+## Documentation
 
 [trojanpanel.github.io](https://trojanpanel.github.io)
 
-## 报告缺陷与问题
+## Bugs & Issues
 
 [Issues](https://github.com/trojanpanel/install-script/issues)
 
-## 支持
+## Support
 
 - [trojan](https://github.com/trojan-gfw/trojan)
 - [trojan-go](https://github.com/p4gefau1t/trojan-go)
@@ -55,6 +61,6 @@ Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
 - [hysteria](https://github.com/HyNetwork/hysteria)
 - [naiveproxy](https://github.com/klzgrad/naiveproxy)
 
-## Star随时间变化
+## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/trojanpanel/install-script.svg)](https://github.com/trojanpanel/install-script)
