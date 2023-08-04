@@ -1,6 +1,13 @@
-[中文](README_ZH.md)
+[中文 README](README_ZH.md)
 <p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
 <p align="center"><b>Multi-user web administration panel supporting Xray/Trojan-Go/Hysteria/NaiveProxy</b></p>
+<p align="center">
+<a href="https://github.com/trojanpanel/install-script/stargazers"><img src="https://img.shields.io/github/stars/trojanpanel/install-script" alt="GitHub stars"></a>
+<a href="https://github.com/trojanpanel/install-script/forks"><img src="https://img.shields.io/github/forks/trojanpanel/install-script" alt="GitHub forks"></a>
+<a href="https://github.com/trojanpanel/install-script/issues"><img src="https://img.shields.io/github/issues/trojanpanel/install-script" alt="GitHub issues"></a>
+<a href="https://github.com/trojanpanel/install-script/releases"><img src="https://img.shields.io/github/v/release/trojanpanel/install-script" alt="GitHub release"></a>
+<a href="https://hub.docker.com/r/jonssonyan/trojan-panel"><img src="https://img.shields.io/docker/pulls/jonssonyan/trojan-panel" alt="Docker pulls"></a>
+</p>
 
 ![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
 
