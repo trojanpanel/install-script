@@ -1,4 +1,4 @@
-[English README_EN.md](README.md)
+[English README_EN.md](README_EN.md)
 <p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
 <p align="center"><b>支持Xray/Trojan-Go/Hysteria/NaiveProxy的多用户Web管理面板</b></p>
 
