@@ -1,5 +1,5 @@
-[中文 README](README_ZH.md)
-<p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
+[中文](README_ZH.md)
+<p align="center"><a href="https://github.com/trojanpanel"><img src="https://github.com/trojanpanel/install-script/assets/46235235/bfc4f96a-e8b6-499d-956f-a9c212059294" alt="Trojan Panel" width="150" /></a></p>
 <p align="center"><b>Multi-user web administration panel supporting Xray/Trojan-Go/Hysteria/NaiveProxy</b></p>
 <p align="center">
 <a href="https://github.com/trojanpanel/install-script/stargazers"><img src="https://img.shields.io/github/stars/trojanpanel/install-script" alt="GitHub stars"></a>
@@ -9,7 +9,7 @@
 <a href="https://hub.docker.com/r/jonssonyan/trojan-panel"><img src="https://img.shields.io/docker/pulls/jonssonyan/trojan-panel" alt="Docker pulls"></a>
 </p>
 
-![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
+![Trojan Panel](https://github.com/trojanpanel/install-script/assets/46235235/811209b6-0407-4ebd-94bc-8c06c2a01766)
 
 ## Features
 
@@ -46,7 +46,7 @@ Memory: ≥ 1G
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
     ```
 
-- [Install old version](./archive)
+- [Install old version](README_ARCHIVE.md)
 
 ## Community
 

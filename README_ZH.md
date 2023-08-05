@@ -1,4 +1,4 @@
-[English README](README.md)
+[English](README.md)
 <p align="center"><a href="https://github.com/trojanpanel"><img src="https://trojanpanel.github.io/logo.png" alt="Trojan Panel" width="150" /></a></p>
 <p align="center"><b>支持Xray/Trojan-Go/Hysteria/NaiveProxy的多用户Web管理面板</b></p>
 <p align="center">
@@ -9,7 +9,7 @@
 <a href="https://hub.docker.com/r/jonssonyan/trojan-panel"><img src="https://img.shields.io/docker/pulls/jonssonyan/trojan-panel" alt="Docker pulls"></a>
 </p>
 
-![Trojan Panel](https://user-images.githubusercontent.com/46235235/173869031-c410e895-4299-46bf-bb7c-0434498fa2e2.png)
+![Trojan Panel](https://github.com/trojanpanel/install-script/assets/46235235/7ac2bba1-b442-442d-b48e-b52f92e0bad8)
 
 ## 特点
 
@@ -42,7 +42,7 @@ CPU: linux/amd64 / linux/arm/v6 / linux/arm/v7 / linux/arm64 / linux/s390x / lin
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
     ```
 
-- [安装旧版本](./archive)
+- [安装旧版本](README_ARCHIVE_ZH.md)
 
 ## 社区
 
