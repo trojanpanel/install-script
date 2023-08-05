@@ -22,7 +22,7 @@ init_var() {
   # 项目目录
   TP_DATA="/tpdata/"
 
-  STATIC_HTML="https://github.com/trojanpanel/install-script/releases/download/v1.0.0/html.tar.gz"
+  STATIC_HTML="https://github.com/trojanpanel/install-script/releases/download/v1.0/html.tar.gz"
 
   # Caddy
   CADDY_DATA="/tpdata/caddy/"
