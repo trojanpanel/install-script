@@ -53,7 +53,7 @@ Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
 
 ## 文档
 
-[trojanpanel.github.io](https://trojanpanel.github.io)
+访问 [https://trojanpanel.github.io](https://trojanpanel.github.io) 查看完整文档
 
 ## 报告缺陷与问题
 

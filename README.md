@@ -57,7 +57,7 @@ Telegram Channel: [Trojan Panel](https://t.me/TrojanPanel)
 
 ## Documentation
 
-[trojanpanel.github.io](https://trojanpanel.github.io)
+Visit [https://trojanpanel.github.io](https://trojanpanel.github.io) to view the full documentation
 
 ## Bugs & Issues
 
