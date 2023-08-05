@@ -43,7 +43,7 @@ Memory: ≥ 1G
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script.sh)
     ```
 
-- Single
+- Standalone
 
     ```shell
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)

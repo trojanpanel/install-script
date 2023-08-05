@@ -33,13 +33,13 @@ CPU: linux/amd64 / linux/arm/v6 / linux/arm/v7 / linux/arm64 / linux/s390x / lin
 
 ## 安装
 
-- 多服务器（推荐）
+- 联机（推荐）
 
     ```shell
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script.sh)
     ```
 
-- 单服务器
+- 单机
 
     ```shell
     source <(curl -L https://github.com/trojanpanel/install-script/raw/main/install_script_standalone.sh)
