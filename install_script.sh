@@ -326,173 +326,9 @@ EOF
   fi
 }
 
-# 安装Caddy2
-install_caddy2() {
-  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> 安装Caddy2"
-
-    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
-      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
-
-    read -r -p "请输入Caddy的端口(默认:80): " caddy_port
-    [[ -z "${caddy_port}" ]] && caddy_port=80
-    read -r -p "请输入Caddy的转发端口(默认:8863): " caddy_remote_port
-    [[ -z "${caddy_remote_port}" ]] && caddy_remote_port=8863
-
-    echo_content yellow "提示：请确认域名已经解析到本机 否则可能安装失败"
-    while read -r -p "请输入你的域名(必填): " domain; do
-      if [[ -z "${domain}" ]]; then
-        echo_content red "域名不能为空"
-      else
-        break
-      fi
-    done
-
-    read -r -p "请输入你的邮箱(可选): " your_email
-
-    while read -r -p "请选择设置证书的方式?(1/自动申请和续签证书 2/手动设置证书路径 默认:1/自动申请和续签证书): " ssl_option; do
-      if [[ -z ${ssl_option} || ${ssl_option} == 1 ]]; then
-        while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
-          if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
-            ssl_module="acme"
-            CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
-            break
-          elif [[ ${ssl_module_type} == 2 ]]; then
-            ssl_module="zerossl"
-            CADDY_CERT_DIR="${CERT_PATH}certificates/acme.zerossl.com-v2-dv90/"
-            break
-          else
-            echo_content red "不可以输入除1和2之外的其他字符"
-          fi
-        done
-
-        cat >${CADDY_CONFIG} <<EOF
-{
-    "admin":{
-        "disabled":true
-    },
-    "logging":{
-        "logs":{
-            "default":{
-                "writer":{
-                    "output":"file",
-                    "filename":"${CADDY_LOG}error.log"
-                },
-                "level":"ERROR"
-            }
-        }
-    },
-    "storage":{
-        "module":"file_system",
-        "root":"${CERT_PATH}"
-    },
-    "apps":{
-        "http":{
-            "http_port": ${caddy_port},
-            "servers":{
-                "srv0":{
-                    "listen":[
-                        ":${caddy_port}"
-                    ],
-                    "routes":[
-                        {
-                            "match":[
-                                {
-                                    "host":[
-                                        "${domain}"
-                                    ]
-                                }
-                            ],
-                            "handle":[
-                                {
-                                    "handler":"static_response",
-                                    "headers":{
-                                        "Location":[
-                                            "https://{http.request.host}:${caddy_remote_port}{http.request.uri}"
-                                        ]
-                                    },
-                                    "status_code":301
-                                }
-                            ]
-                        }
-                    ]
-                },
-                "srv1":{
-                    "listen":[
-                        ":${caddy_remote_port}"
-                    ],
-                    "routes":[
-                        {
-                            "handle":[
-                                {
-                                    "handler":"subroute",
-                                    "routes":[
-                                        {
-                                            "match":[
-                                                {
-                                                    "host":[
-                                                        "${domain}"
-                                                    ]
-                                                }
-                                            ],
-                                            "handle":[
-                                                {
-                                                    "handler":"file_server",
-                                                    "root":"${WEB_PATH}",
-                                                    "index_names":[
-                                                        "index.html",
-                                                        "index.htm"
-                                                    ]
-                                                }
-                                            ],
-                                            "terminal":true
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
-                    "tls_connection_policies":[
-                        {
-                            "match":{
-                                "sni":[
-                                    "${domain}"
-                                ]
-                            }
-                        }
-                    ],
-                    "automatic_https":{
-                        "disable":true
-                    }
-                }
-            }
-        },
-        "tls":{
-            "certificates":{
-                "automate":[
-                    "${domain}"
-                ]
-            },
-            "automation":{
-                "policies":[
-                    {
-                        "issuers":[
-                            {
-                                "module":"${ssl_module}",
-                                "email":"${your_email}"
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    }
-}
-EOF
-        break
-      elif [[ ${ssl_option} == 2 ]]; then
-        install_custom_cert "${domain}"
-        cat >${CADDY_CONFIG} <<EOF
+# 手动设置证书路径
+caddy2_https_config() {
+  cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
         "disabled":true
@@ -621,6 +457,179 @@ EOF
     }
 }
 EOF
+}
+
+# 自动申请和续签证书
+caddy2_https_auto_config() {
+  cat >${CADDY_CONFIG} <<EOF
+{
+    "admin":{
+        "disabled":true
+    },
+    "logging":{
+        "logs":{
+            "default":{
+                "writer":{
+                    "output":"file",
+                    "filename":"${CADDY_LOG}error.log"
+                },
+                "level":"ERROR"
+            }
+        }
+    },
+    "storage":{
+        "module":"file_system",
+        "root":"${CERT_PATH}"
+    },
+    "apps":{
+        "http":{
+            "http_port": ${caddy_port},
+            "servers":{
+                "srv0":{
+                    "listen":[
+                        ":${caddy_port}"
+                    ],
+                    "routes":[
+                        {
+                            "match":[
+                                {
+                                    "host":[
+                                        "${domain}"
+                                    ]
+                                }
+                            ],
+                            "handle":[
+                                {
+                                    "handler":"static_response",
+                                    "headers":{
+                                        "Location":[
+                                            "https://{http.request.host}:${caddy_remote_port}{http.request.uri}"
+                                        ]
+                                    },
+                                    "status_code":301
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "srv1":{
+                    "listen":[
+                        ":${caddy_remote_port}"
+                    ],
+                    "routes":[
+                        {
+                            "handle":[
+                                {
+                                    "handler":"subroute",
+                                    "routes":[
+                                        {
+                                            "match":[
+                                                {
+                                                    "host":[
+                                                        "${domain}"
+                                                    ]
+                                                }
+                                            ],
+                                            "handle":[
+                                                {
+                                                    "handler":"file_server",
+                                                    "root":"${WEB_PATH}",
+                                                    "index_names":[
+                                                        "index.html",
+                                                        "index.htm"
+                                                    ]
+                                                }
+                                            ],
+                                            "terminal":true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "tls_connection_policies":[
+                        {
+                            "match":{
+                                "sni":[
+                                    "${domain}"
+                                ]
+                            }
+                        }
+                    ],
+                    "automatic_https":{
+                        "disable":true
+                    }
+                }
+            }
+        },
+        "tls":{
+            "certificates":{
+                "automate":[
+                    "${domain}"
+                ]
+            },
+            "automation":{
+                "policies":[
+                    {
+                        "issuers":[
+                            {
+                                "module":"${ssl_module}",
+                                "email":"${your_email}"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
+EOF
+}
+
+# 安装Caddy2
+install_caddy2() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
+    echo_content green "---> 安装Caddy2"
+
+    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
+      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
+
+    read -r -p "请输入Caddy的端口(默认:80): " caddy_port
+    [[ -z "${caddy_port}" ]] && caddy_port=80
+    read -r -p "请输入Caddy的转发端口(默认:8863): " caddy_remote_port
+    [[ -z "${caddy_remote_port}" ]] && caddy_remote_port=8863
+
+    echo_content yellow "提示：请确认域名已经解析到本机 否则可能安装失败"
+    while read -r -p "请输入你的域名(必填): " domain; do
+      if [[ -z "${domain}" ]]; then
+        echo_content red "域名不能为空"
+      else
+        break
+      fi
+    done
+
+    read -r -p "请输入你的邮箱(可选): " your_email
+
+    while read -r -p "请选择设置证书的方式?(1/自动申请和续签证书 2/手动设置证书路径 默认:1/自动申请和续签证书): " ssl_option; do
+      if [[ -z ${ssl_option} || ${ssl_option} == 1 ]]; then
+        while read -r -p "请选择申请证书的方式(1/acme 2/zerossl 默认:1/acme): " ssl_module_type; do
+          if [[ -z "${ssl_module_type}" || ${ssl_module_type} == 1 ]]; then
+            ssl_module="acme"
+            CADDY_CERT_DIR="${CERT_PATH}certificates/acme-v02.api.letsencrypt.org-directory/"
+            break
+          elif [[ ${ssl_module_type} == 2 ]]; then
+            ssl_module="zerossl"
+            CADDY_CERT_DIR="${CERT_PATH}certificates/acme.zerossl.com-v2-dv90/"
+            break
+          else
+            echo_content red "不可以输入除1和2之外的其他字符"
+          fi
+        done
+        caddy2_https_auto_config
+        break
+      elif [[ ${ssl_option} == 2 ]]; then
+        install_custom_cert "${domain}"
+        caddy2_https_config
         break
       else
         echo_content red "不可以输入除1和2之外的其他字符"
@@ -742,19 +751,13 @@ install_nginx() {
       if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
         install_custom_cert "custom_cert"
         domain=$(cat "${DOMAIN_FILE}")
-        if [[ -n ${domain} ]]; then
-          nginx_https_config
-        else
-          nginx_http_config
-        fi
+        nginx_https_config
+        break
+      elif [[ ${nginx_https} == 0 ]]; then
+        nginx_http_config
         break
       else
-        if [[ ${nginx_https} == 0 ]]; then
-          nginx_https_config
-          break
-        else
-          echo_content red "不可以输入除0和1之外的其他字符"
-        fi
+        echo_content red "不可以输入除0和1之外的其他字符"
       fi
     done
 
