@@ -786,7 +786,7 @@ install_reverse_proxy() {
     echo_content green "---> 设置伪装Web"
 
     while :; do
-      echo_content yellow "1. 安装Caddy 2（推荐）"
+      echo_content yellow "1. 安装Caddy2（推荐）"
       echo_content yellow "2. 安装Nginx"
       echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_reverse_proxy
@@ -852,7 +852,7 @@ install_cert() {
     echo_content green "---> 设置证书"
 
     while :; do
-      echo_content yellow "1. 安装Caddy 2（自动申请/续签证书）"
+      echo_content yellow "1. 安装Caddy2（自动申请/续签证书）"
       echo_content yellow "2. 手动设置证书路径"
       echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_cert
