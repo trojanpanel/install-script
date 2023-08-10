@@ -657,24 +657,29 @@ EOF
   fi
 }
 
-# 安装Nginx
-install_nginx() {
-  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-nginx$") ]]; then
-    echo_content green "---> 安装Nginx"
+nginx_http_config() {
+  cat >${NGINX_CONFIG} <<-EOF
+server {
+    listen       ${nginx_port};
+    server_name  localhost;
 
-    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
-      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
+    location / {
+        root   ${WEB_PATH};
+        index  index.html index.htm;
+    }
 
-    read -r -p "请输入Nginx的端口(默认:80): " nginx_port
-    [[ -z "${nginx_port}" ]] && nginx_port=80
-    read -r -p "请输入Nginx的转发端口(默认:8863): " nginx_remote_port
-    [[ -z "${nginx_remote_port}" ]] && nginx_remote_port=8863
+    error_page  497               http://\$host:${nginx_port}\$request_uri;
 
-    while read -r -p "请选择Nginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
-      if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
-        install_custom_cert "custom_cert"
-        domain=$(cat "${DOMAIN_FILE}")
-        cat >${NGINX_CONFIG} <<-EOF
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+}
+
+nginx_https_config() {
+  cat >${NGINX_CONFIG} <<-EOF
 server {
     listen ${nginx_port};
     server_name localhost;
@@ -718,30 +723,37 @@ server {
     }
 }
 EOF
+}
+
+# 安装Nginx
+install_nginx() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-nginx$") ]]; then
+    echo_content green "---> 安装Nginx"
+
+    wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
+      tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
+
+    read -r -p "请输入Nginx的端口(默认:80): " nginx_port
+    [[ -z "${nginx_port}" ]] && nginx_port=80
+    read -r -p "请输入Nginx的转发端口(默认:8863): " nginx_remote_port
+    [[ -z "${nginx_remote_port}" ]] && nginx_remote_port=8863
+
+    while read -r -p "请选择Nginx是否开启https?(0/关闭 1/开启 默认:1/开启): " nginx_https; do
+      if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
+        install_custom_cert "custom_cert"
+        domain=$(cat "${DOMAIN_FILE}")
+        if [[ -n ${domain} ]]; then
+          nginx_https_config
+        else
+          nginx_http_config
+        fi
         break
       else
-        if [[ ${nginx_https} != 0 ]]; then
-          echo_content red "不可以输入除0和1之外的其他字符"
-        else
-          cat >${NGINX_CONFIG} <<-EOF
-server {
-    listen       ${nginx_port};
-    server_name  localhost;
-
-    location / {
-        root   ${WEB_PATH};
-        index  index.html index.htm;
-    }
-
-    error_page  497               http://\$host:${nginx_port}\$request_uri;
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-EOF
+        if [[ ${nginx_https} == 0 ]]; then
+          nginx_https_config
           break
+        else
+          echo_content red "不可以输入除0和1之外的其他字符"
         fi
       fi
     done
