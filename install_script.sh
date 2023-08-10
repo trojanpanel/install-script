@@ -644,7 +644,10 @@ EOF
       cat >${DOMAIN_FILE} <<EOF
 ${domain}
 EOF
+      echo_content red "\n=============================================================="
       echo_content skyBlue "---> Caddy安装完成"
+      echo_content yellow "证书目录: ${CERT_PATH}"
+      echo_content red "\n=============================================================="
     else
       echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
@@ -1134,7 +1137,6 @@ install_trojan_panel() {
       echo_content yellow "MariaDB ${mariadb_user}的密码(请妥善保存): ${mariadb_pas}"
       echo_content yellow "Redis的密码(请妥善保存): ${redis_pass}"
       echo_content yellow "系统管理员 默认用户名: sysadmin 默认密码: 123456 请及时登陆管理面板修改密码"
-      echo_content yellow "Trojan Panel私钥和证书目录: ${CERT_PATH}"
       echo_content red "\n=============================================================="
     else
       echo_content red "---> Trojan Panel后端安装失败或运行异常,请尝试修复或卸载重装"
