@@ -636,8 +636,8 @@ install_caddy2() {
       fi
     done
 
-    if [[ -n $(lsof -i:${caddy_port},443 -t) ]]; then
-      kill -9 "$(lsof -i:${caddy_port},443 -t)"
+    if [[ -n $(lsof -i:${caddy_port} -t) ]]; then
+      kill -9 "$(lsof -i:${caddy_port} -t)"
     fi
 
     docker pull caddy:2.6.2 &&
