@@ -39,9 +39,11 @@ services:
     volumes:
       - "/tpdata/web/:/tpdata/trojan-panel/webfile/"
       - "/tpdata/trojan-panel/logs/:/tpdata/trojan-panel/logs/"
-      - "/tpdata/trojan-panel/config/:/tpdata/trojan-panel/config/"
+      - "/tpdata/trojan-panel/export:/tpdata/trojan-panel/export"
+      - "/tpdata/trojan-panel/template:/tpdata/trojan-panel/template"
       - "/etc/localtime:/etc/localtime"
     environment:
+      - "GIN_MODE=release"
       - "mariadb_ip=127.0.0.1"
       - "mariadb_port=9507"
       - "mariadb_user=root"
@@ -57,7 +59,7 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - "/tpdata/nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "/tpdata/trojan-panel-ui/nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - "/tpdata/cert/:/tpdata/cert/"
 
   trojan-panel-core:
@@ -71,11 +73,12 @@ services:
       - "/tpdata/trojan-panel-core/bin/hysteria/config:/tpdata/trojan-panel-core/bin/hysteria/config"
       - "/tpdata/trojan-panel-core/bin/naiveproxy/config:/tpdata/trojan-panel-core/bin/naiveproxy/config"
       - "/tpdata/trojan-panel-core/logs/:/tpdata/trojan-panel-core/logs/"
-      - "/tpdata/trojan-panel-core/config/:/tpdata/trojan-panel-core/config/"
+      - "/tpdata/trojan-panel-core/config/sqlite/:/tpdata/trojan-panel-core/config/sqlite/"
       - "/tpdata/cert/:/tpdata/cert/"
       - "/tpdata/web/:/tpdata/web/"
       - "/etc/localtime:/etc/localtime"
     environment:
+      - "GIN_MODE=release"
       - "mariadb_ip=127.0.0.1"
       - "mariadb_port=9507"
       - "mariadb_user=root"
