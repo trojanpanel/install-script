@@ -326,7 +326,37 @@ EOF
   fi
 }
 
-# 手动设置证书路径
+install_custom_cert() {
+  while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
+    if [[ -z "${crt_path}" ]]; then
+      echo_content red "路径不能为空"
+    else
+      if [[ ! -f "${crt_path}" ]]; then
+        echo_content red "证书的.crt文件路径不存在"
+      else
+        cp "${crt_path}" "${CERT_PATH}$1.crt"
+        break
+      fi
+    fi
+  done
+  while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
+    if [[ -z "${key_path}" ]]; then
+      echo_content red "路径不能为空"
+    else
+      if [[ ! -f "${key_path}" ]]; then
+        echo_content red "证书的.key文件路径不存在"
+      else
+        cp "${key_path}" "${CERT_PATH}$1.key"
+        break
+      fi
+    fi
+  done
+  cat >${DOMAIN_FILE} <<EOF
+$1
+EOF
+}
+
+# Caddy2 https手动设置证书配置文件
 caddy2_https_config() {
   cat >${CADDY_CONFIG} <<EOF
 {
@@ -459,7 +489,7 @@ caddy2_https_config() {
 EOF
 }
 
-# 自动申请和续签证书
+# Caddy2 https自动申请和续签证书配置文件
 caddy2_https_auto_config() {
   cat >${CADDY_CONFIG} <<EOF
 {
@@ -636,8 +666,9 @@ install_caddy2() {
       fi
     done
 
-    if [[ -n $(lsof -i:${caddy_port} -t) ]]; then
-      kill -9 "$(lsof -i:${caddy_port} -t)"
+    # Caddy2临时监听端口用于自动申请证书
+    if [[ -n $(lsof -i:${caddy_port},${caddy_remote_port} -t) ]]; then
+      kill -9 "$(lsof -i:${caddy_port},${caddy_remote_port} -t)"
     fi
 
     docker pull caddy:2.6.2 &&
@@ -666,6 +697,7 @@ EOF
   fi
 }
 
+# Nginx http配置文件
 nginx_http_config() {
   cat >${NGINX_CONFIG} <<-EOF
 server {
@@ -687,6 +719,7 @@ server {
 EOF
 }
 
+# Nginx https配置文件
 nginx_https_config() {
   cat >${NGINX_CONFIG} <<-EOF
 server {
@@ -786,7 +819,7 @@ install_reverse_proxy() {
     echo_content green "---> 设置伪装Web"
 
     while :; do
-      echo_content yellow "1. 安装Caddy2（推荐）"
+      echo_content yellow "1. 安装Caddy2+https（自动申请和续签证书）"
       echo_content yellow "2. 安装Nginx"
       echo_content yellow "3. 不设置"
       read -r -p "请选择(默认:1): " whether_install_reverse_proxy
@@ -815,36 +848,6 @@ install_reverse_proxy() {
   fi
 }
 
-install_custom_cert() {
-  while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
-    if [[ -z "${crt_path}" ]]; then
-      echo_content red "路径不能为空"
-    else
-      if [[ ! -f "${crt_path}" ]]; then
-        echo_content red "证书的.crt文件路径不存在"
-      else
-        cp "${crt_path}" "${CERT_PATH}$1.crt"
-        break
-      fi
-    fi
-  done
-  while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
-    if [[ -z "${key_path}" ]]; then
-      echo_content red "路径不能为空"
-    else
-      if [[ ! -f "${key_path}" ]]; then
-        echo_content red "证书的.key文件路径不存在"
-      else
-        cp "${key_path}" "${CERT_PATH}$1.key"
-        break
-      fi
-    fi
-  done
-  cat >${DOMAIN_FILE} <<EOF
-$1
-EOF
-}
-
 # 设置证书
 install_cert() {
   domain=$(cat "${DOMAIN_FILE}")
@@ -852,22 +855,17 @@ install_cert() {
     echo_content green "---> 设置证书"
 
     while :; do
-      echo_content yellow "1. 安装Caddy2（自动申请/续签证书）"
-      echo_content yellow "2. 手动设置证书路径"
-      echo_content yellow "3. 不设置"
+      echo_content yellow "1. 手动设置证书路径"
+      echo_content yellow "2. 不设置"
       read -r -p "请选择(默认:1): " whether_install_cert
       [[ -z "${whether_install_cert}" ]] && whether_install_cert=1
 
       case ${whether_install_cert} in
       1)
-        install_caddy2
-        break
-        ;;
-      2)
         install_custom_cert "custom_cert"
         break
         ;;
-      3)
+      2)
         break
         ;;
       *)
