@@ -892,11 +892,11 @@ install_mariadb() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
     echo_content green "---> Install MariaDB"
 
-    read -r -p "Please enter the port of the database (default: 9507): " mariadb_port
+    read -r -p "Please enter the port of MariaDB (default: 9507): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-    read -r -p "Please enter the username of the database (default: root): " mariadb_user
+    read -r -p "Please enter the username of MariaDB (default: root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "Please enter the database password (required): " mariadb_pas; do
+    while read -r -p "Please enter the password of MariaDB (required): " mariadb_pas; do
       if [[ -z "${mariadb_pas}" ]]; then
         echo_content red "Password can not be empty"
       else
@@ -932,9 +932,9 @@ install_mariadb() {
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
       echo_content skyBlue "---> MariaDB installation completed"
-      echo_content yellow "---> The database password of MariaDB root (please keep it safe): ${mariadb_pas}"
+      echo_content yellow "---> The MariaDB password of root (please keep it safe): ${mariadb_pas}"
       if [[ "${mariadb_user}" != "root" ]]; then
-        echo_content yellow "---> MariaDB ${mariadb_user} database password (please keep it safe): ${mariadb_pas}"
+        echo_content yellow "---> The MariaDB password of ${mariadb_user} (please keep it safe): ${mariadb_pas}"
       fi
     else
       echo_content red "---> MariaDB installation fails or runs abnormally, please try to repair or uninstall and reinstall"
@@ -968,7 +968,7 @@ install_redis() {
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
       echo_content skyBlue "---> Redis installation completed"
-      echo_content yellow "---> Redis database password (please keep it safe): ${redis_pass}"
+      echo_content yellow "---> Redis password (please keep it safe): ${redis_pass}"
     else
       echo_content red "---> Redis installation fails or runs abnormally, please try to repair or uninstall and reinstall"
       exit 0
@@ -1109,13 +1109,13 @@ install_trojan_panel() {
     read -r -p "Please enter the service port of the Trojan Panel Backend (default: 8081): " trojan_panel_port
     [[ -z "${trojan_panel_port}" ]] && trojan_panel_port=8081
 
-    read -r -p "Please enter the IP address of the database (default: local host): " mariadb_ip
+    read -r -p "Please enter the IP address of MariaDB (default: local host): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "Please enter the port of the database (default: 9507): " mariadb_port
+    read -r -p "Please enter the port of MariaDB (default: 9507): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-    read -r -p "Please enter the username of the database (default: root): " mariadb_user
+    read -r -p "Please enter the username of MariaDB (default: root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "Please enter the database password (required): " mariadb_pas; do
+    while read -r -p "Please enter the password of MariaDB (required): " mariadb_pas; do
       if [[ -z "${mariadb_pas}" ]]; then
         echo_content red "Password can not be empty"
       else
@@ -1183,13 +1183,13 @@ install_trojan_panel_core() {
     read -r -p "Please enter the service port of the Trojan Panel Core (default: 8082): " trojan_panel_core_port
     [[ -z "${trojan_panel_core_port}" ]] && trojan_panel_core_port=8082
 
-    read -r -p "Please enter the IP address of the database (default: local host): " mariadb_ip
+    read -r -p "Please enter the IP address of MariaDB (default: local host): " mariadb_ip
     [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-    read -r -p "Please enter the port of the database (default: 9507): " mariadb_port
+    read -r -p "Please enter the port of MariaDB (default: 9507): " mariadb_port
     [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-    read -r -p "Please enter the username of the database (default: root): " mariadb_user
+    read -r -p "Please enter the username of MariaDB (default: root): " mariadb_user
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-    while read -r -p "Please enter the database password (required): " mariadb_pas; do
+    while read -r -p "Please enter the password of MariaDB (required): " mariadb_pas; do
       if [[ -z "${mariadb_pas}" ]]; then
         echo_content red "Password can not be empty"
       else
@@ -1749,7 +1749,7 @@ change_cert() {
 # Forgot sysadmin password
 forget_pass() {
   while :; do
-    echo_content yellow "1. Query database password"
+    echo_content yellow "1. Query MariaDB password"
     echo_content yellow "2. Query Redis password"
     echo_content yellow "3. Reset the username and password of the admin panel system administrator"
     echo_content yellow "4. Quit"
@@ -1779,13 +1779,13 @@ forget_pass() {
       ;;
     3)
       if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") ]]; then
-        read -r -p "Please enter the IP address of the database (default: local host): " mariadb_ip
+        read -r -p "Please enter the IP address of MariaDB (default: local host): " mariadb_ip
         [[ -z "${mariadb_ip}" ]] && mariadb_ip="127.0.0.1"
-        read -r -p "Please enter the port of the database (default: 9507): " mariadb_port
+        read -r -p "Please enter the port of MariaDB (default: 9507): " mariadb_port
         [[ -z "${mariadb_port}" ]] && mariadb_port=9507
-        read -r -p "Please enter the username of the database (default: root): " mariadb_user
+        read -r -p "Please enter the username of MariaDB (default: root): " mariadb_user
         [[ -z "${mariadb_user}" ]] && mariadb_user="root"
-        while read -r -p "Please enter the database password (required): " mariadb_pas; do
+        while read -r -p "Please enter the password of MariaDB (required): " mariadb_pas; do
           if [[ -z "${mariadb_pas}" ]]; then
             echo_content red "Password can not be empty"
           else
@@ -1802,7 +1802,7 @@ forget_pass() {
           echo_content red "Admin panel sysadmin username and password reset failed"
         fi
       else
-        echo_content red "---> Please install the database first"
+        echo_content red "---> Please install the MariaDB first"
       fi
       ;;
     4)
@@ -1837,7 +1837,7 @@ failure_testing() {
       fi
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-mariadb$") && -z $(docker ps -q -f "name=^trojan-panel-mariadb$" -f "status=running") ]]; then
-      echo_content red "---> The database is running abnormally and the running log is as follows:"
+      echo_content red "---> The MariaDB is running abnormally and the running log is as follows:"
       docker logs trojan-panel-mariadb
     fi
     if [[ -n $(docker ps -a -q -f "name=^trojan-panel-redis$") && -z $(docker ps -q -f "name=^trojan-panel-redis$" -f "status=running") ]]; then
