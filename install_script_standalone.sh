@@ -598,10 +598,10 @@ EOF
       echo_content yellow "Port of TrojanGO: ${trojanGO_port}"
       echo_content yellow "Password for TrojanGO: ${trojan_pas}"
       echo_content yellow "Certificate Directory: ${CERT_PATH}"
-      if [[ ${trojanGO_websocket_enable} == true ]]; then
+      if [[ ${trojanGO_websocket_enable} == 1 ]]; then
         echo_content yellow "Websocket Path: ${trojanGO_websocket_path}"
       fi
-      if [[ ${trojanGO_shadowsocks_enable} == true ]]; then
+      if [[ ${trojanGO_shadowsocks_enable} == 1 ]]; then
         echo_content yellow "Shadowsocks AEAD encryption method: ${trojanGO_shadowsocks_method}"
         echo_content yellow "Shadowsocks AEAD encryption password: ${trojanGO_shadowsocks_password}"
       fi
