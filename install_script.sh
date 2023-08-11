@@ -1726,6 +1726,7 @@ change_cert() {
   rm -rf ${CERT_PATH}* &&
     echo "" >${DOMAIN_FILE}
 
+  install_reverse_proxy
   install_cert
 
   domain_2=$(cat "${DOMAIN_FILE}")
@@ -1968,6 +1969,7 @@ main() {
   case ${selectInstall_type} in
   1)
     install_docker
+    install_reverse_proxy
     install_cert
     install_trojan_panel_ui
     ;;
