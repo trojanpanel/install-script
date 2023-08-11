@@ -775,7 +775,7 @@ server {
 EOF
 }
 
-# 安装Nginx
+# Install Nginx
 install_nginx() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-nginx$") ]]; then
     echo_content green "---> Install Nginx"
@@ -1393,7 +1393,6 @@ update_trojan_panel_ui() {
 
 # Update Trojan Panel Backend
 update_trojan_panel() {
-  # 判断Trojan Panel后端是否安装
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel$") ]]; then
     echo_content red "---> Please install the Trojan Panel Backend first"
     exit 0
@@ -1617,7 +1616,6 @@ uninstall_trojan_panel() {
 
 # Uninstall Trojan Panel Core
 uninstall_trojan_panel_core() {
-  # 判断Trojan Panel内核是否安装
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-core$") ]]; then
     echo_content green "---> Uninstall Trojan Panel Core"
 
