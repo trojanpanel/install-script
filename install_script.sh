@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # System Required: CentOS 7+/Ubuntu 18+/Debian 10+
-# Version: v2.1.8
+# Version: v2.2.0
 # Description: One click Install Trojan Panel server
 # Author: jonssonyan <https://jonssonyan.com>
 # Github: https://github.com/trojanpanel/install-script
@@ -34,7 +34,7 @@ init_var() {
   crt_path=""
   key_path=""
 
-  # Caddy
+  # Caddy2
   CADDY_DATA="/tpdata/caddy/"
   CADDY_CONFIG="${CADDY_DATA}config.json"
   CADDY_LOG="${CADDY_DATA}logs/"
@@ -166,7 +166,7 @@ mkdir_tools() {
 
   # Trojan Panel前端
   mkdir -p ${TROJAN_PANEL_UI_DATA}
-  # # Nginx
+  # Nginx
   mkdir -p ${UI_NGINX_DATA}
   touch ${UI_NGINX_CONFIG}
 
@@ -188,6 +188,7 @@ can_connect() {
   fi
 }
 
+# 查询.ini配置文件信息
 get_ini_value() {
   local config_file="$1"
   local key="$2"
@@ -326,37 +327,45 @@ EOF
   fi
 }
 
+# 手动设置证书
 install_custom_cert() {
-  while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
-    if [[ -z "${crt_path}" ]]; then
-      echo_content red "路径不能为空"
-    else
-      if [[ ! -f "${crt_path}" ]]; then
-        echo_content red "证书的.crt文件路径不存在"
+  domain=$(cat "${DOMAIN_FILE}")
+  if [[ -z "${domain}" ]]; then
+    while read -r -p "请输入证书的.crt文件路径(必填): " crt_path; do
+      if [[ -z "${crt_path}" ]]; then
+        echo_content red "路径不能为空"
       else
-        cp "${crt_path}" "${CERT_PATH}$1.crt"
-        break
+        if [[ ! -f "${crt_path}" ]]; then
+          echo_content red "证书的.crt文件路径不存在"
+        else
+          cp "${crt_path}" "${CERT_PATH}$1.crt"
+          break
+        fi
       fi
-    fi
-  done
-  while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
-    if [[ -z "${key_path}" ]]; then
-      echo_content red "路径不能为空"
-    else
-      if [[ ! -f "${key_path}" ]]; then
-        echo_content red "证书的.key文件路径不存在"
+    done
+    while read -r -p "请输入证书的.key文件路径(必填): " key_path; do
+      if [[ -z "${key_path}" ]]; then
+        echo_content red "路径不能为空"
       else
-        cp "${key_path}" "${CERT_PATH}$1.key"
-        break
+        if [[ ! -f "${key_path}" ]]; then
+          echo_content red "证书的.key文件路径不存在"
+        else
+          cp "${key_path}" "${CERT_PATH}$1.key"
+          break
+        fi
       fi
-    fi
-  done
-  cat >${DOMAIN_FILE} <<EOF
+    done
+    cat >${DOMAIN_FILE} <<EOF
 $1
 EOF
+    echo_content red "\n=============================================================="
+    echo_content skyBlue "---> 手动设置证书安装完成"
+    echo_content yellow "证书目录: ${CERT_PATH}"
+    echo_content red "\n=============================================================="
+  fi
 }
 
-# Caddy2 https手动设置证书配置文件
+# Caddy2 https手动设置证书路径配置文件
 caddy2_https_config() {
   cat >${CADDY_CONFIG} <<EOF
 {
@@ -685,15 +694,15 @@ install_caddy2() {
 ${domain}
 EOF
       echo_content red "\n=============================================================="
-      echo_content skyBlue "---> Caddy安装完成"
+      echo_content skyBlue "---> Caddy2安装完成"
       echo_content yellow "证书目录: ${CERT_PATH}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Caddy安装失败或运行异常,请尝试修复或卸载重装"
+      echo_content red "---> Caddy2安装失败或运行异常,请尝试修复或卸载重装"
       exit 0
     fi
   else
-    echo_content skyBlue "---> 你已经安装了Caddy"
+    echo_content skyBlue "---> 你已经安装了Caddy2"
   fi
 }
 
@@ -970,24 +979,35 @@ install_redis() {
   fi
 }
 
-# 安装Trojan Panel前端
-install_trojan_panel_ui() {
-  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
-    echo_content green "---> 安装Trojan Panel前端"
+# Trojan Panel前端Nginx http配置文件
+ui_http_config() {
+  cat >${UI_NGINX_CONFIG} <<-EOF
+server {
+    listen       ${trojan_panel_ui_port};
+    server_name  localhost;
 
-    read -r -p "请输入Trojan Panel后端的IP地址(默认:本机后端): " trojan_panel_ip
-    [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
-    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_server_port
-    [[ -z "${trojan_panel_server_port}" ]] && trojan_panel_server_port=8081
+    location / {
+        root   ${TROJAN_PANEL_UI_DATA};
+        index  index.html index.htm;
+    }
 
-    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
-    [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
-    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
-      if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
-        install_cert
-        domain=$(cat "${DOMAIN_FILE}")
-        # 配置Nginx
-        cat >${UI_NGINX_CONFIG} <<-EOF
+    location /api {
+        proxy_pass http://${trojan_panel_ip}:${trojan_panel_server_port};
+    }
+
+    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+EOF
+}
+
+# Trojan Panel前端Nginx https配置文件
+ui_https_config() {
+  cat >${UI_NGINX_CONFIG} <<-EOF
 server {
     listen       ${trojan_panel_ui_port} ssl;
     server_name  localhost;
@@ -1028,35 +1048,31 @@ server {
     }
 }
 EOF
+}
+
+# 安装Trojan Panel前端
+install_trojan_panel_ui() {
+  if [[ -z $(docker ps -a -q -f "name=^trojan-panel-ui$") ]]; then
+    echo_content green "---> 安装Trojan Panel前端"
+
+    read -r -p "请输入Trojan Panel后端的IP地址(默认:本机后端): " trojan_panel_ip
+    [[ -z "${trojan_panel_ip}" ]] && trojan_panel_ip="127.0.0.1"
+    read -r -p "请输入Trojan Panel后端的服务端口(默认:8081): " trojan_panel_server_port
+    [[ -z "${trojan_panel_server_port}" ]] && trojan_panel_server_port=8081
+
+    read -r -p "请输入Trojan Panel前端端口(默认:8888): " trojan_panel_ui_port
+    [[ -z "${trojan_panel_ui_port}" ]] && trojan_panel_ui_port="8888"
+    while read -r -p "请选择Trojan Panel前端是否开启https?(0/关闭 1/开启 默认:1/开启): " ui_https; do
+      if [[ -z ${ui_https} || ${ui_https} == 1 ]]; then
+        install_custom_cert "custom_cert"
+        domain=$(cat "${DOMAIN_FILE}")
+        ui_https_config
+        break
+      elif [[ ${ui_https} == 0 ]]; then
+        ui_http_config
         break
       else
-        if [[ ${ui_https} != 0 ]]; then
-          echo_content red "不可以输入除0和1之外的其他字符"
-        else
-          cat >${UI_NGINX_CONFIG} <<-EOF
-server {
-    listen       ${trojan_panel_ui_port};
-    server_name  localhost;
-
-    location / {
-        root   ${TROJAN_PANEL_UI_DATA};
-        index  index.html index.htm;
-    }
-
-    location /api {
-        proxy_pass http://${trojan_panel_ip}:${trojan_panel_server_port};
-    }
-
-    error_page  497               http://\$host:${trojan_panel_ui_port}\$request_uri;
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-EOF
-          break
-        fi
+        echo_content red "不可以输入除0和1之外的其他字符"
       fi
     done
 
@@ -1241,7 +1257,7 @@ install_trojan_panel_core() {
 }
 
 # 更新Trojan Panel数据结构
-update__trojan_panel_database() {
+update_trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
 
   if [[ "${trojan_panel_current_version}" == "v1.3.1" ]]; then
@@ -1316,7 +1332,7 @@ port=8081' >>${trojan_panel_config_path}
 }
 
 # 更新Trojan Panel内核数据结构
-update__trojan_panel_core_database() {
+update_trojan_panel_core_database() {
   echo_content skyBlue "---> 更新Trojan Panel内核数据结构"
 
   version_204_210=("v2.0.4")
@@ -1411,7 +1427,7 @@ update_trojan_panel() {
     redis_pass=$(get_ini_value ${trojan_panel_config_path} redis.password)
     trojan_panel_port=$(get_ini_value ${trojan_panel_config_path} server.port)
 
-    update__trojan_panel_database
+    update_trojan_panel_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
@@ -1475,7 +1491,7 @@ update_trojan_panel_core() {
     grpc_port=$(get_ini_value ${trojan_panel_core_config_path} grpc.port)
     trojan_panel_core_port=$(get_ini_value ${trojan_panel_core_config_path} server.port)
 
-    update__trojan_panel_core_database
+    update_trojan_panel_core_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
