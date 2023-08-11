@@ -627,7 +627,7 @@ EOF
 # Install Caddy2
 install_caddy2() {
   if [[ -z $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> Install Caddy2"
+    echo_content green "---> Install Caddy2+https"
 
     wget --no-check-certificate -O ${WEB_PATH}html.tar.gz -N ${STATIC_HTML} &&
       tar -zxvf ${WEB_PATH}html.tar.gz -k -C ${WEB_PATH}
@@ -693,15 +693,15 @@ install_caddy2() {
 ${domain}
 EOF
       echo_content red "\n=============================================================="
-      echo_content skyBlue "---> Caddy2 installation completed"
+      echo_content skyBlue "---> Caddy2+https installation completed"
       echo_content yellow "Certificate Directory: ${CERT_PATH}"
       echo_content red "\n=============================================================="
     else
-      echo_content red "---> Caddy2 installation fails or runs abnormally, please try to repair or uninstall and reinstall"
+      echo_content red "---> Caddy2+https installation fails or runs abnormally, please try to repair or uninstall and reinstall"
       exit 0
     fi
   else
-    echo_content skyBlue "---> You have installed Caddy2"
+    echo_content skyBlue "---> You have installed Caddy2+https"
   fi
 }
 
@@ -1089,7 +1089,7 @@ install_trojan_panel_ui() {
       domain_or_ip=$([[ -z ${domain} || "${domain}" == "custom_cert" ]] && echo "ip" || echo "${domain}")
 
       echo_content red "\n=============================================================="
-      echo_content skyBlue "Trojan Panel Frontend installation successfully"
+      echo_content skyBlue "Trojan Panel Frontend installed successfully"
       echo_content yellow "Web management panel address: ${https_flag}://${domain_or_ip}:${trojan_panel_ui_port}"
       echo_content red "\n=============================================================="
     else
@@ -1117,7 +1117,7 @@ install_trojan_panel() {
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "Please enter the database password (required): " mariadb_pas; do
       if [[ -z "${mariadb_pas}" ]]; then
-        echo_content red "password can not be empty"
+        echo_content red "Password can not be empty"
       else
         break
       fi
@@ -1131,7 +1131,7 @@ install_trojan_panel() {
     [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "Please enter the Redis password (required): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
-        echo_content red "password can not be empty"
+        echo_content red "Password can not be empty"
       else
         break
       fi
@@ -1161,7 +1161,7 @@ install_trojan_panel() {
       echo_content skyBlue "---> Trojan Panel Backend installation completed"
 
       echo_content red "\n=============================================================="
-      echo_content skyBlue "Trojan Panel Backend installation successfully"
+      echo_content skyBlue "Trojan Panel Backend installed successfully"
       echo_content yellow "MariaDB ${mariadb_user} password (please keep it safe): ${mariadb_pas}"
       echo_content yellow "Redis password (please keep it safe): ${redis_pass}"
       echo_content yellow "System administrator Default username: sysadmin Default password: 123456 Please log in to the management panel to change the password in time"
@@ -1191,7 +1191,7 @@ install_trojan_panel_core() {
     [[ -z "${mariadb_user}" ]] && mariadb_user="root"
     while read -r -p "Please enter the database password (required): " mariadb_pas; do
       if [[ -z "${mariadb_pas}" ]]; then
-        echo_content red "password can not be empty"
+        echo_content red "Password can not be empty"
       else
         break
       fi
@@ -1207,7 +1207,7 @@ install_trojan_panel_core() {
     [[ -z "${redis_port}" ]] && redis_port=6378
     while read -r -p "Please enter the Redis password (required): " redis_pass; do
       if [[ -z "${redis_pass}" ]]; then
-        echo_content red "password can not be empty"
+        echo_content red "Password can not be empty"
       else
         break
       fi
@@ -1528,17 +1528,17 @@ update_trojan_panel_core() {
   fi
 }
 
-# Uninstall Caddy2
+# Uninstall Caddy2+https
 uninstall_caddy2() {
   if [[ -n $(docker ps -a -q -f "name=^trojan-panel-caddy$") ]]; then
-    echo_content green "---> Uninstall Caddy2"
+    echo_content green "---> Uninstall Caddy2+https"
 
     docker rm -f trojan-panel-caddy &&
       rm -rf ${CADDY_DATA}
 
-    echo_content skyBlue "---> Caddy2 uninstallation completed"
+    echo_content skyBlue "---> Caddy2+https uninstallation completed"
   else
-    echo_content red "---> Please install Caddy2 first"
+    echo_content red "---> Please install Caddy2+https first"
   fi
 }
 
@@ -1701,7 +1701,7 @@ redis_flush_all() {
   [[ -z "${redis_port}" ]] && redis_port=6378
   while read -r -p "Please enter the Redis password (required): " redis_pass; do
     if [[ -z "${redis_pass}" ]]; then
-      echo_content red "password can not be empty"
+      echo_content red "Password can not be empty"
     else
       break
     fi
@@ -1787,7 +1787,7 @@ forget_pass() {
         [[ -z "${mariadb_user}" ]] && mariadb_user="root"
         while read -r -p "Please enter the database password (required): " mariadb_pas; do
           if [[ -z "${mariadb_pas}" ]]; then
-            echo_content red "password can not be empty"
+            echo_content red "Password can not be empty"
           else
             break
           fi
@@ -1964,7 +1964,7 @@ main() {
   echo_content yellow "23. Fault detection"
   echo_content yellow "24. Log query"
   echo_content yellow "25. Version query"
-  read -r -p "Please choose:" selectInstall_type
+  read -r -p "Please choose: " selectInstall_type
   case ${selectInstall_type} in
   1)
     install_docker
