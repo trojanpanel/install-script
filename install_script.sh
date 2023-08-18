@@ -328,8 +328,7 @@ EOF
 
 # Custom Settings Certificate
 install_custom_cert() {
-  domain=$(cat "${DOMAIN_FILE}")
-  if [[ -z "${domain}" ]]; then
+  if [[ -z "$(cat "${DOMAIN_FILE}")" ]]; then
     while read -r -p "Please enter the file path of the .crt certificate (required): " crt_path; do
       if [[ -z "${crt_path}" ]]; then
         echo_content red "Path cannot be empty"
@@ -861,8 +860,7 @@ install_reverse_proxy() {
 
 # Set certificate
 install_cert() {
-  domain=$(cat "${DOMAIN_FILE}")
-  if [[ -z "${domain}" ]]; then
+  if [[ -z "$(cat "${DOMAIN_FILE}")" ]]; then
     echo_content green "---> Set certificate"
 
     while :; do
@@ -1278,8 +1276,7 @@ update_trojan_panel_database() {
   fi
   version_205_210=("v2.0.5")
   if [[ "${version_205_210[*]}" =~ "${trojan_panel_current_version}" ]]; then
-    domain=$(cat "${DOMAIN_FILE}")
-    if [[ -z "${domain}" ]]; then
+    if [[ -z "$(cat "${DOMAIN_FILE}")" ]]; then
       docker rm -f trojan-panel-caddy
       rm -rf /tpdata/caddy/srv/
       rm -rf /tpdata/caddy/cert/
@@ -1333,8 +1330,7 @@ update_trojan_panel_core_database() {
 
   version_204_210=("v2.0.4")
   if [[ "${version_204_210[*]}" =~ "${trojan_panel_core_current_version}" ]]; then
-    domain=$(cat "${DOMAIN_FILE}")
-    if [[ -z "${domain}" ]]; then
+    if [[ -z "$(cat "${DOMAIN_FILE}")" ]]; then
       docker rm -f trojan-panel-caddy
       rm -rf /tpdata/caddy/srv/
       rm -rf /tpdata/caddy/cert/
