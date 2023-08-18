@@ -731,6 +731,7 @@ EOF
 
 # Nginx https configuration file
 nginx_https_config() {
+  domain=$1
   cat >${NGINX_CONFIG} <<-EOF
 server {
     listen ${nginx_port};
@@ -793,8 +794,7 @@ install_nginx() {
     while read -r -p "Please choose whether to enable https in Nginx? (0/off 1/on default: 1): " nginx_https; do
       if [[ -z ${nginx_https} || ${nginx_https} == 1 ]]; then
         install_custom_cert "custom_cert"
-        domain=$(cat "${DOMAIN_FILE}")
-        nginx_https_config
+        nginx_https_config "custom_cert"
         break
       elif [[ ${nginx_https} == 0 ]]; then
         nginx_http_config
