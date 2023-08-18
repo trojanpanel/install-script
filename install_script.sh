@@ -366,6 +366,7 @@ EOF
 
 # Caddy2 https custom settings certificate configuration file
 caddy2_https_config() {
+  domain=$1
   cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
@@ -499,6 +500,7 @@ EOF
 
 # Caddy2 https automatic application and renewal certificate configuration file
 caddy2_https_auto_config() {
+  domain=$1
   cat >${CADDY_CONFIG} <<EOF
 {
     "admin":{
@@ -663,11 +665,11 @@ install_caddy2() {
             echo_content red "Cannot enter other characters except 1 and 2"
           fi
         done
-        caddy2_https_auto_config
+        caddy2_https_auto_config "${domain}"
         break
       elif [[ ${ssl_option} == 2 ]]; then
         install_custom_cert "${domain}"
-        caddy2_https_config
+        caddy2_https_config "${domain}"
         break
       else
         echo_content red "Cannot enter other characters except 1 and 2"
@@ -688,10 +690,11 @@ install_caddy2() {
         -v ${CADDY_LOG}:${CADDY_LOG} \
         caddy:2.6.2 caddy run --config ${CADDY_CONFIG}
 
-    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
-      cat >${DOMAIN_FILE} <<EOF
-${domain}
+    cat >${DOMAIN_FILE} <<EOF
+        ${domain}
 EOF
+
+    if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
       echo_content red "\n=============================================================="
       echo_content skyBlue "---> Caddy2+https installation completed"
       echo_content yellow "Certificate Directory: ${CERT_PATH}"
