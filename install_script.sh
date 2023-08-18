@@ -691,7 +691,7 @@ install_caddy2() {
         caddy:2.6.2 caddy run --config ${CADDY_CONFIG}
 
     cat >${DOMAIN_FILE} <<EOF
-        ${domain}
+${domain}
 EOF
 
     if [[ -n $(docker ps -q -f "name=^trojan-panel-caddy$" -f "status=running") ]]; then
