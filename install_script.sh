@@ -1165,7 +1165,8 @@ install_trojan_panel() {
       echo_content skyBlue "Trojan Panel Backend installed successfully"
       echo_content yellow "MariaDB ${mariadb_user} password (please keep it safe): ${mariadb_pas}"
       echo_content yellow "Redis password (please keep it safe): ${redis_pass}"
-      echo_content yellow "System administrator Default username: sysadmin Default password: 123456 Please log in to the management panel to change the password in time"
+      echo_content yellow "System administrator Default username: sysadmin Default password: 123456"
+      echo_content yellow "Please log in to the management panel to change the password in time"
       echo_content red "\n=============================================================="
     else
       echo_content red "---> Trojan Panel Backend installation fails or runs abnormally, please try to repair or uninstall and reinstall"
