@@ -1797,7 +1797,8 @@ forget_pass() {
         docker exec trojan-panel-mariadb mysql -h"${mariadb_ip}" -P"${mariadb_port}" -u"${mariadb_user}" -p"${mariadb_pas}" -Dtrojan_panel_db -e "update account set username = 'sysadmin',pass = 'tFjD2X1F6i9FfWp2GDU5Vbi1conuaChDKIYbw9zMFrqvMoSz',hash='4366294571b8b267d9cf15b56660f0a70659568a86fc270a52fdc9e5' where id = 1 limit 1"
         if [[ "$?" == "0" ]]; then
           echo_content red "\n=============================================================="
-          echo_content yellow "System administrator Default username: sysadmin Default password: 123456 Please log in to the management panel to change the password in time"
+          echo_content yellow "System administrator Default username: sysadmin Default password: 123456"
+          echo_content yellow "Please log in to the management panel to change the password in time"
           echo_content red "\n=============================================================="
         else
           echo_content red "Admin panel sysadmin username and password reset failed"
