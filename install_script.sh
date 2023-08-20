@@ -1765,7 +1765,7 @@ forget_pass() {
         echo_content yellow "MariaDB ${mariadb_user} password (please keep it safe): ${mariadb_pas}"
         echo_content red "\n=============================================================="
       else
-        echo_content red "---> Please install the Trojan Panel Backend first"
+        echo_content red "---> Please execute on the Trojan Panel backend server"
       fi
       ;;
     2)
@@ -1775,7 +1775,7 @@ forget_pass() {
         echo_content yellow "Redis password (please keep it safe): ${redis_pass}"
         echo_content red "\n=============================================================="
       else
-        echo_content red "---> Please install the Trojan Panel Backend first"
+        echo_content red "---> Please execute on the Trojan Panel backend server"
       fi
       ;;
     3)
@@ -1804,7 +1804,7 @@ forget_pass() {
           echo_content red "Admin panel sysadmin username and password reset failed"
         fi
       else
-        echo_content red "---> Please install the MariaDB first"
+        echo_content red "---> Please execute on the MariaDB server"
       fi
       ;;
     4)
