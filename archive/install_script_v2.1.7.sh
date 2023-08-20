@@ -1225,7 +1225,7 @@ install_trojan_panel_core() {
 }
 
 # 更新Trojan Panel数据结构
-update__trojan_panel_database() {
+update_trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
 
   if [[ "${trojan_panel_current_version}" == "v1.3.1" ]]; then
@@ -1295,7 +1295,7 @@ port=8081' >>${trojan_panel_config_path}
 }
 
 # 更新Trojan Panel内核数据结构
-update__trojan_panel_core_database() {
+update_trojan_panel_core_database() {
   echo_content skyBlue "---> 更新Trojan Panel内核数据结构"
 
   version_204_210=("v2.0.4")
@@ -1390,7 +1390,7 @@ update_trojan_panel() {
     redis_pass=$(get_ini_value ${trojan_panel_config_path} redis.password)
     trojan_panel_port=$(get_ini_value ${trojan_panel_config_path} server.port)
 
-    update__trojan_panel_database
+    update_trojan_panel_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 
@@ -1454,7 +1454,7 @@ update_trojan_panel_core() {
     grpc_port=$(get_ini_value ${trojan_panel_core_config_path} grpc.port)
     trojan_panel_core_port=$(get_ini_value ${trojan_panel_core_config_path} server.port)
 
-    update__trojan_panel_core_database
+    update_trojan_panel_core_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p "${redis_port}" -a "${redis_pass}" -e "flushall" &>/dev/null
 

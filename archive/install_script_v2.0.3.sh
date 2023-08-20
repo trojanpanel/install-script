@@ -940,7 +940,7 @@ install_trojan_panel_core() {
 }
 
 # 更新Trojan Panel数据结构
-update__trojan_panel_database() {
+update_trojan_panel_database() {
   echo_content skyBlue "---> 更新Trojan Panel数据结构"
 
   if [[ "${trojan_panel_current_version}" == "v1.3.1" ]]; then
@@ -957,7 +957,7 @@ update__trojan_panel_database() {
 }
 
 # 更新Trojan Panel Core数据结构
-update__trojan_panel_core_database() {
+update_trojan_panel_core_database() {
   echo_content skyBlue "---> 更新Trojan Panel Core数据结构"
 
   echo_content skyBlue "---> Trojan Panel Core数据结构更新完成"
@@ -1008,7 +1008,7 @@ update_trojan_panel() {
       fi
     done
 
-    update__trojan_panel_database
+    update_trojan_panel_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
@@ -1108,7 +1108,7 @@ update_trojan_panel_core() {
     read -r -p "请输入API的端口(默认:8100): " grpc_port
     [[ -z "${grpc_port}" ]] && grpc_port=8100
 
-    update__trojan_panel_core_database
+    update_trojan_panel_core_database
 
     docker exec trojan-panel-redis redis-cli -h "${redis_host}" -p ${redis_port} -a "${redis_pass}" -e "flushall" &>/dev/null
 
