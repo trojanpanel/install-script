@@ -39,8 +39,7 @@ services:
     volumes:
       - "/tpdata/web/:/tpdata/trojan-panel/webfile/"
       - "/tpdata/trojan-panel/logs/:/tpdata/trojan-panel/logs/"
-      - "/tpdata/trojan-panel/export:/tpdata/trojan-panel/export"
-      - "/tpdata/trojan-panel/template:/tpdata/trojan-panel/template"
+      - "/tpdata/trojan-panel/config/:/tpdata/trojan-panel/config/"
       - "/etc/localtime:/etc/localtime"
     environment:
       - "GIN_MODE=release"
@@ -68,12 +67,12 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - "/tpdata/trojan-panel-core/bin/xray/config:/tpdata/trojan-panel-core/bin/xray/config"
-      - "/tpdata/trojan-panel-core/bin/trojango/config:/tpdata/trojan-panel-core/bin/trojango/config"
-      - "/tpdata/trojan-panel-core/bin/hysteria/config:/tpdata/trojan-panel-core/bin/hysteria/config"
-      - "/tpdata/trojan-panel-core/bin/naiveproxy/config:/tpdata/trojan-panel-core/bin/naiveproxy/config"
+      - "/tpdata/trojan-panel-core/bin/xray/config/:/tpdata/trojan-panel-core/bin/xray/config/"
+      - "/tpdata/trojan-panel-core/bin/trojango/config/:/tpdata/trojan-panel-core/bin/trojango/config/"
+      - "/tpdata/trojan-panel-core/bin/hysteria/config/:/tpdata/trojan-panel-core/bin/hysteria/config/"
+      - "/tpdata/trojan-panel-core/bin/naiveproxy/config/:/tpdata/trojan-panel-core/bin/naiveproxy/config/"
       - "/tpdata/trojan-panel-core/logs/:/tpdata/trojan-panel-core/logs/"
-      - "/tpdata/trojan-panel-core/config/sqlite/:/tpdata/trojan-panel-core/config/sqlite/"
+      - "/tpdata/trojan-panel-core/config/:/tpdata/trojan-panel-core/config/"
       - "/tpdata/cert/:/tpdata/cert/"
       - "/tpdata/web/:/tpdata/web/"
       - "/etc/localtime:/etc/localtime"
