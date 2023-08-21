@@ -8,6 +8,7 @@
 | [v2.1.6](./archive/install_script_v2.1.6.sh) |     v2.1.5      |    v2.1.4    |      v2.1.1       |   v0.0.1    | v1.8.0 |  v0.10.6  |  v1.3.4  |      v2.6.4       |
 | [v2.1.7](./archive/install_script_v2.1.7.sh) |     v2.1.5      |    v2.1.4    |      v2.1.1       |   v0.0.1    | v1.8.0 |  v0.10.6  |  v1.3.4  |      v2.6.4       |
 | [v2.1.8](./archive/install_script_v2.1.8.sh) |     v2.1.6      |    v2.1.5    |      v2.1.2       |   v0.0.1    | v1.8.0 |  v0.10.6  |  v1.3.4  |      v2.6.4       |
+| [v2.2.0](./archive/install_script_v2.2.0.sh) |     v2.1.6      |    v2.1.5    |      v2.1.2       |   v0.0.1    | v1.8.0 |  v0.10.6  |  v1.3.4  |      v2.6.4       |
 
 # Install old version
 
