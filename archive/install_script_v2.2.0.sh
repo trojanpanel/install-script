@@ -98,9 +98,9 @@ init_var() {
   trojan_panel_ui_current_version=""
   trojan_panel_ui_latest_version="v2.1.6"
   trojan_panel_current_version=""
-  trojan_panel_latest_version="v2.1.5"
+  trojan_panel_latest_version="v2.2.0"
   trojan_panel_core_current_version=""
-  trojan_panel_core_latest_version="v2.1.2"
+  trojan_panel_core_latest_version="v2.2.0"
 
   # SQL
   sql_215="alter table account change validity_period preset_expire int unsigned default 0 not null comment '预设过期时长';alter table account add preset_quota bigint default 0 not null comment '预设配额' after preset_expire;update account set preset_quota = quota where last_login_time = 0;update account set quota = 0 where last_login_time = 0;alter table node add priority int default 100 not null comment '优先级' after port;INSERT INTO casbin_rule (p_type, v0, v1, v2, v3, v4, v5) VALUES ('p', 'sysadmin', '/api/account/clashSubscribeForSb', 'GET', 'default', 'default', 'default');alter table node_hysteria add server_name varchar(64) default '' not null comment '用于验证服务端证书的 hostname' after down_mbps;alter table node_hysteria add insecure tinyint(1) default 0 not null comment '忽略一切证书错误' after server_name;alter table node_hysteria add fast_open tinyint(1) default 0 not null comment '启用 Fast Open (降低连接建立延迟)' after insecure;"
