@@ -1818,8 +1818,8 @@ log_query() {
     echo_content yellow "1. Trojan Panel Backend"
     echo_content yellow "2. Trojan Panel Frontend"
     echo_content yellow "3. Quit"
-    read -r -p "Please select an application (default: 1): " select_log_query_type
-    [[ -z "${select_log_query_type}" ]] && select_log_query_type=1
+    read -r -p "Please select an application (default: 3): " select_log_query_type
+    [[ -z "${select_log_query_type}" ]] && select_log_query_type=3
 
     case ${select_log_query_type} in
     1)
