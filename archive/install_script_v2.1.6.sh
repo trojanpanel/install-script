@@ -291,7 +291,11 @@ install_docker() {
 
     # 关闭防火墙
     if [[ "$(firewall-cmd --state 2>/dev/null)" == "running" ]]; then
-      systemctl stop firewalld.service && systemctl disable firewalld.service
+      if [[ "${release}" == "centos" ]]; then
+        systemctl stop firewalld.service && systemctl disable firewalld.service
+      elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+        sudo ufw disable
+      fi
     fi
 
     # 时区
