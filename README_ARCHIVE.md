@@ -13,9 +13,9 @@
 # Install old version
 
 ```shell
-source <(curl -L https://github.com/trojanpanel/install-script/raw/main/archive/install_script_${old_version}.sh)
+source <(curl -L https://github.com/trojanpanel/install-script/raw/main/archive/install_script_{old_version}.sh)
 ```
 
 explanation of params:
 
-- `${old_version}`: version number
+- `{old_version}`: old version number

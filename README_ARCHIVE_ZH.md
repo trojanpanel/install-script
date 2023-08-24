@@ -13,9 +13,9 @@
 ## 安装旧版
 
 ```shell
-source <(curl -L https://github.com/trojanpanel/install-script/raw/main/archive/install_script_${old_version}.sh)
+source <(curl -L https://github.com/trojanpanel/install-script/raw/main/archive/install_script_{old_version}.sh)
 ```
 
 参数解释:
 
-- `${old_version}`: 版本号
+- `{old_version}`: 旧版本号
