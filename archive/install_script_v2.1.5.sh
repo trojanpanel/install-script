@@ -290,12 +290,10 @@ install_docker() {
     echo_content green "---> 安装Docker"
 
     # 关闭防火墙
-    if [[ "$(firewall-cmd --state 2>/dev/null)" == "running" ]]; then
-      if [[ "${release}" == "centos" ]]; then
-        systemctl disable firewalld
-      elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
-        sudo ufw disable
-      fi
+    if [[ "${release}" == "centos" ]]; then
+      systemctl disable firewalld
+    elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+      sudo ufw disable
     fi
 
     # 时区

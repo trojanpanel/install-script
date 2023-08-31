@@ -292,12 +292,10 @@ install_docker() {
     echo_content green "---> Install Docker"
 
     # turn off firewall
-    if [[ "$(firewall-cmd --state 2>/dev/null)" == "running" ]]; then
-      if [[ "${release}" == "centos" ]]; then
-        systemctl disable firewalld
-      elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
-        sudo ufw disable
-      fi
+    if [[ "${release}" == "centos" ]]; then
+      systemctl disable firewalld
+    elif [[ "${release}" == "debian" || "${release}" == "ubuntu" ]]; then
+      sudo ufw disable
     fi
 
     # set time zone
