@@ -1243,6 +1243,7 @@ install_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/trojango/config/:${TROJAN_PANEL_CORE_DATA}bin/trojango/config/ \
         -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config/:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config/ \
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config/:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config/ \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria2/config/:${TROJAN_PANEL_CORE_DATA}bin/hysteria2/config/ \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${TROJAN_PANEL_CORE_CONFIG}:${TROJAN_PANEL_CORE_CONFIG} \
         -v ${CERT_PATH}:${CERT_PATH} \
@@ -1443,6 +1444,7 @@ update_trojan_panel_core() {
         -v ${TROJAN_PANEL_CORE_DATA}bin/trojango/config/:${TROJAN_PANEL_CORE_DATA}bin/trojango/config/ \
         -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria/config/:${TROJAN_PANEL_CORE_DATA}bin/hysteria/config/ \
         -v ${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config/:${TROJAN_PANEL_CORE_DATA}bin/naiveproxy/config/ \
+        -v ${TROJAN_PANEL_CORE_DATA}bin/hysteria2/config/:${TROJAN_PANEL_CORE_DATA}bin/hysteria2/config/ \
         -v ${TROJAN_PANEL_CORE_LOGS}:${TROJAN_PANEL_CORE_LOGS} \
         -v ${TROJAN_PANEL_CORE_CONFIG}:${TROJAN_PANEL_CORE_CONFIG} \
         -v ${CERT_PATH}:${CERT_PATH} \
