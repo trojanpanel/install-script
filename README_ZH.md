@@ -55,6 +55,10 @@ Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
 
 访问 [https://trojanpanel.github.io](https://trojanpanel.github.io) 查看完整文档
 
+## 更新日志
+
+访问 [https://trojanpanel.github.io/change/change-log.html](https://trojanpanel.github.io/change/change-log.html) 查看完整日志
+
 ## 报告缺陷与问题
 
 [Issues](https://github.com/trojanpanel/install-script/issues)
