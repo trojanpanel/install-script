@@ -16,7 +16,6 @@ init_var() {
   get_arch=""
   can_google=0
 
-
   # Docker
   DOCKER_MIRROR='"https://hub-mirror.c.163.com","https://ccr.ccs.tencentyun.com","https://mirror.baidubce.com","https://dockerproxy.com"'
 
