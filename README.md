@@ -51,9 +51,9 @@ Memory: ≥ 1G
 
 - [Install old version](README_ARCHIVE.md)
 
-## Community
+## Telegram
 
-Telegram Channel: [Trojan Panel](https://t.me/TrojanPanel)
+Telegram Channel: https://t.me/TrojanPanel
 
 ## Documentation
 
@@ -67,7 +67,7 @@ Visit [https://trojanpanel.github.io/change/change-log.html](https://trojanpanel
 
 [Issues](https://github.com/trojanpanel/install-script/issues)
 
-## Support
+## Thanks
 
 - [trojan](https://github.com/trojan-gfw/trojan)
 - [trojan-go](https://github.com/p4gefau1t/trojan-go)

@@ -47,9 +47,9 @@ CPU: linux/amd64 / linux/arm/v6 / linux/arm/v7 / linux/arm64 / linux/s390x / lin
 
 - [安装旧版本](README_ARCHIVE_ZH.md)
 
-## 社区
+## Telegram
 
-Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
+Telegram Channel: https://t.me/TrojanPanel
 
 ## 文档
 
@@ -63,7 +63,7 @@ Telegram 频道: [Trojan Panel](https://t.me/TrojanPanel)
 
 [Issues](https://github.com/trojanpanel/install-script/issues)
 
-## 支持
+## 致谢
 
 - [trojan](https://github.com/trojan-gfw/trojan)
 - [trojan-go](https://github.com/p4gefau1t/trojan-go)
