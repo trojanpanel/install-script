@@ -47,9 +47,11 @@ CPU: linux/amd64 / linux/arm/v6 / linux/arm/v7 / linux/arm64 / linux/s390x / lin
 
 - [安装旧版本](README_ARCHIVE_ZH.md)
 
-## Telegram
+## 其他
 
-Telegram Channel: https://t.me/TrojanPanel
+Telegram Channel: https://t.me/jonssonyan_channel
+
+You can subscribe to my channel on YouTube: https://www.youtube.com/@jonssonyan
 
 ## 文档
 
